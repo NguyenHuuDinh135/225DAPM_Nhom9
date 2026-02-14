@@ -1,9 +1,5 @@
-import { Button } from "@/components/ui/button";
+import { ComponentExample } from "@/components/component-example";
 
-export default function Home() {
-  return (
-    <main className="flex min-h-screen items-center justify-center">
-      <Button>Xin chào shadcn</Button>
-    </main>
-  );
+export default function Page() {
+return <ComponentExample />;
 }
