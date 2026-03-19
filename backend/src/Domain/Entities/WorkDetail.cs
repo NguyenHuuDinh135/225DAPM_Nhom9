@@ -11,22 +11,22 @@ public class WorkDetail : BaseAuditableEntity
     /// <summary>
     /// Mã định danh của công việc mà chi tiết này thuộc về.
     /// </summary>
-    public string WorkId { get; private set; } = null!;
+    public int WorkId { get; private set; }
 
     /// <summary>
     /// Mã định danh của cây xanh cần thực hiện công việc.
     /// </summary>
-    public string TreeId { get; private set; } = null!;
+    public int TreeId { get; private set; }
 
     /// <summary>
     /// Mã định danh của vị trí mới (nếu công việc bao gồm di chuyển cây).
     /// </summary>
-    public string? NewLocationId { get; private set; }
+    public int? NewLocationId { get; private set; }
 
     /// <summary>
     /// Mã định danh của cây thay thế (nếu công việc bao gồm thay cây).
     /// </summary>
-    public string? ReplacementTreeId { get; private set; }
+    public int? ReplacementTreeId { get; private set; }
 
     /// <summary>
     /// Mô tả chi tiết về công việc cần thực hiện.

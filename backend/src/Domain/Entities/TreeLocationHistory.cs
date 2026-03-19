@@ -11,12 +11,12 @@ public class TreeLocationHistory : BaseAuditableEntity
     /// <summary>
     /// Mã định danh của cây xanh.
     /// </summary>
-    public string TreeId { get; private set; } = null!;
+    public int TreeId { get; private set; }
 
     /// <summary>
     /// Mã định danh của vị trí mà cây được trồng.
     /// </summary>
-    public string LocationId { get; private set; } = null!;
+    public int LocationId { get; private set; }
 
     /// <summary>
     /// Ngày bắt đầu cây ở vị trí này.

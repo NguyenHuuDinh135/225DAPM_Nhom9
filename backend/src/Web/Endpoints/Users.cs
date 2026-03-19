@@ -1,4 +1,4 @@
-﻿using backend.Infrastructure.Identity;
+using backend.Domain.Identity;
 
 namespace backend.Web.Endpoints;
 

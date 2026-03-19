@@ -1,6 +1,4 @@
 using backend.Domain.Common;
-using backend.Infrastructure.Identity;
-
 namespace backend.Domain.Entities;
 
 /// <summary>

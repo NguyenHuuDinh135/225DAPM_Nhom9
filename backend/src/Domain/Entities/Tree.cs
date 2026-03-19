@@ -10,7 +10,7 @@ public class Tree : BaseAuditableEntity
     /// <summary>
     /// Mã định danh của loại cây mà cây này thuộc về.
     /// </summary>
-    public string TreeTypeId { get; private set; } = null!;
+    public int TreeTypeId { get; private set; }
 
     /// <summary>
     /// Tên riêng của cây (nếu có).

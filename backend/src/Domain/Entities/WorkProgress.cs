@@ -1,6 +1,4 @@
 using backend.Domain.Common;
-using backend.Infrastructure.Identity;
-
 namespace backend.Domain.Entities;
 
 /// <summary>
@@ -12,7 +10,7 @@ public class WorkProgress : BaseAuditableEntity
     /// <summary>
     /// Mã định danh của công việc được cập nhật tiến độ.
     /// </summary>
-    public string WorkId { get; private set; } = null!;
+    public int WorkId { get; private set; }
 
     /// <summary>
     /// Mã định danh của người cập nhật tiến độ.

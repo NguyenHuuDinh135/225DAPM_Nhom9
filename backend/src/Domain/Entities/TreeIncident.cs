@@ -9,7 +9,7 @@ public class TreeIncident : BaseAuditableEntity
     /// <summary>
     /// Mã định danh của cây xanh gặp sự cố.
     /// </summary>
-    public string TreeId { get; private set; } = null!;
+    public int TreeId { get; private set; }
 
     /// <summary>
     /// Mã định danh của người báo cáo sự cố.

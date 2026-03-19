@@ -11,7 +11,7 @@ public class TreeIncidentImage : BaseAuditableEntity
     /// <summary>
     /// Mã định danh của sự cố mà hình ảnh này thuộc về.
     /// </summary>
-    public string TreeIncidentId { get; private set; } = null!;
+    public int TreeIncidentId { get; private set; }
 
     /// <summary>
     /// Đường dẫn đến file hình ảnh.

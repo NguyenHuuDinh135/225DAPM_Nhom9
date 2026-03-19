@@ -1,7 +1,8 @@
-﻿using backend.Application.Common.Interfaces;
+using backend.Application.Common.Interfaces;
 using backend.Domain.Constants;
 using backend.Infrastructure.Data;
 using backend.Infrastructure.Data.Interceptors;
+using backend.Domain.Identity;
 using backend.Infrastructure.Identity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;

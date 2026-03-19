@@ -1,13 +1,12 @@
-﻿using Microsoft.AspNetCore.Identity;
 using backend.Domain.Entities;
 using backend.Domain.Enums;
+using Microsoft.AspNetCore.Identity;
 
-namespace backend.Infrastructure.Identity;
-
+namespace backend.Domain.Identity;
 
 public class ApplicationUser : IdentityUser
 {
-    public string? WardId { get; set; }
+    public int? WardId { get; set; }
     public string? FullName { get; set; }
     public DateTime? DateOfBirth { get; set; }
     public UserStatus Status { get; set; }
@@ -22,3 +21,4 @@ public class ApplicationUser : IdentityUser
     public ICollection<WorkUser> WorkUsers { get; set; } = new List<WorkUser>();
     public ICollection<WorkProgress> WorkProgresses { get; set; } = new List<WorkProgress>();
 }
+

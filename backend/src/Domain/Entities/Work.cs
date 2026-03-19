@@ -1,6 +1,5 @@
 using backend.Domain.Common;
 using backend.Domain.Enums;
-using backend.Infrastructure.Identity;
 
 namespace backend.Domain.Entities;
 
@@ -13,7 +12,7 @@ public class Work : BaseAuditableEntity
     /// <summary>
     /// Mã định danh của loại công việc.
     /// </summary>
-    public string WorkTypeId { get; private set; } = null!;
+    public int WorkTypeId { get; private set; }
 
     /// <summary>
     /// Mã định danh của người tạo công việc.
@@ -23,7 +22,7 @@ public class Work : BaseAuditableEntity
     /// <summary>
     /// Mã định danh của kế hoạch mà công việc này thuộc về.
     /// </summary>
-    public string PlanId { get; private set; } = null!;
+    public int PlanId { get; private set; }
 
     /// <summary>
     /// Ngày tạo công việc.

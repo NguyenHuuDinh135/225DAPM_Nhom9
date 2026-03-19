@@ -15,7 +15,7 @@ public class Street : BaseAuditableEntity
     /// <summary>
     /// Mã định danh của phường mà tuyến đường này thuộc về.
     /// </summary>
-    public string WardId { get; private set; } = null!;
+    public int WardId { get; private set; }
 
     // Navigation properties
     /// <summary>
