@@ -49,6 +49,18 @@ export function SiteHeader() {
 
           {/* Right Side Actions */}
           <div className="flex items-center gap-2">
+            <Button
+              asChild
+              variant="outline"
+              size="sm"
+              className="hidden md:inline-flex"
+            >
+              <Link href="/login">Login</Link>
+            </Button>
+            <Button asChild size="sm" className="hidden md:inline-flex">
+              <Link href="/signup">Sign up</Link>
+            </Button>
+
             {/* GitHub Link */}
             <Button
               variant="ghost"
@@ -101,6 +113,23 @@ export function SiteHeader() {
         {isMenuOpen && (
           <div className="md:hidden border-t">
             <nav className="flex flex-col gap-3 py-4">
+              <Link
+                href="/login"
+                className="text-sm font-medium transition-colors hover:text-primary px-2"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Login
+              </Link>
+              <Link
+                href="/signup"
+                className="text-sm font-medium transition-colors hover:text-primary px-2"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Sign up
+              </Link>
+
+              <Separator className="my-1" />
+
               {siteConfig.navItems.map((item) => (
                 <Link
                   key={item.href}
