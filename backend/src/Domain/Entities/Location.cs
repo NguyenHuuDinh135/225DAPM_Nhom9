@@ -10,7 +10,7 @@ public class Location : BaseAuditableEntity
     /// <summary>
     /// Mã định danh của tuyến đường chứa vị trí này.
     /// </summary>
-    public string StreetId { get; private set; } = null!;
+    public int StreetId { get; private set; }
 
     /// <summary>
     /// Số nhà tại vị trí này (nếu có).

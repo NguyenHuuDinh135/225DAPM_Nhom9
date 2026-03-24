@@ -7,7 +7,7 @@ namespace backend.Infrastructure.Identity;
 
 public class ApplicationUser : IdentityUser
 {
-    public string? WardId { get; set; }
+    public int? WardId { get; set; }
     public string? FullName { get; set; }
     public DateTime? DateOfBirth { get; set; }
     public UserStatus Status { get; set; }
