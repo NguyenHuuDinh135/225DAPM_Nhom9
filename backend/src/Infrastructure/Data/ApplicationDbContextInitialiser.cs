@@ -40,13 +40,17 @@ public class ApplicationDbContextInitialiser
     {
         try
         {
-            // See https://jasontaylor.dev/ef-core-database-initialisation-strategies
-            await _context.Database.EnsureDeletedAsync();
+            _logger.LogInformation("Bắt đầu khởi tạo Database...");
+        
+            // Cân nhắc bỏ EnsureDeletedAsync() trên môi trường Production nhé!
+            await _context.Database.EnsureDeletedAsync(); 
             await _context.Database.EnsureCreatedAsync();
+        
+            _logger.LogInformation("Khởi tạo và ánh xạ Database thành công.");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "An error occurred while initialising the database.");
+            _logger.LogError(ex, "Có lỗi xảy ra trong quá trình khởi tạo database.");
             throw;
         }
     }
@@ -55,11 +59,13 @@ public class ApplicationDbContextInitialiser
     {
         try
         {
+            _logger.LogInformation("Bắt đầu Seed dữ liệu mặc định...");
             await TrySeedAsync();
+            _logger.LogInformation("Seed dữ liệu thành công.");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "An error occurred while seeding the database.");
+            _logger.LogError(ex, "Có lỗi xảy ra trong quá trình seed database.");
             throw;
         }
     }

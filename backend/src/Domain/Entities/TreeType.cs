@@ -8,19 +8,8 @@ namespace backend.Domain.Entities;
 /// </summary>
 public class TreeType : BaseAuditableEntity
 {
-    /// <summary>
-    /// Tên của loại cây.
-    /// </summary>
     public string? Name { get; private set; }
-
-    /// <summary>
-    /// Nhóm cây mà loại này thuộc về (ví dụ: cây bóng mát, cây ăn quả).
-    /// </summary>
     public string? Group { get; private set; }
 
-    // Navigation properties
-    /// <summary>
-    /// Danh sách các cây xanh thuộc loại này.
-    /// </summary>
     public ICollection<Tree> Trees { get; private set; } = new List<Tree>();
 }

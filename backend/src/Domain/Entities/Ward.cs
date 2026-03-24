@@ -1,5 +1,4 @@
 using backend.Domain.Common;
-using backend.Infrastructure.Identity;
 
 namespace backend.Domain.Entities;
 
@@ -9,19 +8,7 @@ namespace backend.Domain.Entities;
 /// </summary>
 public class Ward : BaseAuditableEntity
 {
-    /// <summary>
-    /// Tên của phường.
-    /// </summary>
     public string Name { get; private set; } = null!;
 
-    // Navigation properties
-    /// <summary>
-    /// Danh sách các tuyến đường thuộc phường này.
-    /// </summary>
     public ICollection<Street> Streets { get; private set; } = new List<Street>();
-
-    /// <summary>
-    /// Danh sách người dùng (nhân viên) thuộc phường này.
-    /// </summary>
-    public ICollection<ApplicationUser> Users { get; private set; } = new List<ApplicationUser>();
 }

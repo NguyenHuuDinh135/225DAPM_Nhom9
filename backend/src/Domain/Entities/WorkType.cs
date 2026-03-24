@@ -8,14 +8,7 @@ namespace backend.Domain.Entities;
 /// </summary>
 public class WorkType : BaseAuditableEntity
 {
-    /// <summary>
-    /// Tên của loại công việc.
-    /// </summary>
     public string? Name { get; private set; }
 
-    // Navigation properties
-    /// <summary>
-    /// Danh sách các công việc thuộc loại này.
-    /// </summary>
     public ICollection<Work> Works { get; private set; } = new List<Work>();
 }
