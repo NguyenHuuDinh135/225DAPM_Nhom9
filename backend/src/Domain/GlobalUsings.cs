@@ -4,4 +4,4 @@ global using backend.Domain.Enums;
 global using backend.Domain.Events;
 global using backend.Domain.Exceptions;
 global using backend.Domain.ValueObjects;
-global using backend.Infrastructure.Identity;
+// global using backend.Infrastructure.Identity;

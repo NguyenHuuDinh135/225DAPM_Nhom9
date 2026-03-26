@@ -9,6 +9,5 @@
     <PackageReference Include="MediatR.Contracts" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Infrastructure\Infrastructure.csproj" />
   </ItemGroup>
 </Project>

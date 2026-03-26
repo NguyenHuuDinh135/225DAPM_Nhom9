@@ -7,6 +7,7 @@
     <AspnetVersion>10.0.0</AspnetVersion>
     <EfcoreVersion>10.0.0</EfcoreVersion>
     <MicrosoftExtensionsVersion>10.0.0</MicrosoftExtensionsVersion>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
   </PropertyGroup>
   <ItemGroup>
     <PackageVersion Include="Ardalis.GuardClauses" Version="5.0.0" />
@@ -55,7 +56,7 @@
     <PackageVersion Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.13.0" />
     <PackageVersion Include="OpenTelemetry.Instrumentation.Http" Version="1.13.0" />
     <PackageVersion Include="OpenTelemetry.Instrumentation.Runtime" Version="1.13.0" />
-    <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.0-rc.2" />
+    <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.0" />
     <PackageVersion Include="Testcontainers.PostgreSql" Version="4.8.1" />
   </ItemGroup>
 </Project>
