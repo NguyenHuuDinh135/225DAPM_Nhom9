@@ -1,28 +1,42 @@
 export const siteConfig = {
-  name: "Component Showcase",
+  name: "shadcn/ui",
+  url: "https://ui.shadcn.com",
+  ogImage: "https://ui.shadcn.com/og.jpg",
   description:
-    "A beautiful component library built with React and Tailwind CSS",
+    "A set of beautifully designed components that you can customize, extend, and build on. Start here then make it your own. Open Source. Open Code.",
   links: {
-    twitter: "https://twitter.com",
-    github: "https://github.com",
-    linkedin: "https://linkedin.com",
+    twitter: "https://twitter.com/shadcn",
+    github: "https://github.com/shadcn-ui/ui",
   },
   navItems: [
     {
-      title: "Home",
-      href: "/",
+      href: "/docs/installation",
+      label: "Docs",
     },
     {
-      title: "Components",
-      href: "/components",
+      href: "/docs/components",
+      label: "Components",
     },
     {
-      title: "Documentation",
-      href: "/docs",
+      href: "/blocks",
+      label: "Blocks",
     },
     {
-      title: "About",
-      href: "/about",
+      href: "/charts/area",
+      label: "Charts",
+    },
+    {
+      href: "/docs/directory",
+      label: "Directory",
+    },
+    {
+      href: "/create",
+      label: "Create",
     },
   ],
-};
+}
+
+export const META_THEME_COLORS = {
+  light: "#ffffff",
+  dark: "#09090b",
+}
