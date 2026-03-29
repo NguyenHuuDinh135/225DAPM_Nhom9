@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
+using MediatR;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -50,5 +51,13 @@ public static class DependencyInjection
 
         builder.Services.AddAuthorization(options =>
             options.AddPolicy(Policies.CanPurge, policy => policy.RequireRole(Roles.Administrator)));
+
+        builder.Services.AddMediatR(cfg =>
+        {
+            cfg.RegisterServicesFromAssemblyContaining<CreateTreeCommand>();
+            cfg.RegisterServicesFromAssemblyContaining<GetTreeByIdQuery>();
+            cfg.RegisterServicesFromAssemblyContaining<CreateTreeIncidentCommand>();
+            cfg.RegisterServicesFromAssemblyContaining<GetTreeIncidentByIdQuery>();
+        });
     }
 }
