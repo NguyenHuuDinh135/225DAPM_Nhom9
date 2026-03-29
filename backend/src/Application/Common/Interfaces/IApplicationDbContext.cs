@@ -8,5 +8,7 @@ public interface IApplicationDbContext
 
     DbSet<TodoItem> TodoItems { get; }
 
+    DbSet<Location> Locations { get; }
+
     Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 }
