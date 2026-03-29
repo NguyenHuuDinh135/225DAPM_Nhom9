@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
+using StackExchange.Redis;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -50,5 +51,14 @@ public static class DependencyInjection
 
         builder.Services.AddAuthorization(options =>
             options.AddPolicy(Policies.CanPurge, policy => policy.RequireRole(Roles.Administrator)));
+
+        // Add Redis configuration
+        var redisConnectionString = builder.Configuration.GetConnectionString("Redis");
+        Guard.Against.NullOrEmpty(redisConnectionString, message: "Redis connection string not found.");
+
+        builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
+            ConnectionMultiplexer.Connect(redisConnectionString));
+
+        builder.Services.AddSingleton<IRedisCacheService, RedisCacheService>();
     }
 }
