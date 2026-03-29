@@ -9,9 +9,8 @@ import { ActiveThemeProvider } from "@/components/active-theme"
 import { Analytics } from "@/components/analytics"
 import { TailwindIndicator } from "@/components/tailwind-indicator"
 import { ThemeProvider } from "@/components/theme-provider"
-import { TooltipProvider as BaseTooltipProvider } from "@/components/ui/tooltip"
+import { TooltipProvider } from "@/components/ui/tooltip"
 import { Toaster } from "@/components/ui/sonner"
-import { TooltipProvider as RadixTooltipProvider } from "@/components/ui/tooltip"
 
 export const metadata: Metadata = {
   title: {
@@ -90,6 +89,7 @@ export default function RootLayout({
       </head>
       <body
         className={cn(
+          fontVariables,
           "group/body overscroll-none antialiased [--footer-height:calc(var(--spacing)*14)] [--header-height:calc(var(--spacing)*14)] xl:[--footer-height:calc(var(--spacing)*24)]"
         )}
       >
@@ -97,12 +97,10 @@ export default function RootLayout({
           <LayoutProvider>
             <ActiveThemeProvider>
               <NuqsAdapter>
-                <BaseTooltipProvider delayDuration={0}>
-                  <RadixTooltipProvider delayDuration={0}>
-                    {children}
-                    <Toaster position="top-center" />
-                  </RadixTooltipProvider>
-                </BaseTooltipProvider>
+                <TooltipProvider delayDuration={0}>
+                  {children}
+                  <Toaster position="top-center" />
+                </TooltipProvider>
               </NuqsAdapter>
               <TailwindIndicator />
               <Analytics />
