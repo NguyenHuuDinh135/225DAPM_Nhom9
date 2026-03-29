@@ -12,5 +12,7 @@ public interface IApplicationDbContext
 
     DbSet<WorkType> WorkTypes { get; }
 
+    DbSet<Plan> Plans { get; }
+
     Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 }

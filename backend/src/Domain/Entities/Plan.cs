@@ -8,6 +8,18 @@ namespace backend.Domain.Entities;
 /// </summary>
 public class Plan : BaseAuditableEntity
 {
+    private Plan() { } // EF Core
+
+    public Plan(string name, string creatorId, DateTime? startDate, DateTime? endDate)
+    {
+        Name = name;
+        CreatorId = creatorId;
+        StartDate = startDate;
+        EndDate = endDate;
+        Status = "Draft";
+        CreatedDate = DateTime.UtcNow;
+    }
+
     public string? Name { get; private set; }
 
     public string CreatorId { get; private set; } = null!;
@@ -20,4 +32,18 @@ public class Plan : BaseAuditableEntity
     public string? Status { get; private set; }
 
     public ICollection<Work> Works { get; private set; } = new List<Work>();
+
+    public void Update(string name, DateTime? startDate, DateTime? endDate, string status)
+    {
+        Name = name;
+        StartDate = startDate;
+        EndDate = endDate;
+        Status = status;
+    }
+
+    public void Approve(string approverId)
+    {
+        ApproverId = approverId;
+        Status = "Approved";
+    }
 }
