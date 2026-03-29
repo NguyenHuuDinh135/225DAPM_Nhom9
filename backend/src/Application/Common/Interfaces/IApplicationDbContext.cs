@@ -8,5 +8,9 @@ public interface IApplicationDbContext
 
     DbSet<TodoItem> TodoItems { get; }
 
+    DbSet<Work> Works { get; }
+
+    DbSet<WorkType> WorkTypes { get; }
+
     Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 }

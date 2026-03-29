@@ -9,6 +9,19 @@ namespace backend.Domain.Entities;
 /// </summary>
 public class Work : BaseAuditableEntity
 {
+    private Work() { } // EF Core
+
+    public Work(int workTypeId, int planId, string creatorId, DateTime? startDate, DateTime? endDate)
+    {
+        WorkTypeId = workTypeId;
+        PlanId = planId;
+        CreatorId = creatorId;
+        StartDate = startDate;
+        EndDate = endDate;
+        Status = WorkStatus.New;
+        CreatedDate = DateTime.UtcNow;
+    }
+
     public int WorkTypeId { get; private set; }
     public string CreatorId { get; private set; } = null!;
     public int PlanId { get; private set; }
@@ -25,4 +38,12 @@ public class Work : BaseAuditableEntity
     public ICollection<WorkDetail> WorkDetails { get; private set; } = new List<WorkDetail>();
     public ICollection<WorkUser> WorkUsers { get; private set; } = new List<WorkUser>();
     public ICollection<WorkProgress> WorkProgresses { get; private set; } = new List<WorkProgress>();
+
+    public void Update(int workTypeId, DateTime? startDate, DateTime? endDate, WorkStatus status)
+    {
+        WorkTypeId = workTypeId;
+        StartDate = startDate;
+        EndDate = endDate;
+        Status = status;
+    }
 }
