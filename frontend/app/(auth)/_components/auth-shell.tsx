@@ -11,10 +11,13 @@ export function AuthShell({
   imageAlt: string;
 }) {
   return (
-    <div className="grid min-h-[680px] lg:grid-cols-2">
-      <div className="flex flex-col gap-4 p-6 md:p-10 lg:p-12">
+    <div className="grid min-h-screen bg-muted/15 lg:grid-cols-[1.15fr_1fr]">
+      <div className="flex flex-col gap-5 p-6 md:p-10 lg:px-14 lg:py-12 xl:px-20">
         <div className="flex justify-center gap-2 md:justify-start">
-          <Link href="/" className="flex items-center gap-2 font-medium">
+          <Link
+            href="/"
+            className="flex items-center gap-2 text-sm font-semibold tracking-wide text-foreground/90"
+          >
             <div className="flex size-6 items-center justify-center rounded-md bg-primary text-primary-foreground">
               <GalleryVerticalEnd className="size-4" />
             </div>
@@ -23,7 +26,7 @@ export function AuthShell({
         </div>
 
         <div className="flex flex-1 items-center justify-center">
-          <div className="w-full max-w-sm">{children}</div>
+          <div className="w-full max-w-lg px-1 sm:px-2">{children}</div>
         </div>
       </div>
 
