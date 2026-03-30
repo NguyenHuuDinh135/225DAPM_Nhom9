@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using StackExchange.Redis;
+using backend.Infrastructure.Services;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -54,7 +55,7 @@ public static class DependencyInjection
 
         // Add Redis configuration
         var redisConnectionString = builder.Configuration.GetConnectionString("Redis");
-        Guard.Against.NullOrEmpty(redisConnectionString, message: "Redis connection string not found.");
+        Guard.Against.NullOrEmpty(redisConnectionString, message: "Redis connection string 'Redis' not found.");
 
         builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
             ConnectionMultiplexer.Connect(redisConnectionString));
