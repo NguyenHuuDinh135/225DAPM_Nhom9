@@ -10,6 +10,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using StackExchange.Redis;
 using backend.Infrastructure.Services;
+using MediatR;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -61,5 +62,12 @@ public static class DependencyInjection
             ConnectionMultiplexer.Connect(redisConnectionString));
 
         builder.Services.AddSingleton<IRedisCacheService, RedisCacheService>();
+        builder.Services.AddMediatR(cfg =>
+        {
+            cfg.RegisterServicesFromAssemblyContaining<CreateTreeCommand>();
+            cfg.RegisterServicesFromAssemblyContaining<GetTreeByIdQuery>();
+            cfg.RegisterServicesFromAssemblyContaining<CreateTreeIncidentCommand>();
+            cfg.RegisterServicesFromAssemblyContaining<GetTreeIncidentByIdQuery>();
+        });
     }
 }
