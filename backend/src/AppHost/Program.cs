@@ -2,9 +2,13 @@ var builder = DistributedApplication.CreateBuilder(args);
 
 var databaseName = "backendDb";
 
+// Tạo parameter password cố định (bí mật)
+var postgresPassword = builder.AddParameter("postgres-password", "123", secret: true); // Đổi "123" thành password bạn muốn
+
 var postgres = builder
-    .AddPostgres("postgres")
-    // Set the name of the default database to auto-create on container startup.
+    .AddPostgres("postgres", 
+                 password: postgresPassword,   // Fix password
+                 port: 5432)                   // Fix port host = 5432
     .WithEnvironment("POSTGRES_DB", databaseName);
 
 var database = postgres.AddDatabase(databaseName);

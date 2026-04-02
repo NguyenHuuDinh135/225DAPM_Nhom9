@@ -8,12 +8,12 @@ namespace backend.Domain.Entities;
 /// </summary>
 public class TreeLocationHistory : BaseAuditableEntity
 {
-    public int TreeId { get; private set; }
-    public int LocationId { get; private set; }
+    public int TreeId { get;  set; }
+    public int LocationId { get;  set; }
 
-    public DateTime FromDate { get; private set; }
-    public DateTime? ToDate { get; private set; }
+    public DateTime FromDate { get;  set; }
+    public DateTime? ToDate { get;  set; }
 
-    public Tree Tree { get; private set; } = null!;
-    public Location Location { get; private set; } = null!;
+    public Tree Tree { get;  set; } = null!;
+    public Location Location { get;  set; } = null!;
 }

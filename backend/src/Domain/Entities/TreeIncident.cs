@@ -6,15 +6,15 @@ namespace backend.Domain.Entities;
 /// </summary>
 public class TreeIncident : BaseAuditableEntity
 {
-    public int TreeId { get; private set; }
+    public int TreeId { get;  set; }
 
-    public string ReporterId { get; private set; } = null!;
-    public string? ApproverId { get; private set; }
+    public string ReporterId { get;  set; } = null!;
+    public string? ApproverId { get;  set; }
 
-    public string? Content { get; private set; }
-    public string? Status { get; private set; }
-    public DateTime? ReportedDate { get; private set; }
+    public string? Content { get;  set; }
+    public string? Status { get;  set; }
+    public DateTime? ReportedDate { get;  set; }
 
-    public Tree Tree { get; private set; } = null!;
-    public ICollection<TreeIncidentImage> Images { get; private set; } = new List<TreeIncidentImage>();
+    public Tree Tree { get;  set; } = null!;
+    public ICollection<TreeIncidentImage> Images { get;  set; } = new List<TreeIncidentImage>();
 }

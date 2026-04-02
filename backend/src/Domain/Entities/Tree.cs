@@ -7,18 +7,18 @@ namespace backend.Domain.Entities;
 /// </summary>
 public class Tree : BaseAuditableEntity
 {
-    public int TreeTypeId { get; private set; }
+    public int TreeTypeId { get;  set; }
 
-    public string? Name { get; private set; }
-    public string? Condition { get; private set; }
+    public string? Name { get;  set; }
+    public string? Condition { get;  set; }
 
-    public decimal? Height { get; private set; }
-    public decimal? TrunkDiameter { get; private set; }
-    public DateTime? RecordedDate { get; private set; }
+    public decimal? Height { get;  set; }
+    public decimal? TrunkDiameter { get;  set; }
+    public DateTime? RecordedDate { get;  set; }
 
-    public TreeType TreeType { get; private set; } = null!;
+    public TreeType TreeType { get;  set; } = null!;
 
-    public ICollection<TreeLocationHistory> TreeLocationHistories { get; private set; } = new List<TreeLocationHistory>();
-    public ICollection<TreeIncident> TreeIncidents { get; private set; } = new List<TreeIncident>();
-    public ICollection<WorkDetail> WorkDetails { get; private set; } = new List<WorkDetail>();
+    public ICollection<TreeLocationHistory> TreeLocationHistories { get;  set; } = new List<TreeLocationHistory>();
+    public ICollection<TreeIncident> TreeIncidents { get;  set; } = new List<TreeIncident>();
+    public ICollection<WorkDetail> WorkDetails { get;  set; } = new List<WorkDetail>();
 }

@@ -7,10 +7,10 @@ namespace backend.Domain.Entities;
 /// </summary>
 public class Street : BaseAuditableEntity
 {
-    public int WardId { get; private set; }
+    public int WardId { get;  set; }
 
-    public string? Name { get; private set; }
+    public string? Name { get;  set; }
 
-    public Ward Ward { get; private set; } = null!;
-    public ICollection<Location> Locations { get; private set; } = new List<Location>();
+    public Ward Ward { get;  set; } = null!;
+    public ICollection<Location> Locations { get;  set; } = new List<Location>();
 }

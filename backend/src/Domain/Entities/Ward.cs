@@ -8,7 +8,7 @@ namespace backend.Domain.Entities;
 /// </summary>
 public class Ward : BaseAuditableEntity
 {
-    public string Name { get; private set; } = null!;
+    public string Name { get;  set; } = null!;
 
-    public ICollection<Street> Streets { get; private set; } = new List<Street>();
+    public ICollection<Street> Streets { get;  set; } = new List<Street>();
 }

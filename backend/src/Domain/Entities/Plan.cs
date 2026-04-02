@@ -8,16 +8,16 @@ namespace backend.Domain.Entities;
 /// </summary>
 public class Plan : BaseAuditableEntity
 {
-    public string? Name { get; private set; }
+    public string? Name { get;  set; }
 
-    public string CreatorId { get; private set; } = null!;
-    public string? ApproverId { get; private set; }
+    public string CreatorId { get;  set; } = null!;
+    public string? ApproverId { get;  set; }
 
-    public DateTime? CreatedDate { get; private set; }
-    public DateTime? StartDate { get; private set; }
-    public DateTime? EndDate { get; private set; }
+    public DateTime? CreatedDate { get;  set; }
+    public DateTime? StartDate { get;  set; }
+    public DateTime? EndDate { get;  set; }
 
-    public string? Status { get; private set; }
+    public string? Status { get;  set; }
 
-    public ICollection<Work> Works { get; private set; } = new List<Work>();
+    public ICollection<Work> Works { get;  set; } = new List<Work>();
 }

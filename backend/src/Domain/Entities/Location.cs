@@ -10,41 +10,41 @@ public class Location : BaseAuditableEntity
     /// <summary>
     /// Mã định danh của tuyến đường chứa vị trí này.
     /// </summary>
-    public int StreetId { get; private set; }
+    public int StreetId { get;  set; }
 
     /// <summary>
     /// Số nhà tại vị trí này (nếu có).
     /// </summary>
-    public int? HouseNumber { get; private set; }
+    public int? HouseNumber { get;  set; }
 
     /// <summary>
     /// Kinh độ của vị trí (tọa độ GPS).
     /// </summary>
-    public decimal? Longitude { get; private set; }
+    public decimal? Longitude { get;  set; }
 
     /// <summary>
     /// Vĩ độ của vị trí (tọa độ GPS).
     /// </summary>
-    public decimal? Latitude { get; private set; }
+    public decimal? Latitude { get;  set; }
 
     /// <summary>
     /// Mô tả chi tiết về vị trí này.
     /// </summary>
-    public string? Description { get; private set; }
+    public string? Description { get;  set; }
 
     // Navigation properties
     /// <summary>
     /// Tham chiếu đến tuyến đường chứa vị trí này.
     /// </summary>
-    public Street Street { get; private set; } = null!;
+    public Street Street { get;  set; } = null!;
 
     /// <summary>
     /// Lịch sử vị trí của các cây xanh tại địa điểm này.
     /// </summary>
-    public ICollection<TreeLocationHistory> TreeLocationHistories { get; private set; } = new List<TreeLocationHistory>();
+    public ICollection<TreeLocationHistory> TreeLocationHistories { get;  set; } = new List<TreeLocationHistory>();
 
     /// <summary>
     /// Chi tiết công việc liên quan đến vị trí này.
     /// </summary>
-    public ICollection<WorkDetail> WorkDetails { get; private set; } = new List<WorkDetail>();
+    public ICollection<WorkDetail> WorkDetails { get;  set; } = new List<WorkDetail>();
 }
