@@ -8,12 +8,12 @@ namespace backend.Domain.Entities;
 /// </summary>
 public class WorkProgress : BaseAuditableEntity
 {
-    public int WorkId { get; private set; }
-    public string UpdaterId { get; private set; } = null!;
+    public int WorkId { get;  set; }
+    public string UpdaterId { get;  set; } = null!;
 
-    public int? Percentage { get; private set; }
-    public string? Note { get; private set; }
-    public DateTime? UpdatedDate { get; private set; }
+    public int? Percentage { get;  set; }
+    public string? Note { get;  set; }
+    public DateTime? UpdatedDate { get;  set; }
 
-    public Work Work { get; private set; } = null!;
+    public Work Work { get;  set; } = null!;
 }

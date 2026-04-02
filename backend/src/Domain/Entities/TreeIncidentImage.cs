@@ -8,10 +8,10 @@ namespace backend.Domain.Entities;
 /// </summary>
 public class TreeIncidentImage : BaseAuditableEntity
 {
-    public int TreeIncidentId { get; private set; }
+    public int TreeIncidentId { get;  set; }
 
-    public string? Path { get; private set; }
-    public string? Description { get; private set; }
+    public string? Path { get;  set; }
+    public string? Description { get;  set; }
 
-    public TreeIncident TreeIncident { get; private set; } = null!;
+    public TreeIncident TreeIncident { get;  set; } = null!;
 }

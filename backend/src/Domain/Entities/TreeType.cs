@@ -8,8 +8,8 @@ namespace backend.Domain.Entities;
 /// </summary>
 public class TreeType : BaseAuditableEntity
 {
-    public string? Name { get; private set; }
-    public string? Group { get; private set; }
+    public string? Name { get;  set; }
+    public string? Group { get;  set; }
 
-    public ICollection<Tree> Trees { get; private set; } = new List<Tree>();
+    public ICollection<Tree> Trees { get;  set; } = new List<Tree>();
 }

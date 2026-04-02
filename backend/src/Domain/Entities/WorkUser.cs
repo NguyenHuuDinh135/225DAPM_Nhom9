@@ -8,11 +8,11 @@ namespace backend.Domain.Entities;
 /// </summary>
 public class WorkUser : BaseAuditableEntity
 {
-    public int WorkId { get; private set; }
-    public string UserId { get; private set; } = null!;
+    public int WorkId { get;  set; }
+    public string UserId { get;  set; } = null!;
 
-    public string? Role { get; private set; }
-    public string? Status { get; private set; }
+    public string? Role { get;  set; }
+    public string? Status { get;  set; }
 
-    public Work Work { get; private set; } = null!;
+    public Work Work { get;  set; } = null!;
 }

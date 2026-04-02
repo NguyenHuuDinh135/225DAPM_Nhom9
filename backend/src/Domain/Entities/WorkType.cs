@@ -8,7 +8,7 @@ namespace backend.Domain.Entities;
 /// </summary>
 public class WorkType : BaseAuditableEntity
 {
-    public string? Name { get; private set; }
+    public string? Name { get;  set; }
 
-    public ICollection<Work> Works { get; private set; } = new List<Work>();
+    public ICollection<Work> Works { get;  set; } = new List<Work>();
 }

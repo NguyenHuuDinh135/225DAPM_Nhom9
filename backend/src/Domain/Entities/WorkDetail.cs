@@ -8,17 +8,17 @@ namespace backend.Domain.Entities;
 /// </summary>
 public class WorkDetail : BaseAuditableEntity
 {
-    public int WorkId { get; private set; }
-    public int TreeId { get; private set; }
+    public int WorkId { get;  set; }
+    public int TreeId { get;  set; }
 
-    public int? NewLocationId { get; private set; }
-    public int? ReplacementTreeId { get; private set; }
+    public int? NewLocationId { get;  set; }
+    public int? ReplacementTreeId { get;  set; }
 
-    public string? Content { get; private set; }
-    public string? Status { get; private set; }
+    public string? Content { get;  set; }
+    public string? Status { get;  set; }
 
-    public Work Work { get; private set; } = null!;
-    public Tree Tree { get; private set; } = null!;
-    public Location? NewLocation { get; private set; }
-    public Tree? ReplacementTree { get; private set; }
+    public Work Work { get;  set; } = null!;
+    public Tree Tree { get;  set; } = null!;
+    public Location? NewLocation { get;  set; }
+    public Tree? ReplacementTree { get;  set; }
 }
