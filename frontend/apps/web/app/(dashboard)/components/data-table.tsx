@@ -104,7 +104,6 @@ export const schema = z.object({
   reviewer: z.string(),
 })
 
-// Create a separate component for the drag handle
 function DragHandle({ id }: { id: number }) {
   const { attributes, listeners } = useSortable({
     id,
@@ -119,7 +118,7 @@ function DragHandle({ id }: { id: number }) {
       className="size-7 text-muted-foreground hover:bg-transparent"
     >
       <HugeiconsIcon icon={DragDropVerticalIcon} strokeWidth={2} className="size-3 text-muted-foreground" />
-      <span className="sr-only">Drag to reorder</span>
+      <span className="sr-only">Kéo thả để sắp xếp</span>
     </Button>
   )
 }
@@ -140,7 +139,7 @@ const columns: ColumnDef<z.infer<typeof schema>>[] = [
             (table.getIsSomePageRowsSelected() && "indeterminate")
           }
           onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-          aria-label="Select all"
+          aria-label="Chọn tất cả"
         />
       </div>
     ),
@@ -149,7 +148,7 @@ const columns: ColumnDef<z.infer<typeof schema>>[] = [
         <Checkbox
           checked={row.getIsSelected()}
           onCheckedChange={(value) => row.toggleSelected(!!value)}
-          aria-label="Select row"
+          aria-label="Chọn dòng"
         />
       </div>
     ),
@@ -158,7 +157,7 @@ const columns: ColumnDef<z.infer<typeof schema>>[] = [
   },
   {
     accessorKey: "header",
-    header: "Header",
+    header: "Tên công việc",
     cell: ({ row }) => {
       return <TableCellViewer item={row.original} />
     },
@@ -166,10 +165,10 @@ const columns: ColumnDef<z.infer<typeof schema>>[] = [
   },
   {
     accessorKey: "type",
-    header: "Section Type",
+    header: "Phân loại",
     cell: ({ row }) => (
       <div className="w-32">
-        <Badge variant="outline" className="px-1.5 text-muted-foreground">
+        <Badge variant="outline" className="px-1.5 text-muted-foreground bg-muted/50">
           {row.original.type}
         </Badge>
       </div>
@@ -177,13 +176,13 @@ const columns: ColumnDef<z.infer<typeof schema>>[] = [
   },
   {
     accessorKey: "status",
-    header: "Status",
+    header: "Trạng thái",
     cell: ({ row }) => (
-      <Badge variant="outline" className="px-1.5 text-muted-foreground">
-        {row.original.status === "Done" ? (
-          <HugeiconsIcon icon={CheckmarkCircle01Icon} strokeWidth={2} className="fill-green-500 dark:fill-green-400" />
+      <Badge variant="outline" className="px-1.5 font-medium border-border">
+        {row.original.status === "Hoàn thành" ? (
+          <HugeiconsIcon icon={CheckmarkCircle01Icon} strokeWidth={2} className="fill-emerald-500 text-emerald-500 mr-1 size-3" />
         ) : (
-          <HugeiconsIcon icon={Loading03Icon} strokeWidth={2} />
+          <HugeiconsIcon icon={Loading03Icon} strokeWidth={2} className="text-amber-500 animate-spin mr-1 size-3" />
         )}
         {row.original.status}
       </Badge>
@@ -191,19 +190,18 @@ const columns: ColumnDef<z.infer<typeof schema>>[] = [
   },
   {
     accessorKey: "target",
-    header: () => <div className="w-full text-end">Target</div>,
+    header: () => <div className="w-full text-end">Mục tiêu (Cây)</div>,
     cell: ({ row }) => (
       <form
          onSubmit={(e) => {
           e.preventDefault()
-          console.log("Saving:", row.original.header)
         }}
       >
         <Label htmlFor={`${row.original.id}-target`} className="sr-only">
-          Target
+          Mục tiêu
         </Label>
         <Input
-          className="h-8 w-16 border-transparent bg-transparent text-end shadow-none hover:bg-input/30 focus-visible:border focus-visible:bg-background dark:bg-transparent dark:hover:bg-input/30 dark:focus-visible:bg-input/30"
+          className="h-8 w-16 border-transparent bg-transparent text-end shadow-none hover:bg-input/30 focus-visible:border focus-visible:bg-background"
           defaultValue={row.original.target}
           id={`${row.original.id}-target`}
         />
@@ -212,19 +210,18 @@ const columns: ColumnDef<z.infer<typeof schema>>[] = [
   },
   {
     accessorKey: "limit",
-    header: () => <div className="w-full text-end">Limit</div>,
+    header: () => <div className="w-full text-end">Hạn mức (Ngày)</div>,
     cell: ({ row }) => (
       <form
          onSubmit={(e) => {
           e.preventDefault()
-          console.log("Saving:", row.original.header)
         }}
       >
         <Label htmlFor={`${row.original.id}-limit`} className="sr-only">
-          Limit
+          Hạn mức
         </Label>
         <Input
-          className="h-8 w-16 border-transparent bg-transparent text-end shadow-none hover:bg-input/30 focus-visible:border focus-visible:bg-background dark:bg-transparent dark:hover:bg-input/30 dark:focus-visible:bg-input/30"
+          className="h-8 w-16 border-transparent bg-transparent text-end shadow-none hover:bg-input/30 focus-visible:border focus-visible:bg-background"
           defaultValue={row.original.limit}
           id={`${row.original.id}-limit`}
         />
@@ -233,33 +230,32 @@ const columns: ColumnDef<z.infer<typeof schema>>[] = [
   },
   {
     accessorKey: "reviewer",
-    header: "Reviewer",
+    header: "Người giám sát",
     cell: ({ row }) => {
-      const isAssigned = row.original.reviewer !== "Assign reviewer"
+      const isAssigned = row.original.reviewer !== "Chưa phân công"
 
       if (isAssigned) {
-        return row.original.reviewer
+        return <span className="text-sm font-medium">{row.original.reviewer}</span>
       }
 
       return (
         <>
           <Label htmlFor={`${row.original.id}-reviewer`} className="sr-only">
-            Reviewer
+            Người giám sát
           </Label>
           <Select>
             <SelectTrigger
-              className="w-38 **:data-[slot=select-value]:block **:data-[slot=select-value]:truncate"
+              className="w-40 **:data-[slot=select-value]:block **:data-[slot=select-value]:truncate"
               size="sm"
               id={`${row.original.id}-reviewer`}
             >
-              <SelectValue placeholder="Assign reviewer" />
+              <SelectValue placeholder="Phân công ngay" />
             </SelectTrigger>
             <SelectContent align="end">
               <SelectGroup>
-                <SelectItem value="Eddie Lake">Eddie Lake</SelectItem>
-                <SelectItem value="Jamik Tashpulatov">
-                  Jamik Tashpulatov
-                </SelectItem>
+                <SelectItem value="Trần Minh Tuấn">Trần Minh Tuấn</SelectItem>
+                <SelectItem value="Nguyễn Mai Anh">Nguyễn Mai Anh</SelectItem>
+                <SelectItem value="Lê Văn Hải">Lê Văn Hải</SelectItem>
               </SelectGroup>
             </SelectContent>
           </Select>
@@ -278,15 +274,15 @@ const columns: ColumnDef<z.infer<typeof schema>>[] = [
             size="icon"
           >
             <HugeiconsIcon icon={MoreVerticalCircle01Icon} strokeWidth={2} />
-            <span className="sr-only">Open menu</span>
+            <span className="sr-only">Mở menu</span>
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-32">
-          <DropdownMenuItem>Edit</DropdownMenuItem>
-          <DropdownMenuItem>Make a copy</DropdownMenuItem>
-          <DropdownMenuItem>Favorite</DropdownMenuItem>
+        <DropdownMenuContent align="end" className="w-36">
+          <DropdownMenuItem>Chỉnh sửa</DropdownMenuItem>
+          <DropdownMenuItem>Giao việc nhanh</DropdownMenuItem>
+          <DropdownMenuItem>Đánh dấu ưu tiên</DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem variant="destructive">Delete</DropdownMenuItem>
+          <DropdownMenuItem variant="destructive">Xóa công việc</DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
     ),
@@ -303,7 +299,7 @@ function DraggableRow({ row }: { row: Row<z.infer<typeof schema>> }) {
       data-state={row.getIsSelected() && "selected"}
       data-dragging={isDragging}
       ref={setNodeRef}
-      className="relative z-0 data-[dragging=true]:z-10 data-[dragging=true]:opacity-80"
+      className="relative z-0 data-[dragging=true]:z-10 data-[dragging=true]:opacity-80 data-[dragging=true]:bg-muted/50 data-[dragging=true]:shadow-md"
       style={{
         transform: CSS.Transform.toString(transform),
         transition: transition,
@@ -325,11 +321,8 @@ export function DataTable({
 }) {
   const [data, setData] = React.useState(() => initialData)
   const [rowSelection, setRowSelection] = React.useState({})
-  const [columnVisibility, setColumnVisibility] =
-    React.useState<VisibilityState>({})
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    []
-  )
+  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
+  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [pagination, setPagination] = React.useState({
     pageIndex: 0,
@@ -385,50 +378,50 @@ export function DataTable({
 
   return (
     <Tabs
-      defaultValue="outline"
+      defaultValue="danh-sach"
       className="w-full flex-col justify-start gap-6"
     >
       <div className="flex items-center justify-between px-4 lg:px-6">
         <Label htmlFor="view-selector" className="sr-only">
-          View
+          Chế độ xem
         </Label>
-        <Select defaultValue="outline">
+        <Select defaultValue="danh-sach">
           <SelectTrigger
             className="flex w-fit @4xl/main:hidden"
             size="sm"
             id="view-selector"
           >
-            <SelectValue placeholder="Select a view" />
+            <SelectValue placeholder="Chọn góc nhìn" />
           </SelectTrigger>
           <SelectContent>
             <SelectGroup>
-              <SelectItem value="outline">Outline</SelectItem>
-              <SelectItem value="past-performance">Past Performance</SelectItem>
-              <SelectItem value="key-personnel">Key Personnel</SelectItem>
-              <SelectItem value="focus-documents">Focus Documents</SelectItem>
+              <SelectItem value="danh-sach">Danh sách công việc</SelectItem>
+              <SelectItem value="lich-su">Lịch sử bảo dưỡng</SelectItem>
+              <SelectItem value="nhan-su">Quản lý nhân sự</SelectItem>
+              <SelectItem value="tai-lieu">Tài liệu quy định</SelectItem>
             </SelectGroup>
           </SelectContent>
         </Select>
-        <TabsList className="hidden **:data-[slot=badge]:size-5 **:data-[slot=badge]:rounded-full **:data-[slot=badge]:bg-muted-foreground/30 **:data-[slot=badge]:px-1 @4xl/main:flex">
-          <TabsTrigger value="outline">Outline</TabsTrigger>
-          <TabsTrigger value="past-performance">
-            Past Performance <Badge variant="secondary">3</Badge>
+        <TabsList className="hidden **:data-[slot=badge]:size-5 **:data-[slot=badge]:rounded-full **:data-[slot=badge]:bg-green-100 **:data-[slot=badge]:text-green-800 **:data-[slot=badge]:px-1 @4xl/main:flex">
+          <TabsTrigger value="danh-sach">Danh sách công việc</TabsTrigger>
+          <TabsTrigger value="lich-su">
+            Lịch sử <Badge variant="secondary" className="ml-1">5</Badge>
           </TabsTrigger>
-          <TabsTrigger value="key-personnel">
-            Key Personnel <Badge variant="secondary">2</Badge>
+          <TabsTrigger value="nhan-su">
+            Nhân sự <Badge variant="secondary" className="ml-1">3</Badge>
           </TabsTrigger>
-          <TabsTrigger value="focus-documents">Focus Documents</TabsTrigger>
+          <TabsTrigger value="tai-lieu">Tài liệu đính kèm</TabsTrigger>
         </TabsList>
         <div className="flex items-center gap-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm">
                 <HugeiconsIcon icon={LeftToRightListBulletIcon} strokeWidth={2} data-icon="inline-start" />
-                Columns
+                Cột hiển thị
                 <HugeiconsIcon icon={ArrowDown01Icon} strokeWidth={2} data-icon="inline-end" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-32">
+            <DropdownMenuContent align="end" className="w-40">
               {table
                 .getAllColumns()
                 .filter(
@@ -446,23 +439,28 @@ export function DataTable({
                         column.toggleVisibility(!!value)
                       }
                     >
-                      {column.id}
+                      {column.id === "header" ? "Tên công việc" : 
+                       column.id === "type" ? "Phân loại" :
+                       column.id === "status" ? "Trạng thái" :
+                       column.id === "target" ? "Mục tiêu" :
+                       column.id === "limit" ? "Hạn mức" : "Người giám sát"}
                     </DropdownMenuCheckboxItem>
                   )
                 })}
             </DropdownMenuContent>
           </DropdownMenu>
-          <Button variant="outline" size="sm">
+          <Button size="sm" className="bg-[#007B22] hover:bg-[#006400] text-white">
             <HugeiconsIcon icon={Add01Icon} strokeWidth={2} />
-            <span className="hidden lg:inline">Add Section</span>
+            <span className="hidden lg:inline">Thêm công việc</span>
           </Button>
         </div>
       </div>
+      
       <TabsContent
-        value="outline"
+        value="danh-sach"
         className="relative flex flex-col gap-4 overflow-auto px-4 lg:px-6"
       >
-        <div className="overflow-hidden rounded-lg border">
+        <div className="overflow-hidden rounded-lg border border-border shadow-sm">
           <DndContext
             collisionDetection={closestCenter}
             modifiers={[restrictToVerticalAxis]}
@@ -471,12 +469,12 @@ export function DataTable({
             id={sortableId}
           >
             <Table>
-              <TableHeader className="sticky top-0 z-10 bg-muted">
+              <TableHeader className="sticky top-0 z-10 bg-muted/60">
                 {table.getHeaderGroups().map((headerGroup) => (
                   <TableRow key={headerGroup.id}>
                     {headerGroup.headers.map((header) => {
                       return (
-                        <TableHead key={header.id} colSpan={header.colSpan}>
+                        <TableHead key={header.id} colSpan={header.colSpan} className="text-foreground font-semibold">
                           {header.isPlaceholder
                             ? null
                             : flexRender(
@@ -503,9 +501,9 @@ export function DataTable({
                   <TableRow>
                     <TableCell
                       colSpan={columns.length}
-                      className="h-24 text-center"
+                      className="h-24 text-center text-muted-foreground"
                     >
-                      No results.
+                      Không có dữ liệu.
                     </TableCell>
                   </TableRow>
                 )}
@@ -513,15 +511,17 @@ export function DataTable({
             </Table>
           </DndContext>
         </div>
-        <div className="flex items-center justify-between px-4">
+        
+        {/* Pagination & Footer */}
+        <div className="flex items-center justify-between px-2">
           <div className="hidden flex-1 text-sm text-muted-foreground lg:flex">
-            {table.getFilteredSelectedRowModel().rows.length} of{" "}
-            {table.getFilteredRowModel().rows.length} row(s) selected.
+            Đã chọn {table.getFilteredSelectedRowModel().rows.length} /{" "}
+            {table.getFilteredRowModel().rows.length} hàng.
           </div>
           <div className="flex w-full items-center gap-8 lg:w-fit">
             <div className="hidden items-center gap-2 lg:flex">
-              <Label htmlFor="rows-per-page" className="text-sm font-medium">
-                Rows per page
+              <Label htmlFor="rows-per-page" className="text-sm font-medium text-muted-foreground">
+                Hiển thị
               </Label>
               <Select
                 value={`${table.getState().pagination.pageSize}`}
@@ -545,8 +545,8 @@ export function DataTable({
                 </SelectContent>
               </Select>
             </div>
-            <div className="flex w-fit items-center justify-center text-sm font-medium">
-              Page {table.getState().pagination.pageIndex + 1} of{" "}
+            <div className="flex w-fit items-center justify-center text-sm font-medium text-muted-foreground">
+              Trang {table.getState().pagination.pageIndex + 1} / {" "}
               {table.getPageCount()}
             </div>
             <div className="ms-auto flex items-center gap-2 lg:ms-0">
@@ -556,7 +556,7 @@ export function DataTable({
                 onClick={() => table.setPageIndex(0)}
                 disabled={!table.getCanPreviousPage()}
               >
-                <span className="sr-only">Go to first page</span>
+                <span className="sr-only">Trang đầu</span>
                 <HugeiconsIcon icon={ArrowLeftDoubleIcon} strokeWidth={2} />
               </Button>
               <Button
@@ -566,7 +566,7 @@ export function DataTable({
                 onClick={() => table.previousPage()}
                 disabled={!table.getCanPreviousPage()}
               >
-                <span className="sr-only">Go to previous page</span>
+                <span className="sr-only">Trang trước</span>
                 <HugeiconsIcon icon={ArrowLeft01Icon} strokeWidth={2} />
               </Button>
               <Button
@@ -576,7 +576,7 @@ export function DataTable({
                 onClick={() => table.nextPage()}
                 disabled={!table.getCanNextPage()}
               >
-                <span className="sr-only">Go to next page</span>
+                <span className="sr-only">Trang sau</span>
                 <HugeiconsIcon icon={ArrowRight01Icon} strokeWidth={2} />
               </Button>
               <Button
@@ -586,49 +586,42 @@ export function DataTable({
                 onClick={() => table.setPageIndex(table.getPageCount() - 1)}
                 disabled={!table.getCanNextPage()}
               >
-                <span className="sr-only">Go to last page</span>
+                <span className="sr-only">Trang cuối</span>
                 <HugeiconsIcon icon={ArrowRightDoubleIcon} strokeWidth={2} />
               </Button>
             </div>
           </div>
         </div>
       </TabsContent>
-      <TabsContent
-        value="past-performance"
-        className="flex flex-col px-4 lg:px-6"
-      >
-        <div className="aspect-video w-full flex-1 rounded-lg border border-dashed"></div>
+
+      {/* Empty States cho các Tab khác */}
+      <TabsContent value="lich-su" className="flex flex-col px-4 lg:px-6">
+        <div className="flex items-center justify-center aspect-[3/1] w-full flex-1 rounded-lg border border-dashed border-border bg-muted/10 text-muted-foreground">Chưa có lịch sử bảo dưỡng nào được ghi nhận.</div>
       </TabsContent>
-      <TabsContent value="key-personnel" className="flex flex-col px-4 lg:px-6">
-        <div className="aspect-video w-full flex-1 rounded-lg border border-dashed"></div>
+      <TabsContent value="nhan-su" className="flex flex-col px-4 lg:px-6">
+        <div className="flex items-center justify-center aspect-[3/1] w-full flex-1 rounded-lg border border-dashed border-border bg-muted/10 text-muted-foreground">Chưa có dữ liệu phân bổ nhân sự.</div>
       </TabsContent>
-      <TabsContent
-        value="focus-documents"
-        className="flex flex-col px-4 lg:px-6"
-      >
-        <div className="aspect-video w-full flex-1 rounded-lg border border-dashed"></div>
+      <TabsContent value="tai-lieu" className="flex flex-col px-4 lg:px-6">
+        <div className="flex items-center justify-center aspect-[3/1] w-full flex-1 rounded-lg border border-dashed border-border bg-muted/10 text-muted-foreground">Kéo thả tài liệu đính kèm (Ảnh khảo sát, quy trình cắt tỉa...) vào đây.</div>
       </TabsContent>
     </Tabs>
   )
 }
 
-const chartData = [
-  { month: "January", desktop: 186, mobile: 80 },
-  { month: "February", desktop: 305, mobile: 200 },
-  { month: "March", desktop: 237, mobile: 120 },
-  { month: "April", desktop: 73, mobile: 190 },
-  { month: "May", desktop: 209, mobile: 130 },
-  { month: "June", desktop: 214, mobile: 140 },
+// Dữ liệu giả lập cho biểu đồ trong Drawer (Chi tiết 1 công việc)
+const drawerChartData = [
+  { month: "Tháng 1", tien_do: 20 },
+  { month: "Tháng 2", tien_do: 45 },
+  { month: "Tháng 3", tien_do: 65 },
+  { month: "Tháng 4", tien_do: 80 },
+  { month: "Tháng 5", tien_do: 95 },
+  { month: "Tháng 6", tien_do: 100 },
 ]
 
-const chartConfig = {
-  desktop: {
-    label: "Desktop",
-    color: "var(--primary)",
-  },
-  mobile: {
-    label: "Mobile",
-    color: "var(--primary)",
+const drawerChartConfig = {
+  tien_do: {
+    label: "Mức độ hoàn thành (%)",
+    color: "#007B22",
   },
 } satisfies ChartConfig
 
@@ -638,159 +631,135 @@ function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
   return (
     <Drawer direction={isMobile ? "bottom" : "right"}>
       <DrawerTrigger asChild>
-        <Button variant="link" className="w-fit px-0 text-start text-foreground">
+        <Button variant="link" className="w-fit px-0 text-start font-semibold text-green-800 hover:text-green-600">
           {item.header}
         </Button>
       </DrawerTrigger>
-      <DrawerContent>
-        <DrawerHeader className="gap-1">
-          <DrawerTitle>{item.header}</DrawerTitle>
+      <DrawerContent className={isMobile ? "" : "w-[500px]"}>
+        <DrawerHeader className="gap-1 bg-muted/30 border-b pb-4">
+          <DrawerTitle className="text-xl text-green-800">{item.header}</DrawerTitle>
           <DrawerDescription>
-            Showing total visitors for the last 6 months
+            Chi tiết kế hoạch triển khai và theo dõi tiến độ chăm sóc.
           </DrawerDescription>
         </DrawerHeader>
-        <div className="flex flex-col gap-4 overflow-y-auto px-4 text-sm">
+        <div className="flex flex-col gap-6 overflow-y-auto px-6 py-4 text-sm">
           {!isMobile && (
             <>
-              <ChartContainer config={chartConfig}>
-                <AreaChart
-                  accessibilityLayer
-                  data={chartData}
-                  margin={{
-                    left: 0,
-                    right: 10,
-                  }}
-                >
-                  <CartesianGrid vertical={false} />
-                  <XAxis
-                    dataKey="month"
-                    tickLine={false}
-                    axisLine={false}
-                    tickMargin={8}
-                    tickFormatter={(value) => value.slice(0, 3)}
-                    hide
-                  />
-                  <ChartTooltip
-                    cursor={false}
-                    content={<ChartTooltipContent indicator="dot" />}
-                  />
-                  <Area
-                    dataKey="mobile"
-                    type="natural"
-                    fill="var(--color-mobile)"
-                    fillOpacity={0.6}
-                    stroke="var(--color-mobile)"
-                    stackId="a"
-                  />
-                  <Area
-                    dataKey="desktop"
-                    type="natural"
-                    fill="var(--color-desktop)"
-                    fillOpacity={0.4}
-                    stroke="var(--color-desktop)"
-                    stackId="a"
-                  />
-                </AreaChart>
-              </ChartContainer>
-              <Separator />
-              <div className="grid gap-2">
-                <div className="flex gap-2 leading-none font-medium">
-                  Trending up by 5.2% this month{" "}
-                  <HugeiconsIcon icon={ChartUpIcon} strokeWidth={2} className="size-4" />
-                </div>
-                <div className="text-muted-foreground">
-                  Showing total visitors for the last 6 months. This is just
-                  some random text to test the layout. It spans multiple lines
-                  and should wrap around.
+              <div className="bg-card border rounded-xl p-4 shadow-sm">
+                <p className="font-semibold text-foreground mb-4">Biểu đồ tiến độ dự kiến</p>
+                <ChartContainer config={drawerChartConfig} className="h-[140px] w-full">
+                  <AreaChart
+                    accessibilityLayer
+                    data={drawerChartData}
+                    margin={{ left: 0, right: 10 }}
+                  >
+                    <CartesianGrid vertical={false} strokeDasharray="3 3"/>
+                    <XAxis
+                      dataKey="month"
+                      tickLine={false}
+                      axisLine={false}
+                      tickMargin={8}
+                    />
+                    <ChartTooltip
+                      cursor={false}
+                      content={<ChartTooltipContent indicator="line" />}
+                    />
+                    <Area
+                      dataKey="tien_do"
+                      type="step"
+                      fill="var(--color-tien_do)"
+                      fillOpacity={0.2}
+                      stroke="var(--color-tien_do)"
+                      strokeWidth={2}
+                    />
+                  </AreaChart>
+                </ChartContainer>
+                <div className="mt-4 flex gap-2 leading-none font-medium text-emerald-600">
+                  Vượt tiến độ 15% so với tháng trước <HugeiconsIcon icon={ChartUpIcon} strokeWidth={2} className="size-4" />
                 </div>
               </div>
               <Separator />
             </>
           )}
-          <form className="flex flex-col gap-4">
-            <div className="flex flex-col gap-3">
-              <Label htmlFor="header">Header</Label>
-              <Input id="header" defaultValue={item.header} />
+
+          {/* FORM CHỈNH SỬA CHI TIẾT */}
+          <form className="flex flex-col gap-5">
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="header" className="font-semibold">Tên công việc / Tuyến đường</Label>
+              <Input id="header" defaultValue={item.header} className="bg-muted/20" />
             </div>
+            
             <div className="grid grid-cols-2 gap-4">
-              <div className="flex flex-col gap-3">
-                <Label htmlFor="type">Type</Label>
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="type" className="font-semibold">Phân loại</Label>
                 <Select defaultValue={item.type}>
                   <SelectTrigger id="type" className="w-full">
-                    <SelectValue placeholder="Select a type" />
+                    <SelectValue placeholder="Chọn phân loại" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectGroup>
-                      <SelectItem value="Table of Contents">
-                        Table of Contents
-                      </SelectItem>
-                      <SelectItem value="Executive Summary">
-                        Executive Summary
-                      </SelectItem>
-                      <SelectItem value="Technical Approach">
-                        Technical Approach
-                      </SelectItem>
-                      <SelectItem value="Design">Design</SelectItem>
-                      <SelectItem value="Capabilities">Capabilities</SelectItem>
-                      <SelectItem value="Focus Documents">
-                        Focus Documents
-                      </SelectItem>
-                      <SelectItem value="Narrative">Narrative</SelectItem>
-                      <SelectItem value="Cover Page">Cover Page</SelectItem>
+                      <SelectItem value="Cắt tỉa">Cắt tỉa</SelectItem>
+                      <SelectItem value="Bón phân">Bón phân</SelectItem>
+                      <SelectItem value="Trồng mới">Trồng mới</SelectItem>
+                      <SelectItem value="Khảo sát">Khảo sát</SelectItem>
+                      <SelectItem value="Xử lý sâu bệnh">Xử lý sâu bệnh</SelectItem>
+                      <SelectItem value="Bảo dưỡng">Bảo dưỡng</SelectItem>
+                      <SelectItem value="Gia cố">Gia cố</SelectItem>
                     </SelectGroup>
                   </SelectContent>
                 </Select>
               </div>
-              <div className="flex flex-col gap-3">
-                <Label htmlFor="status">Status</Label>
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="status" className="font-semibold">Trạng thái</Label>
                 <Select defaultValue={item.status}>
                   <SelectTrigger id="status" className="w-full">
-                    <SelectValue placeholder="Select a status" />
+                    <SelectValue placeholder="Chọn trạng thái" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectGroup>
-                      <SelectItem value="Done">Done</SelectItem>
-                      <SelectItem value="In Progress">In Progress</SelectItem>
-                      <SelectItem value="Not Started">Not Started</SelectItem>
+                      <SelectItem value="Hoàn thành">Hoàn thành</SelectItem>
+                      <SelectItem value="Đang xử lý">Đang xử lý</SelectItem>
+                      <SelectItem value="Chưa bắt đầu">Chưa bắt đầu</SelectItem>
                     </SelectGroup>
                   </SelectContent>
                 </Select>
               </div>
             </div>
+
             <div className="grid grid-cols-2 gap-4">
-              <div className="flex flex-col gap-3">
-                <Label htmlFor="target">Target</Label>
-                <Input id="target" defaultValue={item.target} />
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="target" className="font-semibold">Mục tiêu (Số cây)</Label>
+                <Input id="target" defaultValue={item.target} type="number" />
               </div>
-              <div className="flex flex-col gap-3">
-                <Label htmlFor="limit">Limit</Label>
-                <Input id="limit" defaultValue={item.limit} />
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="limit" className="font-semibold">Hạn mức (Ngày)</Label>
+                <Input id="limit" defaultValue={item.limit} type="number" />
               </div>
             </div>
-            <div className="flex flex-col gap-3">
-              <Label htmlFor="reviewer">Reviewer</Label>
+
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="reviewer" className="font-semibold">Người giám sát / Chịu trách nhiệm</Label>
               <Select defaultValue={item.reviewer}>
                 <SelectTrigger id="reviewer" className="w-full">
-                  <SelectValue placeholder="Select a reviewer" />
+                  <SelectValue placeholder="Chọn người phụ trách" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectGroup>
-                    <SelectItem value="Eddie Lake">Eddie Lake</SelectItem>
-                    <SelectItem value="Jamik Tashpulatov">
-                      Jamik Tashpulatov
-                    </SelectItem>
-                    <SelectItem value="Emily Whalen">Emily Whalen</SelectItem>
+                    <SelectItem value="Trần Minh Tuấn">Trần Minh Tuấn (Khu vực 1)</SelectItem>
+                    <SelectItem value="Nguyễn Mai Anh">Nguyễn Mai Anh (Khu vực 2)</SelectItem>
+                    <SelectItem value="Lê Văn Hải">Lê Văn Hải (Khu vực 3)</SelectItem>
+                    <SelectItem value="Chưa phân công" className="text-muted-foreground italic">Chưa phân công</SelectItem>
                   </SelectGroup>
                 </SelectContent>
               </Select>
             </div>
           </form>
         </div>
-        <DrawerFooter>
-          <Button>Submit</Button>
+        <DrawerFooter className="border-t bg-muted/10 flex-row justify-end gap-2">
           <DrawerClose asChild>
-            <Button variant="outline">Done</Button>
+            <Button variant="outline">Hủy bỏ</Button>
           </DrawerClose>
+          <Button className="bg-[#007B22] hover:bg-[#006400] text-white">Lưu thay đổi</Button>
         </DrawerFooter>
       </DrawerContent>
     </Drawer>

@@ -6,7 +6,7 @@ import {
   Inter,
 } from "next/font/google"
 
-import { cn } from "@/lib/utils"
+import { cn } from "@workspace/ui/lib/utils"
 
 const fontSans = FontSans({
   subsets: ["latin"],

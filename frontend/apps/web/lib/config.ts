@@ -1,5 +1,5 @@
 export const siteConfig = {
-  name: "shadcn/ui",
+  name: "Nhóm 9 - Hệ Thống Quản lý Cây xanh Thành phố Đà Nẵng",
   url: "https://ui.shadcn.com",
   ogImage: "https://ui.shadcn.com/og.jpg",
   description:
@@ -10,29 +10,25 @@ export const siteConfig = {
   },
   navItems: [
     {
-      href: "/docs/installation",
-      label: "Docs",
+      href: "/",
+      label: "Trang chủ", // Trang chủ hiện tại đang là bản đồ
     },
     {
-      href: "/docs/components",
-      label: "Components",
+      href: "/category",
+      label: "Danh mục", // Chứa DataTable quản lý thông tin cây
     },
     {
-      href: "/blocks",
-      label: "Blocks",
+      href: "/map",
+      label: "Bản đồ cây xanh", // Task list & Progress update
     },
     {
-      href: "/charts/area",
-      label: "Charts",
+      href: "/statistics",
+      label: "Thống kê", // Các biểu đồ báo cáo (Charts)
     },
     {
-      href: "/docs/directory",
-      label: "Directory",
-    },
-    {
-      href: "/create",
-      label: "Create",
-    },
+      href: "/feedback",
+      label: "Ý kiến phản ánh", // Quản lý người dùng, phân quyền, cấu hình hệ thống
+    }
   ],
 }
 

@@ -1,5 +1,5 @@
-import { AppSidebar } from "@/components/app-sidebar"
-import { SiteHeader } from "@/components/site-header"
+import { AppSidebar } from "@/app/(dashboard)/components/app-sidebar"
+import { SiteHeader } from "@/app/(dashboard)/components/site-header"
 import { SidebarInset, SidebarProvider } from "@workspace/ui/components/sidebar"
 
 import { ReactNode } from "react"
