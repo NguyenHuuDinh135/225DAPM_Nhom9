@@ -96,6 +96,17 @@ const NAV_MAIN: NavItem[] = [
     ],
   },
   {
+    title: "Works",
+    url: "/works",
+    icon: <ClipboardListIcon className="size-4" />,
+    roles: ["staff", "team_leader", "admin"],
+    items: [
+      { title: "Danh sách", url: "/works" },
+      { title: "Phân công", url: "/works/1/assign" },
+      { title: "Tiến độ", url: "/works/1/progress" },
+    ],
+  },
+  {
     title: "Incidents",
     url: "/incidents",
     icon: <TriangleAlertIcon className="size-4" />,
