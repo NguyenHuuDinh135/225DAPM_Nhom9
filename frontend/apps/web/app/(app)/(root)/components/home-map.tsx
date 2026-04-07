@@ -1,124 +1,157 @@
-"use client";
+"use client"
 
-import * as React from "react";
-// ĐÃ FIX: Thêm MarkerContent vào import
-import { Map, MapMarker, MarkerContent, MapPopup, MapControls } from "@workspace/ui/components/ui/map";
-import { Button } from "@workspace/ui/components/button";
-import { ChevronLeft, ChevronRight, MoreHorizontal, X, List } from "lucide-react";
+import * as React from "react"
+import Link from "next/link"
+import { ChevronLeft, ChevronRight, List, MoreHorizontal, X } from "lucide-react"
 
-// HÀM TẠO 1000 DỮ LIỆU CÂY XANH TẠI ĐÀ NẴNG
-const generateDenseTrees = (count: number) => {
-  const speciesList = ["Lim xẹt cánh (Phượng vàng)", "Cây Nhạc Ngựa", "Cây Bàng Đài Loan", "Cây Giáng Hương", "Cây Xà Cừ"];
-  const streets = ["Nguyễn Văn Linh", "Lê Duẩn", "Bạch Đằng", "Trần Phú", "Nguyễn Tri Phương", "Hùng Vương"];
-  const wards = ["Phường Vĩnh Trung", "Phường Thạch Thang", "Phường Hải Châu 1", "Phường Phước Ninh"];
+import { Button } from "@workspace/ui/components/button"
+import {
+  Map,
+  MapControls,
+  MapMarker,
+  MapPopup,
+  MarkerContent,
+} from "@workspace/ui/components/ui/map"
 
-  return Array.from({ length: count }).map((_, i) => ({
-    id: `CX-${i}`,
-    name: speciesList[Math.floor(Math.random() * speciesList.length)],
-    street: streets[Math.floor(Math.random() * streets.length)],
-    address: wards[Math.floor(Math.random() * wards.length)],
-    // Tọa độ rải đều khu vực trung tâm Hải Châu
-    lng: 108.195 + Math.random() * 0.035,
-    lat: 16.045 + Math.random() * 0.025,
-    status: Math.random() > 0.1 ? "healthy" : "needs-care",
-  }));
-};
+import { getStatusLabel, getTreeById, treeRecords } from "@/lib/trees"
 
-const MOCK_TREES = generateDenseTrees(1000);
+const trees = treeRecords
+  .map((tree) => getTreeById(tree.id))
+  .filter((tree) => tree !== null)
 
 export function TreeManagementMap() {
-  const [selectedTree, setSelectedTree] = React.useState<typeof MOCK_TREES[0] | null>(null);
+  const [selectedIndex, setSelectedIndex] = React.useState<number | null>(null)
+
+  const selectedTree =
+    selectedIndex !== null && trees[selectedIndex] ? trees[selectedIndex] : null
+
+  const moveSelection = (direction: -1 | 1) => {
+    if (selectedIndex === null) {
+      return
+    }
+
+    const nextIndex = selectedIndex + direction
+
+    if (nextIndex < 0 || nextIndex >= trees.length) {
+      return
+    }
+
+    setSelectedIndex(nextIndex)
+  }
 
   return (
     <div className="absolute inset-0 z-10 bg-muted/10">
-      <Map
-        center={[108.21, 16.06]} 
-        zoom={14}
-        className="w-full h-full relative"
-      >
+      <Map center={[108.2149, 16.0644]} zoom={13.5} className="relative h-full w-full">
         <MapControls position="top-right" showCompass showLocate showZoom />
 
-        {/* ĐÃ FIX LỖI HIỂN THỊ MARKER */}
-        {MOCK_TREES.map((tree) => (
+        {trees.map((tree, index) => (
           <MapMarker
             key={tree.id}
             longitude={tree.lng}
             latitude={tree.lat}
-            onClick={(e: any) => {
-              e.originalEvent?.stopPropagation();
-              setSelectedTree(tree);
-            }}
           >
-            {/* Bắt buộc phải có <MarkerContent> bọc ngoài UI của marker */}
             <MarkerContent>
               <div
-                className={`h-2.5 w-2.5 rounded-full border border-green-950 shadow-sm cursor-pointer hover:scale-[2] transition-transform ${
-                  tree.status === "healthy" ? "bg-[#32CD32]" : "bg-orange-500 animate-pulse"
-                }`}
-              />
+                onClick={(event) => {
+                  event.stopPropagation()
+                  setSelectedIndex(index)
+                }}
+                className="flex h-7 w-7 cursor-pointer items-center justify-center"
+              >
+                <div
+                  className={`h-3 w-3 rounded-full border border-green-950 shadow-sm transition-transform hover:scale-[1.9] ${
+                    tree.status === "healthy"
+                      ? "bg-[#32CD32]"
+                      : tree.status === "monitoring"
+                        ? "bg-amber-400"
+                        : "animate-pulse bg-orange-500"
+                  }`}
+                />
+              </div>
             </MarkerContent>
           </MapMarker>
         ))}
 
-        {/* POPUP CHI TIẾT */}
         {selectedTree && (
           <MapPopup
             longitude={selectedTree.lng}
             latitude={selectedTree.lat}
-            onClose={() => setSelectedTree(null)}
+            onClose={() => setSelectedIndex(null)}
             closeButton={false}
             anchor="bottom"
             offset={15}
-            className="z-50 p-0 overflow-hidden rounded-md shadow-2xl border border-border w-[380px] bg-background"
+            className="z-50 w-[390px] overflow-hidden rounded-md border border-border bg-background p-0 shadow-2xl"
           >
             <div className="flex flex-col">
-              <div className="flex items-center justify-between p-3 border-b">
-                <h3 className="text-[15px] font-bold text-[#007B22]">Thông tin cơ bản</h3>
+              <div className="flex items-center justify-between border-b p-3">
+                <div>
+                  <h3 className="text-[15px] font-bold text-[#007B22]">
+                    Thông tin cơ bản
+                  </h3>
+                  <p className="text-xs text-muted-foreground">
+                    {selectedTree.code} • {selectedTree.species.name}
+                  </p>
+                </div>
                 <div className="flex gap-2">
-                  <ChevronLeft className="h-4 w-4 text-muted-foreground cursor-pointer" />
-                  <X 
-                    className="h-4 w-4 text-muted-foreground cursor-pointer hover:text-foreground" 
-                    onClick={() => setSelectedTree(null)} 
+                  <ChevronLeft
+                    className={`h-4 w-4 cursor-pointer ${
+                      selectedIndex === 0
+                        ? "pointer-events-none text-muted-foreground/40"
+                        : "text-muted-foreground"
+                    }`}
+                    onClick={() => moveSelection(-1)}
+                  />
+                  <X
+                    className="h-4 w-4 cursor-pointer text-muted-foreground hover:text-foreground"
+                    onClick={() => setSelectedIndex(null)}
                   />
                 </div>
               </div>
 
               <div className="p-3">
-                <div className="border border-[#007B22] rounded-[2px] overflow-hidden text-[13px]">
-                  <div className="flex border-b border-[#007B22]">
-                    <div className="w-1/3 p-2 border-r border-[#007B22] text-foreground font-medium">Tên cây</div>
-                    <div className="w-2/3 p-2 text-foreground">{selectedTree.name}</div>
-                  </div>
-                  <div className="flex border-b border-[#007B22]">
-                    <div className="w-1/3 p-2 border-r border-[#007B22] text-foreground font-medium">Địa chỉ</div>
-                    <div className="w-2/3 p-2 text-foreground">{selectedTree.address}</div>
-                  </div>
-                  <div className="flex">
-                    <div className="w-1/3 p-2 border-r border-[#007B22] text-foreground font-medium">Tuyến đường</div>
-                    <div className="w-2/3 p-2 text-foreground">{selectedTree.street}</div>
-                  </div>
+                <div className="overflow-hidden rounded-[2px] border border-[#007B22] text-[13px]">
+                  <Row label="Tên cây" value={selectedTree.species.name} />
+                  <Row label="Địa chỉ" value={selectedTree.addressLine} />
+                  <Row label="Tuyến đường" value={selectedTree.street} />
+                  <Row label="Tình trạng" value={getStatusLabel(selectedTree.status)} />
                 </div>
               </div>
 
               <div className="flex items-center gap-1.5 px-3 pb-3">
-                <Button className="bg-[#007B22] hover:bg-[#006400] text-white h-7 text-[12px] px-3 rounded-sm shadow-none">
-                  Chi tiết
+                <Button
+                  asChild
+                  className="h-7 rounded-sm bg-[#007B22] px-3 text-[12px] text-white shadow-none hover:bg-[#006400]"
+                >
+                  <Link href={`/tree-detail/${selectedTree.id}?from=home`}>Chi tiết</Link>
                 </Button>
-                <Button className="bg-[#007B22] hover:bg-[#006400] text-white h-7 text-[12px] px-3 rounded-sm shadow-none">
-                  Chỉ đường
+                <Button
+                  asChild
+                  variant="outline"
+                  className="h-7 rounded-sm border-[#007B22] px-3 text-[12px] text-[#007B22] hover:bg-[#007B22] hover:text-white"
+                >
+                  <Link href="/category">Danh mục</Link>
                 </Button>
-                <Button className="bg-[#007B22] hover:bg-[#006400] text-white h-7 w-8 p-0 rounded-sm shadow-none">
+                <Button className="h-7 w-8 rounded-sm bg-[#007B22] p-0 text-white shadow-none hover:bg-[#006400]">
                   <MoreHorizontal className="h-4 w-4" />
                 </Button>
                 <div className="flex-1" />
-                <Button variant="outline" className="h-7 w-7 p-0 bg-[#007B22] text-white hover:bg-[#006400] hover:text-white border-none rounded-sm">
+                <Button
+                  variant="outline"
+                  className="h-7 w-7 rounded-sm border-none bg-[#007B22] p-0 text-white hover:bg-[#006400] hover:text-white"
+                  onClick={() => moveSelection(-1)}
+                >
                   <ChevronLeft className="h-4 w-4" />
                 </Button>
-                <Button variant="outline" className="h-7 w-7 p-0 bg-[#007B22] text-white hover:bg-[#006400] hover:text-white border-none rounded-sm">
+                <Button
+                  variant="outline"
+                  className="h-7 w-7 rounded-sm border-none bg-[#007B22] p-0 text-white hover:bg-[#006400] hover:text-white"
+                  onClick={() => moveSelection(1)}
+                >
                   <ChevronRight className="h-4 w-4" />
                 </Button>
-                <span className="text-[10px] text-muted-foreground flex items-center gap-1 ml-1">
-                  <List className="h-3 w-3" /> 1 trên 1
+                <span className="ml-1 flex items-center gap-1 text-[10px] text-muted-foreground">
+                  <List className="h-3 w-3" />
+                  {(selectedIndex ?? 0) + 1} trên {trees.length}
                 </span>
               </div>
             </div>
@@ -126,5 +159,16 @@ export function TreeManagementMap() {
         )}
       </Map>
     </div>
-  );
+  )
+}
+
+function Row({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex border-b border-[#007B22] last:border-b-0">
+      <div className="w-1/3 border-r border-[#007B22] p-2 font-medium text-foreground">
+        {label}
+      </div>
+      <div className="w-2/3 p-2 text-foreground">{value}</div>
+    </div>
+  )
 }
