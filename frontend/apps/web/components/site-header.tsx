@@ -13,26 +13,23 @@ import { Separator } from "@workspace/ui/components/separator"
 import { Button } from "@workspace/ui/components/button"
 
 // Import NavUser của bạn vào đây (chỉnh lại đường dẫn nếu cần)
-import { NavUser } from "@/components/nav-user" 
+import { NavUser } from "@/components/nav-user"
 
 export function SiteHeader() {
   // GIẢ LẬP TRẠNG THÁI ĐĂNG NHẬP (Thay bằng logic Auth thực tế của bạn)
-  const isLoggedIn = false; 
-  
+  const isLoggedIn = false
+
   const mockUser = {
     name: "Dinh",
     email: "dinh@student.ute.udn.vn",
     avatar: "https://github.com/shadcn.png",
-  };
+  }
 
   return (
     <header className="sticky top-0 z-50 w-full bg-background">
-      <div className="container-wrapper px-6 group-has-data-[slot=designer]/layout:max-w-none 3xl:fixed:px-0">
-        <div className="flex h-(--header-height) items-center **:data-[slot=separator]:h-4! group-has-data-[slot=designer]/layout:fixed:max-w-none 3xl:fixed:container">
-          <MobileNav
-            items={siteConfig.navItems}
-            className="flex lg:hidden"
-          />
+      <div className="container-wrapper 3xl:fixed:px-0 px-6 group-has-data-[slot=designer]/layout:max-w-none">
+        <div className="group-has-data-[slot=designer]/layout:fixed:max-w-none 3xl:fixed:container flex h-(--header-height) items-center **:data-[slot=separator]:h-4!">
+          <MobileNav items={siteConfig.navItems} className="flex lg:hidden" />
           <Button
             asChild
             variant="ghost"
@@ -53,15 +50,15 @@ export function SiteHeader() {
             <GitHubLink />
             <Separator
               orientation="vertical"
-              className="hidden group-has-data-[slot=designer]/layout:hidden 3xl:flex"
+              className="3xl:flex hidden group-has-data-[slot=designer]/layout:hidden"
             />
-            <SiteConfig className="hidden 3xl:flex 3xl:group-has-data-[slot=designer]/layout:hidden" />
+            <SiteConfig className="3xl:flex 3xl:group-has-data-[slot=designer]/layout:hidden hidden" />
             <Separator orientation="vertical" />
             <ModeSwitcher />
-            
+
             <div className="flex items-center gap-2 group-has-data-[slot=designer]/layout:hidden">
               <Separator orientation="vertical" />
-              
+
               {/* LOGIC HIỂN THỊ ĐĂNG NHẬP HOẶC USER NAV */}
               {isLoggedIn ? (
                 <NavUser user={mockUser} />
@@ -73,7 +70,6 @@ export function SiteHeader() {
                   </Link>
                 </Button>
               )}
-
             </div>
           </div>
         </div>

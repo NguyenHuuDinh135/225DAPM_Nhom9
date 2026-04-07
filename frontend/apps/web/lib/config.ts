@@ -28,7 +28,11 @@ export const siteConfig = {
     {
       href: "/feedback",
       label: "Ý kiến phản ánh", // Quản lý người dùng, phân quyền, cấu hình hệ thống
-    }
+    },
+    {
+      href: "/plans",
+      label: "Kế hoạch", // Trang quản lý kế hoạch
+    },
   ],
 }
 
