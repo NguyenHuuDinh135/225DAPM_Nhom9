@@ -1,5 +1,8 @@
+"use client"
+
+import { useState } from "react"
 import Link from "next/link"
-import { mockWorks, statusConfig } from "./mock-data"
+import { mockWorks, statusConfig, type Work } from "./mock-data"
 import { Badge } from "@workspace/ui/components/badge"
 import { Button } from "@workspace/ui/components/button"
 import {
@@ -16,9 +19,16 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@workspace/ui/components/dropdown-menu"
-import { UsersIcon, BarChart3Icon, PlusIcon, MoreHorizontalIcon } from "lucide-react"
+import { UsersIcon, BarChart3Icon, MoreHorizontalIcon } from "lucide-react"
+import { CreateWorkDialog } from "./components/create-work-dialog"
 
 export default function WorksPage() {
+  const [works, setWorks] = useState<Work[]>(mockWorks)
+
+  function handleCreated(work: Work) {
+    setWorks((prev) => [work, ...prev])
+  }
+
   return (
     <div className="flex flex-1 flex-col gap-4 p-4 md:p-6 min-w-0">
       {/* Header */}
@@ -27,13 +37,10 @@ export default function WorksPage() {
           <h1 className="text-xl font-semibold md:text-2xl">Danh sách công việc</h1>
           <p className="text-sm text-muted-foreground">Quản lý và theo dõi tiến độ công việc</p>
         </div>
-        <Button size="sm" className="w-fit bg-[#007B22] hover:bg-[#006400] text-white shrink-0">
-          <PlusIcon className="size-4" />
-          Tạo công việc
-        </Button>
+        <CreateWorkDialog onCreated={handleCreated} />
       </div>
 
-      {/* Table wrapper — scroll ngang trên màn nhỏ */}
+      {/* Table */}
       <div className="rounded-lg border w-full overflow-x-auto">
         <Table>
           <TableHeader className="bg-muted/60">
@@ -48,16 +55,23 @@ export default function WorksPage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {mockWorks.map((work) => {
-              const latestProgress = work.workProgresses.length > 0 ? work.workProgresses[work.workProgresses.length - 1] : undefined
-              const percentage = latestProgress?.percentage ?? 0
+            {works.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={7} className="text-center text-muted-foreground py-10">
+                  Chưa có công việc nào. Nhấn "Tạo công việc" để bắt đầu.
+                </TableCell>
+              </TableRow>
+            ) : works.map((work) => {
+              const lastProgress = work.workProgresses.length > 0
+                ? work.workProgresses[work.workProgresses.length - 1]
+                : undefined
+              const percentage = lastProgress?.percentage ?? 0
               const status = statusConfig[work.status]
 
               return (
                 <TableRow key={work.id}>
                   <TableCell>
                     <div className="font-medium">{work.workTypeName}</div>
-                    {/* Hiện thêm info trên mobile */}
                     <div className="text-xs text-muted-foreground md:hidden">{work.planName}</div>
                     <div className="mt-1 sm:hidden flex items-center gap-2">
                       <div className="h-1.5 w-16 rounded-full bg-muted overflow-hidden">
