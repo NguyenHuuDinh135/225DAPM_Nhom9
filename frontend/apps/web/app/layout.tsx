@@ -8,9 +8,8 @@ import { LayoutProvider } from "@/hooks/use-layout"
 import { ActiveThemeProvider } from "@/components/active-theme"
 import { Analytics } from "@/components/analytics"
 import { TailwindIndicator } from "@/components/tailwind-indicator"
-import { TooltipProvider as BaseTooltipProvider } from "@workspace/ui/components/tooltip"
+import { TooltipProvider } from "@workspace/ui/components/tooltip"
 import { Toaster } from "@workspace/ui/components/sonner"
-import { TooltipProvider as RadixTooltipProvider } from "@workspace/ui/components/tooltip"
 // @ts-expect-error: Bỏ qua lỗi TypeScript không nhận diện được file CSS
 import "@workspace/ui/globals.css";
 export const metadata: Metadata = {
@@ -90,6 +89,7 @@ export default function RootLayout({
       </head>
       <body
         className={cn(
+          fontVariables,
           "group/body overscroll-none antialiased [--footer-height:calc(var(--spacing)*14)] [--header-height:calc(var(--spacing)*14)] xl:[--footer-height:calc(var(--spacing)*24)]"
         )}
       >
@@ -97,12 +97,10 @@ export default function RootLayout({
           <LayoutProvider>
             <ActiveThemeProvider>
               <NuqsAdapter>
-                <BaseTooltipProvider delayDuration={0}>
-                  <RadixTooltipProvider delayDuration={0}>
-                    {children}
-                    <Toaster position="top-center" />
-                  </RadixTooltipProvider>
-                </BaseTooltipProvider>
+                <TooltipProvider delayDuration={0}>
+                  {children}
+                  <Toaster position="top-center" />
+                </TooltipProvider>
               </NuqsAdapter>
               <TailwindIndicator />
               <Analytics />
