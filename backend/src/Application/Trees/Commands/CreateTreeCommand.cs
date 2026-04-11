@@ -1,12 +1,14 @@
+using backend.Application.Common.Interfaces;
+using backend.Domain.Entities;
 using MediatR;
 
 namespace backend.Application.Trees.Commands
 {
     public class CreateTreeCommand : IRequest<int>
     {
-        public string Name { get; set; } = string.Empty;
-        public string Type { get; set; } = string.Empty;
-        public string Location { get; set; } = string.Empty;
+        public string? Name { get; set; }
+        public int TreeTypeId { get; set; }
+        public string? Condition { get; set; }
     }
 
     public class CreateTreeCommandHandler : IRequestHandler<CreateTreeCommand, int>
@@ -23,8 +25,9 @@ namespace backend.Application.Trees.Commands
             var tree = new Tree
             {
                 Name = request.Name,
-                Type = request.Type,
-                Location = request.Location
+                TreeTypeId = request.TreeTypeId,
+                Condition = request.Condition,
+                RecordedDate = DateTime.UtcNow
             };
 
             _context.Trees.Add(tree);

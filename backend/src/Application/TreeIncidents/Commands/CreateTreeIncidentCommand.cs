@@ -1,3 +1,5 @@
+using backend.Application.Common.Interfaces;
+using backend.Domain.Entities;
 using MediatR;
 
 namespace backend.Application.TreeIncidents.Commands
@@ -5,8 +7,8 @@ namespace backend.Application.TreeIncidents.Commands
     public class CreateTreeIncidentCommand : IRequest<int>
     {
         public int TreeId { get; set; }
-        public string Description { get; set; } = string.Empty;
-        public DateTime DateReported { get; set; }
+        public string? Content { get; set; }
+        public string ReporterId { get; set; } = string.Empty;
     }
 
     public class CreateTreeIncidentCommandHandler : IRequestHandler<CreateTreeIncidentCommand, int>
@@ -23,8 +25,10 @@ namespace backend.Application.TreeIncidents.Commands
             var incident = new TreeIncident
             {
                 TreeId = request.TreeId,
-                Description = request.Description,
-                DateReported = request.DateReported
+                Content = request.Content,
+                ReporterId = request.ReporterId,
+                ReportedDate = DateTime.UtcNow,
+                Status = "Open"
             };
 
             _context.TreeIncidents.Add(incident);

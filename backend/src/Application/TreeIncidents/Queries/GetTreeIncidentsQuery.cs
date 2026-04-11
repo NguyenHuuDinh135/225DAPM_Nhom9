@@ -1,3 +1,4 @@
+using backend.Application.Common.Interfaces;
 using MediatR;
 
 namespace backend.Application.TreeIncidents.Queries
@@ -22,8 +23,9 @@ namespace backend.Application.TreeIncidents.Queries
                 {
                     Id = incident.Id,
                     TreeId = incident.TreeId,
-                    Description = incident.Description,
-                    DateReported = incident.DateReported
+                    Content = incident.Content,
+                    Status = incident.Status,
+                    ReportedDate = incident.ReportedDate
                 })
                 .ToListAsync(cancellationToken);
         }
@@ -33,7 +35,8 @@ namespace backend.Application.TreeIncidents.Queries
     {
         public int Id { get; set; }
         public int TreeId { get; set; }
-        public string Description { get; set; } = string.Empty;
-        public DateTime DateReported { get; set; }
+        public string? Content { get; set; }
+        public string? Status { get; set; }
+        public DateTime? ReportedDate { get; set; }
     }
 }

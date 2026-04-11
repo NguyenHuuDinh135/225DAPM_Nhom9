@@ -1,3 +1,4 @@
+using backend.Application.Common.Interfaces;
 using MediatR;
 
 namespace backend.Application.Trees.Queries
@@ -22,8 +23,9 @@ namespace backend.Application.Trees.Queries
                 {
                     Id = tree.Id,
                     Name = tree.Name,
-                    Type = tree.Type,
-                    Location = tree.Location
+                    Condition = tree.Condition,
+                    TreeTypeId = tree.TreeTypeId,
+                    RecordedDate = tree.RecordedDate
                 })
                 .ToListAsync(cancellationToken);
         }
@@ -32,8 +34,9 @@ namespace backend.Application.Trees.Queries
     public class TreeDto
     {
         public int Id { get; set; }
-        public string Name { get; set; } = string.Empty;
-        public string Type { get; set; } = string.Empty;
-        public string Location { get; set; } = string.Empty;
+        public string? Name { get; set; }
+        public string? Condition { get; set; }
+        public int TreeTypeId { get; set; }
+        public DateTime? RecordedDate { get; set; }
     }
 }
