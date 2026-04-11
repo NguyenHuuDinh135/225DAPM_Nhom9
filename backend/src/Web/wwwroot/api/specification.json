@@ -834,22 +834,19 @@
         ]
       }
     },
-    "/api/Works": {
+    "/api/WorkItems": {
       "get": {
         "tags": [
-          "Works"
+          "WorkItems"
         ],
-        "operationId": "GetWorks",
+        "operationId": "GetWorkItems",
         "responses": {
           "200": {
             "description": "",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/WorkDto"
-                  }
+                  "$ref": "#/components/schemas/WorkItemsVm"
                 }
               }
             }
@@ -863,15 +860,15 @@
       },
       "post": {
         "tags": [
-          "Works"
+          "WorkItems"
         ],
-        "operationId": "CreateWork",
+        "operationId": "CreateWorkItem",
         "requestBody": {
           "x-name": "command",
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/CreateWorkCommand"
+                "$ref": "#/components/schemas/AssignWorkCommand"
               }
             }
           },
@@ -879,13 +876,18 @@
           "x-position": 1
         },
         "responses": {
-          "201": {
+          "204": {
+            "description": ""
+          },
+          "400": {
             "description": "",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "integer",
-                  "format": "int32"
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
                 }
               }
             }
@@ -898,50 +900,12 @@
         ]
       }
     },
-    "/api/Works/{id}": {
-      "get": {
-        "tags": [
-          "Works"
-        ],
-        "operationId": "GetWorkById",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            },
-            "x-position": 1
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/WorkDto"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "JWT": []
-          }
-        ]
-      },
+    "/api/WorkItems/{id}": {
       "put": {
         "tags": [
-          "Works"
+          "WorkItems"
         ],
-        "operationId": "UpdateWork",
+        "operationId": "UpdateWorkItem",
         "parameters": [
           {
             "name": "id",
@@ -959,7 +923,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateWorkCommand"
+                "$ref": "#/components/schemas/UpdateWorkItemCommand"
               }
             }
           },
@@ -992,9 +956,9 @@
       },
       "delete": {
         "tags": [
-          "Works"
+          "WorkItems"
         ],
-        "operationId": "DeleteWork",
+        "operationId": "DeleteWorkItem",
         "parameters": [
           {
             "name": "id",
@@ -1007,116 +971,6 @@
             "x-position": 1
           }
         ],
-        "responses": {
-          "204": {
-            "description": ""
-          },
-          "400": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "type": "string"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "JWT": []
-          }
-        ]
-      }
-    },
-    "/api/Works/{id}/assign": {
-      "post": {
-        "tags": [
-          "Works"
-        ],
-        "operationId": "AssignUser",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            },
-            "x-position": 1
-          }
-        ],
-        "requestBody": {
-          "x-name": "command",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/AssignUserToWorkCommand"
-              }
-            }
-          },
-          "required": true,
-          "x-position": 2
-        },
-        "responses": {
-          "204": {
-            "description": ""
-          },
-          "400": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "type": "string"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "JWT": []
-          }
-        ]
-      }
-    },
-    "/api/Works/{id}/progress": {
-      "post": {
-        "tags": [
-          "Works"
-        ],
-        "operationId": "UpdateProgress",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            },
-            "x-position": 1
-          }
-        ],
-        "requestBody": {
-          "x-name": "command",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateWorkProgressCommand"
-              }
-            }
-          },
-          "required": true,
-          "x-position": 2
-        },
         "responses": {
           "204": {
             "description": ""
@@ -1693,7 +1547,19 @@
           }
         }
       },
-      "WorkDto": {
+      "WorkItemsVm": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "workItems": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WorkItemDto"
+            }
+          }
+        }
+      },
+      "WorkItemDto": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
@@ -1754,7 +1620,7 @@
           3
         ]
       },
-      "CreateWorkCommand": {
+      "AssignWorkCommand": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
@@ -1781,7 +1647,7 @@
           }
         }
       },
-      "UpdateWorkCommand": {
+      "UpdateWorkItemCommand": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
@@ -1801,44 +1667,6 @@
           },
           "status": {
             "$ref": "#/components/schemas/WorkStatus"
-          }
-        }
-      },
-      "AssignUserToWorkCommand": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "workId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "userId": {
-            "type": "string"
-          },
-          "role": {
-            "type": "string",
-            "nullable": true
-          }
-        }
-      },
-      "UpdateWorkProgressCommand": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "workId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "updaterId": {
-            "type": "string"
-          },
-          "percentage": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "note": {
-            "type": "string",
-            "nullable": true
           }
         }
       }

@@ -1,8 +1,8 @@
 using backend.Domain.Enums;
 
-namespace backend.Application.Works.Commands.UpdateWork;
+namespace backend.Application.WorkItems.Commands.UpdateWorkItem;
 
-public record UpdateWorkCommand : IRequest<IStatusResult>
+public record UpdateWorkItemCommand : IRequest<IStatusResult>
 {
     public int Id { get; init; }
     public DateTime? StartDate { get; init; }
@@ -10,36 +10,34 @@ public record UpdateWorkCommand : IRequest<IStatusResult>
     public WorkStatus Status { get; init; }
 }
 
-public class UpdateWorkCommandValidator : AbstractValidator<UpdateWorkCommand>
+public class UpdateWorkItemCommandValidator : AbstractValidator<UpdateWorkItemCommand>
 {
-    public UpdateWorkCommandValidator()
+    public UpdateWorkItemCommandValidator()
     {
         RuleFor(x => x.Id).GreaterThan(0);
     }
 }
 
-public class UpdateWorkCommandHandler : IRequestHandler<UpdateWorkCommand, IStatusResult>
+public class UpdateWorkItemCommandHandler : IRequestHandler<UpdateWorkItemCommand, IStatusResult>
 {
     private readonly IApplicationDbContext _context;
 
-    public UpdateWorkCommandHandler(IApplicationDbContext context)
+    public UpdateWorkItemCommandHandler(IApplicationDbContext context)
     {
         _context = context;
     }
 
-    public async Task<IStatusResult> Handle(UpdateWorkCommand request, CancellationToken cancellationToken)
+    public async Task<IStatusResult> Handle(UpdateWorkItemCommand request, CancellationToken cancellationToken)
     {
         var work = await _context.Works.FindAsync([request.Id], cancellationToken);
-
         if (work is null)
-            return StatusResult.Failure($"Work {request.Id} not found.");
+            return StatusResult.Failure($"WorkItem {request.Id} not found.");
 
         work.StartDate = request.StartDate;
         work.EndDate = request.EndDate;
         work.Status = request.Status;
 
         await _context.SaveChangesAsync(cancellationToken);
-
         return StatusResult.Success();
     }
 }
