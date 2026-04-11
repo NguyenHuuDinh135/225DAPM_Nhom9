@@ -41,6 +41,7 @@
     "mapbox-gl": "^3.21.0",
     "maplibre-gl": "^5.22.0",
     "nuqs": "^2.8.9",
+    "react-datepicker": "^9.1.0",
     "react-map-gl": "^8.1.0",
     "recharts": "^3.8.1",
     "zod": "^4.3.6"
