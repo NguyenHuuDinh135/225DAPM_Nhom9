@@ -137,3 +137,44 @@ DELETE {{Web_HostAddress}}/api/TodoItems/1
 Authorization: Bearer {{BearerToken}}
 
 ###
+
+# GET WorkItems
+GET {{Web_HostAddress}}/api/WorkItems
+Authorization: Bearer {{BearerToken}}
+
+###
+
+# POST WorkItems (Tạo công việc mới)
+POST {{Web_HostAddress}}/api/WorkItems
+Authorization: Bearer {{BearerToken}}
+Content-Type: application/json
+
+{
+  "workTypeId": 1,
+  "planId": 1,
+  "creatorId": "admin-id",
+  "startDate": "2026-04-12T00:00:00Z",
+  "endDate": "2026-06-01T00:00:00Z"
+}
+
+###
+
+# PUT WorkItems (Cập nhật)
+PUT {{Web_HostAddress}}/api/WorkItems/1
+Authorization: Bearer {{BearerToken}}
+Content-Type: application/json
+
+{
+  "id": 1,
+  "startDate": "2026-04-12T00:00:00Z",
+  "endDate": "2026-06-01T00:00:00Z",
+  "status": 1
+}
+
+###
+
+# DELETE WorkItems
+DELETE {{Web_HostAddress}}/api/WorkItems/1
+Authorization: Bearer {{BearerToken}}
+
+###

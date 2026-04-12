@@ -1,5 +1,8 @@
 using backend.Application.Common.Interfaces;
 
+using backend.Application.Common.Interfaces;
+using backend.Application.Common.Models;
+
 namespace backend.Application.Incidents.Commands.SendIncidentFeedback;
 
 public record SendIncidentFeedbackCommand : IRequest<IStatusResult>

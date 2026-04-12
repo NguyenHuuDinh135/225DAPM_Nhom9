@@ -1,5 +1,8 @@
 using backend.Application.Common.Interfaces;
 
+using backend.Application.Common.Interfaces;
+using backend.Application.Common.Models;
+
 namespace backend.Application.Identity.Commands.AssignPermissions;
 
 public record AssignPermissionsCommand : IRequest<IStatusResult>

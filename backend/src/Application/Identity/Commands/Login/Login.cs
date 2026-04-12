@@ -1,4 +1,5 @@
 using backend.Application.Common.Interfaces;
+using backend.Application.Identity.Commands.Login;
 
 namespace backend.Application.Identity.Commands.Login;
 
