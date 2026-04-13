@@ -27,13 +27,14 @@ public class CreateLocationCommandHandler : IRequestHandler<CreateLocationComman
 
     public async Task<int> Handle(CreateLocationCommand request, CancellationToken cancellationToken)
     {
-        var entity = new Location();
-
-        typeof(Location).GetProperty(nameof(Location.StreetId))!.SetValue(entity, request.StreetId);
-        typeof(Location).GetProperty(nameof(Location.HouseNumber))!.SetValue(entity, request.HouseNumber);
-        typeof(Location).GetProperty(nameof(Location.Longitude))!.SetValue(entity, request.Longitude);
-        typeof(Location).GetProperty(nameof(Location.Latitude))!.SetValue(entity, request.Latitude);
-        typeof(Location).GetProperty(nameof(Location.Description))!.SetValue(entity, request.Description);
+        var entity = new Location
+        {
+            StreetId = request.StreetId,
+            HouseNumber = request.HouseNumber,
+            Longitude = request.Longitude,
+            Latitude = request.Latitude,
+            Description = request.Description
+        };
 
         _context.Locations.Add(entity);
 
