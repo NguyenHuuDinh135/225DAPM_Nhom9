@@ -1,12 +1,16 @@
-namespace backend.Application.Locations.Commands.CreateLocation;
+namespace backend.Application.Locations.Commands.UpdateLocation;
 
-public class CreateLocationCommandValidator : AbstractValidator<CreateLocationCommand>
+public class UpdateLocationCommandValidator : AbstractValidator<UpdateLocationCommand>
 {
     private readonly IApplicationDbContext _context;
 
-    public CreateLocationCommandValidator(IApplicationDbContext context)
+    public UpdateLocationCommandValidator(IApplicationDbContext context)
     {
         _context = context;
+
+        RuleFor(v => v.Id)
+            .GreaterThan(0)
+            .WithMessage("'{PropertyName}' must be greater than 0.");
 
         RuleFor(v => v.StreetId)
             .GreaterThan(0)

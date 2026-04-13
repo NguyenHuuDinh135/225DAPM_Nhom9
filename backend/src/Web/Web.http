@@ -38,6 +38,54 @@ Content-Type: application/json
 
 ###
 
+# GET Locations
+GET {{Web_HostAddress}}/api/Locations
+Authorization: Bearer {{BearerToken}}
+
+###
+
+# GET Location By Id
+GET {{Web_HostAddress}}/api/Locations/1
+Authorization: Bearer {{BearerToken}}
+
+###
+
+# POST Locations
+POST {{Web_HostAddress}}/api/Locations
+Authorization: Bearer {{BearerToken}}
+Content-Type: application/json
+
+{
+  "streetId": 1,
+  "houseNumber": 120,
+  "longitude": 108.2210,
+  "latitude": 16.0602,
+  "description": "Dia diem moi cho frontend"
+}
+
+###
+
+# PUT Locations
+PUT {{Web_HostAddress}}/api/Locations/1
+Authorization: Bearer {{BearerToken}}
+Content-Type: application/json
+
+{
+  "streetId": 1,
+  "houseNumber": 125,
+  "longitude": 108.2215,
+  "latitude": 16.0605,
+  "description": "Cap nhat mo ta vi tri"
+}
+
+###
+
+# DELETE Locations
+DELETE {{Web_HostAddress}}/api/Locations/1
+Authorization: Bearer {{BearerToken}}
+
+###
+
 # GET WeatherForecast
 GET {{Web_HostAddress}}/api/WeatherForecasts
 Authorization: Bearer {{BearerToken}}

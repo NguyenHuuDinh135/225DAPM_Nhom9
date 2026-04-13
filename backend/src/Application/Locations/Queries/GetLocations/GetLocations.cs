@@ -24,8 +24,10 @@ public class GetLocationsQueryHandler : IRequestHandler<GetLocationsQuery, Locat
         {
             Locations = await _context.Locations
                 .AsNoTracking()
+                .OrderBy(l => l.Street.Name)
+                .ThenBy(l => l.HouseNumber)
+                .ThenBy(l => l.Id)
                 .ProjectTo<LocationDto>(_mapper.ConfigurationProvider)
-                .OrderBy(l => l.StreetId)
                 .ToListAsync(cancellationToken)
         };
     }
