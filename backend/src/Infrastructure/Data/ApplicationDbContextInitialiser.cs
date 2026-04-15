@@ -162,7 +162,7 @@ public class ApplicationDbContextInitialiser
                     Condition = rand.Next(0, 3) == 0 ? "Yếu" : "Tốt",
                     Height = decimal.Round(7m + (decimal)(rand.NextDouble() * 18), 1),
                     TrunkDiameter = decimal.Round(25m + (decimal)(rand.NextDouble() * 35), 1),
-                    RecordedDate = DateTime.Now.AddMonths(-rand.Next(1, 24))
+                    RecordedDate = DateTime.UtcNow.AddMonths(-rand.Next(1, 24))
                 });
             }
             await _context.SaveChangesAsync();
@@ -177,8 +177,8 @@ public class ApplicationDbContextInitialiser
                 {
                     Name = $"Kế hoạch chăm sóc cây xanh quý {i % 4 + 1}/2026",
                     CreatorId = admin.Id,
-                    StartDate = DateTime.Now.AddMonths(-rand.Next(0, 6)),
-                    EndDate = DateTime.Now.AddMonths(rand.Next(6, 12)),
+                    StartDate = DateTime.UtcNow.AddMonths(-rand.Next(0, 6)),
+                    EndDate = DateTime.UtcNow.AddMonths(rand.Next(6, 12)),
                     Status = rand.Next(0, 2) == 0 ? "Active" : "Completed"
                 });
             }
@@ -215,8 +215,8 @@ public class ApplicationDbContextInitialiser
                     WorkTypeId = rand.Next(1, 11),
                     CreatorId = admin.Id,
                     PlanId = rand.Next(1, 11),
-                    StartDate = DateTime.Now.AddDays(-rand.Next(5, 30)),
-                    EndDate = DateTime.Now.AddDays(rand.Next(10, 45)),
+                    StartDate = DateTime.UtcNow.AddDays(-rand.Next(5, 30)),
+                    EndDate = DateTime.UtcNow.AddDays(rand.Next(10, 45)),
                     Status = rand.Next(0, 3) == 0 ? WorkStatus.InProgress : WorkStatus.Completed
                 });
             }
@@ -251,7 +251,7 @@ public class ApplicationDbContextInitialiser
                     UpdaterId = admin.Id,
                     Percentage = rand.Next(70, 101),
                     Note = "Đã hoàn thành tốt",
-                    UpdatedDate = DateTime.Now.AddDays(-rand.Next(0, 8))
+                    UpdatedDate = DateTime.UtcNow.AddDays(-rand.Next(0, 8))
                 });
             }
             await _context.SaveChangesAsync();
@@ -284,7 +284,7 @@ public class ApplicationDbContextInitialiser
                     ReporterId = admin.Id,
                     Content = $"Cây có dấu hiệu sâu bệnh / gãy cành {i}",
                     Status = "Resolved",
-                    ReportedDate = DateTime.Now.AddDays(-rand.Next(5, 40))
+                    ReportedDate = DateTime.UtcNow.AddDays(-rand.Next(5, 40))
                 });
             }
             await _context.SaveChangesAsync();
@@ -314,8 +314,8 @@ public class ApplicationDbContextInitialiser
                 {
                     TreeId = rand.Next(1, 11),
                     LocationId = rand.Next(1, 11),
-                    FromDate = DateTime.Now.AddMonths(-rand.Next(6, 18)),
-                    ToDate = DateTime.Now.AddMonths(-rand.Next(1, 6))
+                    FromDate = DateTime.UtcNow.AddMonths(-rand.Next(6, 18)),
+                    ToDate = DateTime.UtcNow.AddMonths(-rand.Next(1, 6))
                 });
             }
             await _context.SaveChangesAsync();

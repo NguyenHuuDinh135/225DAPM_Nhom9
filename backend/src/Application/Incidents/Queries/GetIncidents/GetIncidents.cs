@@ -1,4 +1,5 @@
 using backend.Application.Common.Interfaces;
+using backend.Application.Incidents.Queries.GetIncidents;
 
 namespace backend.Application.Incidents.Queries.GetIncidents;
 

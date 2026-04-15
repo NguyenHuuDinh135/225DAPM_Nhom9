@@ -1,5 +1,8 @@
 using backend.Application.Common.Interfaces;
 
+using backend.Application.Common.Interfaces;
+using backend.Application.Common.Models;
+
 namespace backend.Application.Progress.Commands.UpdateProgress;
 
 public record UpdateProgressCommand : IRequest<IStatusResult>

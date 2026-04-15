@@ -1,4 +1,5 @@
 using backend.Application.Common.Interfaces;
+using backend.Application.Employees.Queries.GetEmployees;
 
 namespace backend.Application.Employees.Queries.GetEmployees;
 

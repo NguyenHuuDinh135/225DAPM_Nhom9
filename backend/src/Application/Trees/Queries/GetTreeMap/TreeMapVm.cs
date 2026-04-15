@@ -1,0 +1,16 @@
+namespace backend.Application.Trees.Queries.GetTreeMap;
+
+public class TreeMapVm
+{
+    public IList<TreeMapDto> Trees { get; init; } = new List<TreeMapDto>();
+}
+
+public class TreeMapDto
+{
+    public int Id { get; init; }
+    public string? Name { get; init; }
+    public string? Condition { get; init; }
+    public string? TreeTypeName { get; init; }
+    public decimal? Latitude { get; init; }
+    public decimal? Longitude { get; init; }
+}

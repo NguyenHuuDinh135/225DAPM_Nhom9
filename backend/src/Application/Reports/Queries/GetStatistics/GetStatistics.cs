@@ -1,4 +1,5 @@
 using backend.Application.Common.Interfaces;
+using backend.Application.Reports.Queries.GetStatistics;
 
 namespace backend.Application.Reports.Queries.GetStatistics;
 

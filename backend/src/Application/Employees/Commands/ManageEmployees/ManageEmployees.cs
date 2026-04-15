@@ -1,5 +1,8 @@
 using backend.Application.Common.Interfaces;
 
+using backend.Application.Common.Interfaces;
+using backend.Application.Common.Models;
+
 namespace backend.Application.Employees.Commands.ManageEmployees;
 
 public record ManageEmployeesCommand : IRequest<IStatusResult>

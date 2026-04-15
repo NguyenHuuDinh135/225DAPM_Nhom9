@@ -34,7 +34,7 @@ namespace backend.Infrastructure.Services
             if (jsonData.IsNullOrEmpty)
                 return default;
 
-            return JsonSerializer.Deserialize<T>(jsonData!);
+            return JsonSerializer.Deserialize<T>(jsonData!.ToString());
         }
 
         public async Task RemoveAsync(string key)
