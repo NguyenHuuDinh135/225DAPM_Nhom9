@@ -1,4 +1,5 @@
 using backend.Infrastructure.Data;
+using backend.Web.Endpoints;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -38,6 +39,8 @@ app.Map("/", () => Results.Redirect("/api"));
 
 app.MapDefaultEndpoints();
 app.MapEndpoints();
+app.MapTreeIncidentsEndpoints();
+app.RegisterTreesEndpoints();
 app.Run();
 
 public partial class Program { }
