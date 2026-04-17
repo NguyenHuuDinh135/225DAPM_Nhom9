@@ -108,7 +108,7 @@ public class IdentityService : IIdentityService
 
         if (user is null)
         {
-            return Result.Failure("User was not found.");
+            return Result.Failure(new[] { "User was not found." });
         }
 
         user.UserName = request.Email;
@@ -135,7 +135,7 @@ public class IdentityService : IIdentityService
 
         if (user is null)
         {
-            return Result.Failure("User was not found.");
+            return Result.Failure(new[] { "User was not found." });
         }
 
         user.UserName = request.Email;
@@ -177,7 +177,7 @@ public class IdentityService : IIdentityService
     {
         var user = await _userManager.FindByIdAsync(userId);
 
-        return user != null ? await DeleteUserAsync(user) : Result.Failure("User was not found.");
+        return user != null ? await DeleteUserAsync(user) : Result.Failure(new[] { "User was not found." });
     }
 
     public async Task<Result> DeleteUserAsync(ApplicationUser user)
@@ -190,7 +190,7 @@ public class IdentityService : IIdentityService
         }
         catch (DbUpdateException)
         {
-            return Result.Failure("Cannot delete user because it is referenced by existing records.");
+            return Result.Failure(new[] { "Cannot delete user because it is referenced by existing records." });
         }
     }
 
