@@ -1,6 +1,6 @@
-using CleanArchitecture.Application.Common.Interfaces;
+using backend.Application.Common.Interfaces;
 
-namespace CleanArchitecture.Application.TreeIncidents.Queries.GetTreeIncidents;
+namespace backend.Application.TreeIncidents.Queries.GetTreeIncidents;
 
 public record GetTreeIncidentsQuery : IRequest<TreeIncidentsVm>
 {

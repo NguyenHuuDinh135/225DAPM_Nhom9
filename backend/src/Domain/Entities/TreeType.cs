@@ -10,6 +10,7 @@ public class TreeType : BaseAuditableEntity
 {
     public string? Name { get;  set; }
     public string? Group { get;  set; }
+    public int MaintenanceIntervalDays { get; set; } = 90;
 
     public ICollection<Tree> Trees { get;  set; } = new List<Tree>();
 }

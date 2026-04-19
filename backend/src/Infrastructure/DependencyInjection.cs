@@ -1,16 +1,17 @@
-﻿using backend.Application.Common.Interfaces;
+using backend.Application.Common.Interfaces;
 using backend.Domain.Constants;
 using backend.Infrastructure.Data;
 using backend.Infrastructure.Data.Interceptors;
 using backend.Infrastructure.Identity;
+using backend.Infrastructure.Services;
+using Hangfire;
+using Hangfire.PostgreSql;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using StackExchange.Redis;
-using backend.Infrastructure.Services;
-using MediatR;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -62,5 +63,16 @@ public static class DependencyInjection
                 ConnectionMultiplexer.Connect(redisConnectionString));
             builder.Services.AddSingleton<IRedisCacheService, RedisCacheService>();
         }
+
+        // Maintenance job service
+        builder.Services.AddScoped<IMaintenanceJobService, MaintenanceJobService>();
+
+        // Hangfire
+        builder.Services.AddHangfire(config => config
+            .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+            .UseSimpleAssemblyNameTypeSerializer()
+            .UseRecommendedSerializerSettings()
+            .UsePostgreSqlStorage(c => c.UseNpgsqlConnection(connectionString)));
+        builder.Services.AddHangfireServer();
     }
 }

@@ -1,3 +1,7 @@
+using backend.Application.Common.Interfaces;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+
 namespace backend.Infrastructure.Storage;
 public class FileService : IFileService
 {

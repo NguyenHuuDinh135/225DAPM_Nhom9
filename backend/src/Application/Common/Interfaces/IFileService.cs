@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Http;
+
 namespace backend.Application.Common.Interfaces;
 
 public interface IFileService

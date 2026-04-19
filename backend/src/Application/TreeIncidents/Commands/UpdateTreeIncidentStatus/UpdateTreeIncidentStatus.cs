@@ -1,9 +1,11 @@
+using backend.Application.Common.Interfaces;
+
 namespace backend.Application.TreeIncidents.Commands.UpdateTreeIncidentStatus;
 
 public record UpdateTreeIncidentStatusCommand : IRequest
 {
-    public Guid Id { get; init; }
-    public IncidentStatus Status { get; init; }
+    public int Id { get; init; }
+    public string Status { get; init; } = null!;
 }
 
 public class UpdateTreeIncidentStatusCommandHandler : IRequestHandler<UpdateTreeIncidentStatusCommand>
@@ -18,22 +20,10 @@ public class UpdateTreeIncidentStatusCommandHandler : IRequestHandler<UpdateTree
     public async Task Handle(UpdateTreeIncidentStatusCommand request, CancellationToken cancellationToken)
     {
         var entity = await _context.TreeIncidents
-            .FindAsync(new object[] { request.Id }, cancellationToken);
+            .FindAsync(new object[] { request.Id }, cancellationToken)
+            ?? throw new KeyNotFoundException($"TreeIncident {request.Id} not found.");
 
-        if (entity == null)
-        {
-            throw new NotFoundException(nameof(TreeIncident), request.Id);
-        }
-
-        // Cập nhật trạng thái
         entity.Status = request.Status;
-
-        // Nếu trạng thái là Hoàn thành, ghi nhận thời gian
-        if (request.Status == IncidentStatus.Resolved)
-        {
-            entity.ResolvedDate = DateTime.Now;
-        }
-
         await _context.SaveChangesAsync(cancellationToken);
     }
 }

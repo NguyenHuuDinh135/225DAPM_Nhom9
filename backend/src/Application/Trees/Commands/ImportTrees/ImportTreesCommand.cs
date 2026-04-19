@@ -3,14 +3,14 @@ using backend.Domain.Entities;
 
 namespace backend.Application.Trees.Commands.ImportTrees;
 
-public record ImportTreesCommand : IRequest<List<Guid>>
+public record ImportTreesCommand : IRequest<List<int>>
 {
-    public Guid TreeTypeId { get; init; }
+    public int TreeTypeId { get; init; }
     public int Quantity { get; init; }
     public string BatchNumber { get; init; } = string.Empty;
 }
 
-public class ImportTreesCommandHandler : IRequestHandler<ImportTreesCommand, List<Guid>>
+public class ImportTreesCommandHandler : IRequestHandler<ImportTreesCommand, List<int>>
 {
     private readonly IApplicationDbContext _context;
 
@@ -19,27 +19,17 @@ public class ImportTreesCommandHandler : IRequestHandler<ImportTreesCommand, Lis
         _context = context;
     }
 
-    public async Task<List<Guid>> Handle(ImportTreesCommand request, CancellationToken cancellationToken)
+    public async Task<List<int>> Handle(ImportTreesCommand request, CancellationToken cancellationToken)
     {
-        var importedTreeIds = new List<Guid>();
+        var importedTreeIds = new List<int>();
 
         for (int i = 0; i < request.Quantity; i++)
         {
-            var tree = new Tree
-            {
-                // Tùy thuộc vào cấu trúc Entity Tree của bạn mà map cho chuẩn nhé. 
-                // Ở đây mình giả định một số trường cơ bản khi cây đang ở vườn ươm:
-                // TreeTypeId = request.TreeTypeId,
-                // Status = "InNursery", 
-                // Latitude = null, // Chưa mang ra trồng nên chưa có tọa độ
-                // Longitude = null
-            };
-
+            var tree = new Tree { TreeTypeId = request.TreeTypeId };
             _context.Trees.Add(tree);
+            await _context.SaveChangesAsync(cancellationToken);
             importedTreeIds.Add(tree.Id);
         }
-
-        await _context.SaveChangesAsync(cancellationToken);
 
         return importedTreeIds;
     }
