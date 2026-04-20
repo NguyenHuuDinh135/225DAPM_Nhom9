@@ -1,0 +1,118 @@
+"use client"
+
+import { type ColumnDef } from "@tanstack/react-table"
+import { MoreHorizontal } from "lucide-react"
+import { Checkbox } from "@workspace/ui/components/checkbox"
+import { Badge } from "@workspace/ui/components/badge"
+import { Button } from "@workspace/ui/components/button"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@workspace/ui/components/dropdown-menu"
+import { apiClient } from "@/lib/api-client"
+import { type Plan } from "../data/schema"
+import { DataTableColumnHeader } from "../../tasks/components/data-table-column-header"
+
+const statusVariant: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
+  Draft: "outline",
+  Approved: "default",
+  Rejected: "destructive",
+}
+
+function RowActions({ row, onRefresh }: { row: { original: Plan }; onRefresh: () => void }) {
+  const plan = row.original
+
+  async function handleApprove() {
+    const approverId = typeof window !== "undefined" ? (localStorage.getItem("user_id") ?? "") : ""
+    await apiClient.put(`/api/planning/${plan.id}/approve`, { approverId })
+    onRefresh()
+  }
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="icon" className="size-8 data-[state=open]:bg-muted">
+          <MoreHorizontal />
+          <span className="sr-only">Open menu</span>
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-[160px]">
+        {plan.status !== "Approved" && (
+          <DropdownMenuItem onClick={handleApprove}>Duyệt kế hoạch</DropdownMenuItem>
+        )}
+        <DropdownMenuSeparator />
+        <DropdownMenuItem variant="destructive">Xóa</DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  )
+}
+
+export function makeColumns(onRefresh: () => void): ColumnDef<Plan>[] {
+  return [
+    {
+      id: "select",
+      header: ({ table }) => (
+        <Checkbox
+          checked={table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && "indeterminate")}
+          onCheckedChange={(v) => table.toggleAllPageRowsSelected(!!v)}
+          aria-label="Select all"
+          className="translate-y-[2px]"
+        />
+      ),
+      cell: ({ row }) => (
+        <Checkbox
+          checked={row.getIsSelected()}
+          onCheckedChange={(v) => row.toggleSelected(!!v)}
+          aria-label="Select row"
+          className="translate-y-[2px]"
+        />
+      ),
+      enableSorting: false,
+      enableHiding: false,
+    },
+    {
+      accessorKey: "name",
+      header: ({ column }) => <DataTableColumnHeader column={column} title="Tiêu đề" />,
+      cell: ({ row }) => (
+        <span className="max-w-[280px] truncate font-medium">{row.getValue("name") ?? "—"}</span>
+      ),
+    },
+    {
+      accessorKey: "startDate",
+      header: ({ column }) => <DataTableColumnHeader column={column} title="Bắt đầu" />,
+      cell: ({ row }) => {
+        const v = row.getValue("startDate") as string | null
+        return <span>{v ? new Date(v).toLocaleDateString("vi-VN") : "—"}</span>
+      },
+    },
+    {
+      accessorKey: "endDate",
+      header: ({ column }) => <DataTableColumnHeader column={column} title="Kết thúc" />,
+      cell: ({ row }) => {
+        const v = row.getValue("endDate") as string | null
+        return <span>{v ? new Date(v).toLocaleDateString("vi-VN") : "—"}</span>
+      },
+    },
+    {
+      accessorKey: "status",
+      header: ({ column }) => <DataTableColumnHeader column={column} title="Trạng thái" />,
+      cell: ({ row }) => {
+        const s = (row.getValue("status") as string | null) ?? "Draft"
+        return <Badge variant={statusVariant[s] ?? "outline"}>{s}</Badge>
+      },
+      filterFn: (row, id, value) => value.includes(row.getValue(id)),
+    },
+    {
+      accessorKey: "workCount",
+      header: ({ column }) => <DataTableColumnHeader column={column} title="Số công việc" />,
+      cell: ({ row }) => <span>{row.getValue("workCount")}</span>,
+    },
+    {
+      id: "actions",
+      cell: ({ row }) => <RowActions row={row} onRefresh={onRefresh} />,
+    },
+  ]
+}

@@ -10,7 +10,7 @@ import { Analytics } from "@/components/analytics"
 import { TailwindIndicator } from "@/components/tailwind-indicator"
 import { TooltipProvider } from "@workspace/ui/components/tooltip"
 import { Toaster } from "@workspace/ui/components/sonner"
-// @ts-expect-error: Bỏ qua lỗi TypeScript không nhận diện được file CSS
+import { AuthProvider } from "@/hooks/use-auth"
 import "@workspace/ui/globals.css";
 export const metadata: Metadata = {
   title: {
@@ -97,10 +97,12 @@ export default function RootLayout({
           <LayoutProvider>
             <ActiveThemeProvider>
               <NuqsAdapter>
-                <TooltipProvider delayDuration={0}>
-                  {children}
-                  <Toaster position="top-center" />
-                </TooltipProvider>
+                <AuthProvider>
+                  <TooltipProvider delayDuration={0}>
+                    {children}
+                    <Toaster position="top-center" />
+                  </TooltipProvider>
+                </AuthProvider>
               </NuqsAdapter>
               <TailwindIndicator />
               <Analytics />

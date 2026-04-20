@@ -1,67 +1,41 @@
-import { promises as fs } from "fs"
-import path from "path"
 import { type Metadata } from "next"
-import Image from "next/image"
-import { z } from "zod"
-
+import { cookies } from "next/headers"
 import { columns } from "./components/columns"
 import { DataTable } from "./components/data-table"
-import { UserNav } from "./components/user-nav"
-import { taskSchema } from "./data/schema"
+import { workItemSchema, type WorkItem } from "./data/schema"
+import { z } from "zod"
 
 export const metadata: Metadata = {
-  title: "Tasks",
-  description: "A task and issue tracker build using Tanstack Table.",
+  title: "Công việc",
 }
 
-// Simulate a database read for tasks.
-async function getTasks() {
-  const data = await fs.readFile(
-    path.join(process.cwd(), "app/(dashboard)/tasks/data/tasks.json")
-  )
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080"
 
-  const tasks = JSON.parse(data.toString())
+async function getWorkItems(): Promise<WorkItem[]> {
+  const cookieStore = await cookies()
+  const token = cookieStore.get("access_token")?.value
 
-  return z.array(taskSchema).parse(tasks)
+  const res = await fetch(`${BASE_URL}/api/work-items`, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    next: { revalidate: 30 },
+  })
+
+  if (!res.ok) return []
+
+  const json = await res.json() as { workItems: unknown[] }
+  return z.array(workItemSchema).parse(json.workItems)
 }
 
 export default async function TaskPage() {
-  const tasks = await getTasks()
+  const tasks = await getWorkItems()
 
   return (
-    <>
-      <div className="md:hidden">
-        <Image
-          src="/examples/tasks-light.png"
-          width={1280}
-          height={998}
-          alt="Playground"
-          className="block dark:hidden"
-        />
-        <Image
-          src="/examples/tasks-dark.png"
-          width={1280}
-          height={998}
-          alt="Playground"
-          className="hidden dark:block"
-        />
+    <div className="hidden h-full flex-1 flex-col gap-8 p-8 md:flex">
+      <div className="flex flex-col gap-1">
+        <h2 className="text-2xl font-semibold tracking-tight">Danh sách công việc</h2>
+        <p className="text-muted-foreground">Quản lý và theo dõi tiến độ công việc.</p>
       </div>
-      <div className="hidden h-full flex-1 flex-col gap-8 p-8 md:flex">
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex flex-col gap-1">
-            <h2 className="text-2xl font-semibold tracking-tight">
-              Welcome back!
-            </h2>
-            <p className="text-muted-foreground">
-              Here&apos;s a list of your tasks for this month.
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <UserNav />
-          </div>
-        </div>
-        <DataTable data={tasks} columns={columns} />
-      </div>
-    </>
+      <DataTable data={tasks} columns={columns} />
+    </div>
   )
 }

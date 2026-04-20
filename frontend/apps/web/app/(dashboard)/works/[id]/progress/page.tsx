@@ -1,10 +1,8 @@
 "use client"
 
-import { use, useState } from "react"
+import { use, useEffect, useRef, useState } from "react"
 import Link from "next/link"
-import { mockWorks } from "../../mock-data"
 import { Button } from "@workspace/ui/components/button"
-import { Input } from "@workspace/ui/components/input"
 import { Label } from "@workspace/ui/components/label"
 import { Textarea } from "@workspace/ui/components/textarea"
 import { ArrowLeftIcon, SendIcon } from "lucide-react"
@@ -12,51 +10,81 @@ import { toast } from "@workspace/ui/components/sonner"
 
 interface ProgressEntry {
   id: number
-  updaterName: string
-  percentage: number
-  note: string
-  updatedDate: string
+  updaterId: string
+  note: string | null
+  updatedDate: string | null
+  images: string[]
 }
+
+interface WorkDetail {
+  id: number
+  workTypeName: string | null
+  planName: string | null
+  progresses: ProgressEntry[]
+}
+
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080"
 
 export default function ProgressPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
-  const work = mockWorks.find((w) => w.id === Number(id))
-
-  const [progresses, setProgresses] = useState<ProgressEntry[]>(
-    work?.workProgresses.map((p) => ({ ...p })) ?? []
-  )
-  const [percentage, setPercentage] = useState("")
+  const [work, setWork] = useState<WorkDetail | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [submitting, setSubmitting] = useState(false)
   const [note, setNote] = useState("")
+  const fileRef = useRef<HTMLInputElement>(null)
 
+  function loadWork() {
+    const token = localStorage.getItem("access_token")
+    fetch(`${BASE_URL}/api/work-items/${id}`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    })
+      .then((r) => r.ok ? r.json() : Promise.reject())
+      .then((data: WorkDetail) => setWork(data))
+      .catch(() => toast.error("Không thể tải thông tin công việc"))
+      .finally(() => setLoading(false))
+  }
+
+  useEffect(() => { loadWork() }, [id])
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    const token = localStorage.getItem("access_token")
+    const userId = localStorage.getItem("user_id") ?? ""
+
+    const fd = new FormData()
+    fd.append("note", note)
+    fd.append("updaterId", userId)
+    const files = fileRef.current?.files
+    if (files) {
+      for (const f of Array.from(files)) fd.append("images", f)
+    }
+
+    setSubmitting(true)
+    try {
+      const res = await fetch(`${BASE_URL}/api/work-items/${id}/report-progress`, {
+        method: "POST",
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        body: fd,
+      })
+      if (!res.ok) throw new Error()
+      toast.success("Đã cập nhật tiến độ")
+      setNote("")
+      if (fileRef.current) fileRef.current.value = ""
+      loadWork()
+    } catch {
+      toast.error("Cập nhật thất bại")
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  if (loading) return <div className="p-6 text-muted-foreground">Đang tải...</div>
   if (!work) return <div className="p-6 text-muted-foreground">Không tìm thấy công việc.</div>
 
-  const latestPercentage = progresses.length > 0 ? progresses[progresses.length - 1]!.percentage : 0
-
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    const pct = Number(percentage)
-    if (!percentage || isNaN(pct) || pct < 0 || pct > 100) {
-      toast.error("Tiến độ phải từ 0 đến 100")
-      return
-    }
-    setProgresses((prev) => [
-      ...prev,
-      {
-        id: Date.now(),
-        updaterName: "Bạn",
-        percentage: pct,
-        note,
-        updatedDate: new Date().toISOString().split("T")[0],
-      },
-    ])
-    setPercentage("")
-    setNote("")
-    toast.success("Đã cập nhật tiến độ")
-  }
+  const progresses = work.progresses
 
   return (
     <div className="flex flex-1 flex-col gap-4 p-4 md:p-6 min-w-0">
-      {/* Header */}
       <div className="flex items-center gap-3 min-w-0">
         <Button variant="ghost" size="icon" className="shrink-0" asChild>
           <Link href="/works"><ArrowLeftIcon className="size-4" /></Link>
@@ -67,57 +95,38 @@ export default function ProgressPage({ params }: { params: Promise<{ id: string 
         </div>
       </div>
 
-      {/* Layout: stack trên mobile, 2 cột trên lg */}
       <div className="grid gap-4 lg:grid-cols-[360px_1fr]">
-        {/* Cột trái */}
-        <div className="flex flex-col gap-4">
-          {/* Progress bar */}
-          <div className="rounded-lg border p-4 flex flex-col gap-2">
-            <div className="flex justify-between text-sm font-medium">
-              <span>Tiến độ hiện tại</span>
-              <span className="text-[#007B22] font-semibold">{latestPercentage}%</span>
-            </div>
-            <div className="h-2.5 w-full rounded-full bg-muted overflow-hidden">
-              <div
-                className="h-full rounded-full bg-[#007B22] transition-all duration-500"
-                style={{ width: `${latestPercentage}%` }}
-              />
-            </div>
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="rounded-lg border p-4 flex flex-col gap-4 h-fit">
+          <h2 className="font-medium">Thêm cập nhật mới</h2>
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="note">Ghi chú</Label>
+            <Textarea
+              id="note"
+              placeholder="Mô tả công việc đã thực hiện..."
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              rows={4}
+            />
           </div>
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="images">Ảnh đính kèm</Label>
+            <input
+              id="images"
+              ref={fileRef}
+              type="file"
+              accept="image/*"
+              multiple
+              className="text-sm file:mr-3 file:rounded file:border-0 file:bg-muted file:px-3 file:py-1 file:text-sm"
+            />
+          </div>
+          <Button type="submit" disabled={submitting} className="bg-[#007B22] hover:bg-[#006400] text-white">
+            <SendIcon className="size-4" />
+            {submitting ? "Đang gửi..." : "Cập nhật"}
+          </Button>
+        </form>
 
-          {/* Form */}
-          <form onSubmit={handleSubmit} className="rounded-lg border p-4 flex flex-col gap-4">
-            <h2 className="font-medium">Thêm cập nhật mới</h2>
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="percentage">Tiến độ (%)</Label>
-              <Input
-                id="percentage"
-                type="number"
-                min={0}
-                max={100}
-                placeholder="0 - 100"
-                value={percentage}
-                onChange={(e) => setPercentage(e.target.value)}
-              />
-            </div>
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="note">Ghi chú</Label>
-              <Textarea
-                id="note"
-                placeholder="Mô tả công việc đã thực hiện..."
-                value={note}
-                onChange={(e) => setNote(e.target.value)}
-                rows={4}
-              />
-            </div>
-            <Button type="submit" className="bg-[#007B22] hover:bg-[#006400] text-white">
-              <SendIcon className="size-4" />
-              Cập nhật
-            </Button>
-          </form>
-        </div>
-
-        {/* Cột phải: timeline */}
+        {/* Timeline */}
         <div className="rounded-lg border p-4 flex flex-col gap-3 overflow-y-auto max-h-[600px]">
           <h2 className="font-medium">Lịch sử cập nhật</h2>
           {progresses.length === 0 ? (
@@ -131,15 +140,19 @@ export default function ProgressPage({ params }: { params: Promise<{ id: string 
                     {i < arr.length - 1 && <div className="w-px flex-1 bg-border my-1" />}
                   </div>
                   <div className="pb-4 flex-1 min-w-0">
-                    <div className="flex items-center justify-between gap-2 text-sm flex-wrap">
-                      <div className="flex items-center gap-1.5 min-w-0">
-                        <span className="font-medium truncate">{p.updaterName}</span>
-                        <span className="text-muted-foreground shrink-0 text-xs">· {p.updatedDate}</span>
-                      </div>
-                      <span className="font-semibold text-[#007B22] shrink-0">{p.percentage}%</span>
+                    <div className="flex items-center gap-1.5 text-sm flex-wrap">
+                      <span className="font-mono text-xs text-muted-foreground">{p.updaterId}</span>
+                      {p.updatedDate && (
+                        <span className="text-muted-foreground text-xs">· {new Date(p.updatedDate).toLocaleDateString("vi-VN")}</span>
+                      )}
                     </div>
-                    {p.note && (
-                      <p className="text-sm text-muted-foreground mt-0.5 break-words">{p.note}</p>
+                    {p.note && <p className="text-sm text-muted-foreground mt-0.5 break-words">{p.note}</p>}
+                    {p.images.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {p.images.map((src, idx) => (
+                          <a key={idx} href={src} target="_blank" rel="noreferrer" className="text-xs text-blue-600 underline">Ảnh {idx + 1}</a>
+                        ))}
+                      </div>
                     )}
                   </div>
                 </div>

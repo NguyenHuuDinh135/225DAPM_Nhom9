@@ -1,7 +1,7 @@
 import { AppSidebar } from "@/app/(dashboard)/components/app-sidebar"
 import { SiteHeader } from "@/app/(dashboard)/components/site-header"
 import { SidebarInset, SidebarProvider } from "@workspace/ui/components/sidebar"
-
+import { NotificationListener } from "@/components/notification-listener"
 import { ReactNode } from "react"
 
 export default function Page({ children }: { children: ReactNode }) {
@@ -17,8 +17,9 @@ export default function Page({ children }: { children: ReactNode }) {
       <AppSidebar variant="inset" />
       <SidebarInset>
         <SiteHeader />
-            {children}
+        {children}
       </SidebarInset>
+      <NotificationListener />
     </SidebarProvider>
   )
 }
