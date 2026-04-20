@@ -16,4 +16,5 @@ public class WorkProgress : BaseAuditableEntity
     public DateTime? UpdatedDate { get;  set; }
 
     public Work Work { get;  set; } = null!;
+    public ICollection<WorkProgressImage> Images { get; set; } = new List<WorkProgressImage>();
 }

@@ -1,8 +1,11 @@
+using backend.Application.WorkItems.Commands.ApproveWorkItem;
 using backend.Application.WorkItems.Commands.AssignWork;
 using backend.Application.WorkItems.Commands.DeleteWorkItem;
+using backend.Application.WorkItems.Commands.ReportWorkProgress;
 using backend.Application.WorkItems.Commands.UpdateWorkItem;
 using backend.Application.WorkItems.Queries.GetWorkItems;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
 
 namespace backend.Web.Endpoints;
 
@@ -14,6 +17,8 @@ public class WorkItems : EndpointGroupBase
         groupBuilder.MapPost(CreateWorkItem).RequireAuthorization();
         groupBuilder.MapPut(UpdateWorkItem, "{id}").RequireAuthorization();
         groupBuilder.MapDelete(DeleteWorkItem, "{id}").RequireAuthorization();
+        groupBuilder.MapPost(ReportProgress, "{id}/report-progress").RequireAuthorization().DisableAntiforgery();
+        groupBuilder.MapPut(ApproveWork, "{id}/approve").RequireAuthorization();
     }
 
     public async Task<Ok<WorkItemsVm>> GetWorkItems(ISender sender)
@@ -38,6 +43,28 @@ public class WorkItems : EndpointGroupBase
     public async Task<Results<NoContent, BadRequest<string[]>>> DeleteWorkItem(ISender sender, int id)
     {
         var result = await sender.Send(new DeleteWorkItemCommand(id));
+        return result.Succeeded ? TypedResults.NoContent() : TypedResults.BadRequest(result.Errors);
+    }
+
+    public async Task<Results<NoContent, BadRequest<string[]>>> ReportProgress(
+        ISender sender, int id, IFormFileCollection images, [FromForm] string? note, [FromForm] string? updaterId)
+    {
+        var cmd = new ReportWorkProgressCommand
+        {
+            WorkItemId = id,
+            Images = images.ToList(),
+            Note = note,
+            UpdaterId = updaterId ?? string.Empty
+        };
+        var result = await sender.Send(cmd);
+        return result.Succeeded ? TypedResults.NoContent() : TypedResults.BadRequest(result.Errors);
+    }
+
+    public async Task<Results<NoContent, BadRequest<string[]>>> ApproveWork(
+        ISender sender, int id, ApproveWorkItemCommand command)
+    {
+        var cmd = command with { WorkItemId = id };
+        var result = await sender.Send(cmd);
         return result.Succeeded ? TypedResults.NoContent() : TypedResults.BadRequest(result.Errors);
     }
 }

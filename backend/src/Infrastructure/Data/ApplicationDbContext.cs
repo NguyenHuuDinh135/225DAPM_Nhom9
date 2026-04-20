@@ -28,6 +28,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>, IApplica
     public DbSet<Work> Works => Set<Work>();
     public DbSet<WorkDetail> WorkDetails => Set<WorkDetail>();
     public DbSet<WorkProgress> WorkProgresses => Set<WorkProgress>();
+    public DbSet<WorkProgressImage> WorkProgressImages => Set<WorkProgressImage>();
     public DbSet<WorkType> WorkTypes => Set<WorkType>();
     public DbSet<WorkUser> WorkUsers => Set<WorkUser>();
 

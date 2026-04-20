@@ -4,6 +4,7 @@ public enum WorkStatus
 {
     New,
     InProgress,
+    WaitingForApproval,
     Completed,
     Cancelled
 }

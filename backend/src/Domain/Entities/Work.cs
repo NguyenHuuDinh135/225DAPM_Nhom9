@@ -22,7 +22,23 @@ public class Work : BaseAuditableEntity
     public WorkType WorkType { get;  set; } = null!;
     public Plan Plan { get;  set; } = null!;
 
+    public string? RejectionFeedback { get; private set; }
+
     public ICollection<WorkDetail> WorkDetails { get;  set; } = new List<WorkDetail>();
     public ICollection<WorkUser> WorkUsers { get;  set; } = new List<WorkUser>();
     public ICollection<WorkProgress> WorkProgresses { get;  set; } = new List<WorkProgress>();
+
+    public void SubmitForApproval() => Status = WorkStatus.WaitingForApproval;
+
+    public void Complete()
+    {
+        Status = WorkStatus.Completed;
+        RejectionFeedback = null;
+    }
+
+    public void Reject(string feedback)
+    {
+        Status = WorkStatus.InProgress;
+        RejectionFeedback = feedback;
+    }
 }
