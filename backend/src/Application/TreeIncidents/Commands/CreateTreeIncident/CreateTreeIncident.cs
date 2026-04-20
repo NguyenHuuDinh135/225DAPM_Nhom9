@@ -24,21 +24,14 @@ public class CreateTreeIncidentCommandHandler : IRequestHandler<CreateTreeIncide
 
     public async Task<int> Handle(CreateTreeIncidentCommand request, CancellationToken cancellationToken)
     {
-        var entity = new TreeIncident
-        {
-            TreeId = request.TreeId,
-            Content = request.Content,
-            ReporterId = "system",
-            Status = "Pending",
-            ReportedDate = DateTime.UtcNow
-        };
+        var entity = TreeIncident.Create(request.TreeId, "system", request.Content);
 
         if (request.Images != null)
         {
             foreach (var file in request.Images)
             {
                 var path = await _fileService.UploadAsync(file, "incidents");
-                entity.Images.Add(new TreeIncidentImage { Path = path });
+                entity.AddImage(new TreeIncidentImage { Path = path });
             }
         }
 

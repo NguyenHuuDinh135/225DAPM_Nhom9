@@ -1,5 +1,6 @@
 using backend.Application.Common.Interfaces;
 using backend.Infrastructure.Data;
+using backend.Web.Hubs;
 using Hangfire;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -39,6 +40,7 @@ app.Map("/", () => Results.Redirect("/api"));
 
 app.MapDefaultEndpoints();
 app.MapEndpoints();
+app.MapHub<IncidentHub>("/hubs/incidents");
 
 RecurringJob.AddOrUpdate<IMaintenanceJobService>(
     "tree-maintenance",

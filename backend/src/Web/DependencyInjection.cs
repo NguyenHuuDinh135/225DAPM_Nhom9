@@ -1,6 +1,7 @@
 ﻿using Azure.Identity;
 using backend.Application.Common.Interfaces;
 using backend.Infrastructure.Data;
+using backend.Web.Hubs;
 using backend.Web.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -14,6 +15,9 @@ public static class DependencyInjection
     public static void AddWebServices(this IHostApplicationBuilder builder)
     {
         builder.Services.AddDatabaseDeveloperPageExceptionFilter();
+
+        builder.Services.AddSignalR();
+        builder.Services.AddSingleton<INotificationService, NotificationService>();
 
         builder.Services.AddScoped<IUser, CurrentUser>();
 

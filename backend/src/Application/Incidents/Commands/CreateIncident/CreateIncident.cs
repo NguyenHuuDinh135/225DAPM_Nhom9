@@ -1,9 +1,13 @@
 using backend.Application.Common.Interfaces;
+using backend.Domain.Entities;
 
 namespace backend.Application.Incidents.Commands.CreateIncident;
 
 public record CreateIncidentCommand : IRequest<int>
 {
+    public int TreeId { get; init; }
+    public string ReporterId { get; init; } = null!;
+    public string? Content { get; init; }
 }
 
 public class CreateIncidentCommandValidator : AbstractValidator<CreateIncidentCommand>
@@ -13,17 +17,18 @@ public class CreateIncidentCommandValidator : AbstractValidator<CreateIncidentCo
     }
 }
 
-public class CreateIncidentCommandHandler : IRequestHandler<CreateIncidentCommand, int>
+public class CreateIncidentCommandHandler(IApplicationDbContext context, INotificationService notificationService)
+    : IRequestHandler<CreateIncidentCommand, int>
 {
-    private readonly IApplicationDbContext _context;
-
-    public CreateIncidentCommandHandler(IApplicationDbContext context)
-    {
-        _context = context;
-    }
-
     public async Task<int> Handle(CreateIncidentCommand request, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        var incident = TreeIncident.Create(request.TreeId, request.ReporterId, request.Content);
+
+        context.TreeIncidents.Add(incident);
+        await context.SaveChangesAsync(cancellationToken);
+
+        await notificationService.SendIncidentNotificationAsync("Có sự cố mới được báo cáo!", incident.Id);
+
+        return incident.Id;
     }
 }

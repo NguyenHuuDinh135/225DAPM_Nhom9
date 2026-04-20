@@ -23,7 +23,7 @@ public class UpdateTreeIncidentStatusCommandHandler : IRequestHandler<UpdateTree
             .FindAsync(new object[] { request.Id }, cancellationToken)
             ?? throw new KeyNotFoundException($"TreeIncident {request.Id} not found.");
 
-        entity.Status = request.Status;
+        entity.UpdateStatus(request.Status);
         await _context.SaveChangesAsync(cancellationToken);
     }
 }

@@ -278,14 +278,9 @@ public class ApplicationDbContextInitialiser
         {
             for (int i = 1; i <= 10; i++)
             {
-                _context.TreeIncidents.Add(new TreeIncident
-                {
-                    TreeId = rand.Next(1, 11),
-                    ReporterId = admin.Id,
-                    Content = $"Cây có dấu hiệu sâu bệnh / gãy cành {i}",
-                    Status = "Resolved",
-                    ReportedDate = DateTime.UtcNow.AddDays(-rand.Next(5, 40))
-                });
+                var incident = TreeIncident.Create(rand.Next(1, 11), admin.Id, $"Cây có dấu hiệu sâu bệnh / gãy cành {i}");
+                incident.UpdateStatus("Resolved");
+                _context.TreeIncidents.Add(incident);
             }
             await _context.SaveChangesAsync();
         }
