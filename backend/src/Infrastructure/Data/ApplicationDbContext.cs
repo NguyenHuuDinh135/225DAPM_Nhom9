@@ -11,11 +11,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>, IApplica
 {
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
 
-    // Existing DbSets
-    public DbSet<TodoList> TodoLists => Set<TodoList>();
-    public DbSet<TodoItem> TodoItems => Set<TodoItem>();
-
-    // New DbSets for Tree Management System
+    // DbSets for Tree Management System
     public DbSet<Location> Locations => Set<Location>();
     public DbSet<Plan> Plans => Set<Plan>();
     public DbSet<Street> Streets => Set<Street>();

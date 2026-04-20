@@ -6,7 +6,7 @@ public class Trees : EndpointGroupBase
 {
     public override void Map(RouteGroupBuilder groupBuilder)
     {
-        groupBuilder.MapGet("", GetAllTrees);
+        groupBuilder.MapGet("", GetAllTrees).RequireAuthorization();
     }
 
     public async Task<IEnumerable<TreeDto>> GetAllTrees(ISender sender)

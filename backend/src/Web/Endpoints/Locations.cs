@@ -1,5 +1,6 @@
 using backend.Application.Locations.Commands.CreateLocation;
 using backend.Application.Locations.Queries.GetLocations;
+using backend.Domain.Constants;
 using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace backend.Web.Endpoints;
@@ -9,7 +10,7 @@ public class Locations : EndpointGroupBase
     public override void Map(RouteGroupBuilder groupBuilder)
     {
         groupBuilder.MapGet(GetLocations).RequireAuthorization();
-        groupBuilder.MapPost(CreateLocation).RequireAuthorization();
+        groupBuilder.MapPost(CreateLocation).RequireAuthorization(Roles.Manager, Roles.Admin);
     }
 
     public async Task<Ok<LocationsVm>> GetLocations(ISender sender)

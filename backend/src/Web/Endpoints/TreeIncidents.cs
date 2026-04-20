@@ -1,5 +1,6 @@
 using backend.Application.TreeIncidents.Commands.CreateTreeIncident;
 using backend.Application.TreeIncidents.Commands.UpdateTreeIncidentStatus;
+using backend.Domain.Constants;
 using Microsoft.AspNetCore.Mvc;
 
 namespace backend.Web.Endpoints;
@@ -8,8 +9,8 @@ public class TreeIncidents : EndpointGroupBase
 {
     public override void Map(RouteGroupBuilder app)
     {
-        app.MapPost("report-incident", CreateTreeIncident);
-        app.MapPut("{id}/status", UpdateIncidentStatus);
+        app.MapPost("report-incident", CreateTreeIncident).AllowAnonymous();
+        app.MapPut("{id}/status", UpdateIncidentStatus).RequireAuthorization(Roles.Manager, Roles.Employee);
     }
 
     public async Task<int> CreateTreeIncident(ISender sender, [FromBody] CreateTreeIncidentCommand command)

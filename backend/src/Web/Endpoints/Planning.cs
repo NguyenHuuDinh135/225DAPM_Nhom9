@@ -3,6 +3,7 @@ using backend.Application.Planning.Commands.CreatePlan;
 using backend.Application.Planning.Commands.DeletePlan;
 using backend.Application.Planning.Commands.UpdatePlan;
 using backend.Application.Planning.Queries.GetPlans;
+using backend.Domain.Constants;
 using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace backend.Web.Endpoints;
@@ -12,10 +13,10 @@ public class Planning : EndpointGroupBase
     public override void Map(RouteGroupBuilder groupBuilder)
     {
         groupBuilder.MapGet(GetPlans).RequireAuthorization();
-        groupBuilder.MapPost(CreatePlan).RequireAuthorization();
-        groupBuilder.MapPut(UpdatePlan, "{id}").RequireAuthorization();
-        groupBuilder.MapDelete(DeletePlan, "{id}").RequireAuthorization();
-        groupBuilder.MapPut(ApprovePlan, "{id}/approve").RequireAuthorization();
+        groupBuilder.MapPost(CreatePlan).RequireAuthorization(Roles.Manager, Roles.Admin);
+        groupBuilder.MapPut(UpdatePlan, "{id}").RequireAuthorization(Roles.Manager, Roles.Admin);
+        groupBuilder.MapDelete(DeletePlan, "{id}").RequireAuthorization(Roles.Manager, Roles.Admin);
+        groupBuilder.MapPut(ApprovePlan, "{id}/approve").RequireAuthorization(Roles.Manager, Roles.Admin);
     }
 
     public async Task<Ok<List<PlanDto>>> GetPlans(ISender sender)

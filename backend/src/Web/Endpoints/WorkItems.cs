@@ -4,6 +4,7 @@ using backend.Application.WorkItems.Commands.DeleteWorkItem;
 using backend.Application.WorkItems.Commands.ReportWorkProgress;
 using backend.Application.WorkItems.Commands.UpdateWorkItem;
 using backend.Application.WorkItems.Queries.GetWorkItems;
+using backend.Domain.Constants;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
@@ -14,11 +15,11 @@ public class WorkItems : EndpointGroupBase
     public override void Map(RouteGroupBuilder groupBuilder)
     {
         groupBuilder.MapGet(GetWorkItems).RequireAuthorization();
-        groupBuilder.MapPost(CreateWorkItem).RequireAuthorization();
-        groupBuilder.MapPut(UpdateWorkItem, "{id}").RequireAuthorization();
-        groupBuilder.MapDelete(DeleteWorkItem, "{id}").RequireAuthorization();
-        groupBuilder.MapPost(ReportProgress, "{id}/report-progress").RequireAuthorization().DisableAntiforgery();
-        groupBuilder.MapPut(ApproveWork, "{id}/approve").RequireAuthorization();
+        groupBuilder.MapPost(CreateWorkItem).RequireAuthorization(Roles.Manager, Roles.Admin);
+        groupBuilder.MapPut(UpdateWorkItem, "{id}").RequireAuthorization(Roles.Manager, Roles.Admin);
+        groupBuilder.MapDelete(DeleteWorkItem, "{id}").RequireAuthorization(Roles.Manager, Roles.Admin);
+        groupBuilder.MapPost(ReportProgress, "{id}/report-progress").RequireAuthorization(Roles.Employee).DisableAntiforgery();
+        groupBuilder.MapPut(ApproveWork, "{id}/approve").RequireAuthorization(Roles.Manager, Roles.Admin);
     }
 
     public async Task<Ok<WorkItemsVm>> GetWorkItems(ISender sender)
