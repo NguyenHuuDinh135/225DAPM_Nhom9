@@ -1,3 +1,4 @@
+using backend.Application.Common.Interfaces;
 using StackExchange.Redis;
 using System.Text.Json;
 
@@ -10,7 +11,7 @@ namespace backend.Infrastructure.Services
         Task RemoveAsync(string key);
     }
 
-    public class RedisCacheService : IRedisCacheService
+    public class RedisCacheService : IRedisCacheService, ICacheService
     {
         private readonly IConnectionMultiplexer _connectionMultiplexer;
 
@@ -25,6 +26,10 @@ namespace backend.Infrastructure.Services
             var jsonData = JsonSerializer.Serialize(value);
             await db.StringSetAsync(key, jsonData, expiry);
         }
+
+        // Explicit ICacheService implementation (non-nullable TimeSpan)
+        Task ICacheService.SetAsync<T>(string key, T value, TimeSpan expiration)
+            => SetAsync(key, value, expiration);
 
         public async Task<T?> GetAsync<T>(string key)
         {

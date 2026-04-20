@@ -7,15 +7,21 @@ public record GetDashboardStatisticsQuery : IRequest<DashboardStatsVm>;
 
 public class GetDashboardStatisticsQueryHandler : IRequestHandler<GetDashboardStatisticsQuery, DashboardStatsVm>
 {
+    private const string CacheKey = "DashboardStats_Current";
     private readonly IApplicationDbContext _context;
+    private readonly ICacheService _cache;
 
-    public GetDashboardStatisticsQueryHandler(IApplicationDbContext context)
+    public GetDashboardStatisticsQueryHandler(IApplicationDbContext context, ICacheService cache)
     {
         _context = context;
+        _cache = cache;
     }
 
     public async Task<DashboardStatsVm> Handle(GetDashboardStatisticsQuery request, CancellationToken cancellationToken)
     {
+        var cached = await _cache.GetAsync<DashboardStatsVm>(CacheKey);
+        if (cached is not null) return cached;
+
         var now = DateTime.UtcNow;
         var startOfMonth = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc);
 
@@ -43,7 +49,7 @@ public class GetDashboardStatisticsQueryHandler : IRequestHandler<GetDashboardSt
             })
             .ToListAsync(cancellationToken);
 
-        return new DashboardStatsVm
+        var result = new DashboardStatsVm
         {
             TotalTrees = totalTrees,
             PendingIncidents = pendingIncidents,
@@ -51,5 +57,8 @@ public class GetDashboardStatisticsQueryHandler : IRequestHandler<GetDashboardSt
             PendingWorksThisMonth = pendingThisMonth,
             OverdueWorks = overdueWorks
         };
+
+        await _cache.SetAsync(CacheKey, result, TimeSpan.FromMinutes(5));
+        return result;
     }
 }

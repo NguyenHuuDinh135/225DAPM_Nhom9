@@ -61,7 +61,9 @@ public static class DependencyInjection
         {
             builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
                 ConnectionMultiplexer.Connect(redisConnectionString));
-            builder.Services.AddSingleton<IRedisCacheService, RedisCacheService>();
+            builder.Services.AddSingleton<RedisCacheService>();
+            builder.Services.AddSingleton<IRedisCacheService>(sp => sp.GetRequiredService<RedisCacheService>());
+            builder.Services.AddSingleton<ICacheService>(sp => sp.GetRequiredService<RedisCacheService>());
         }
 
         // Maintenance job service
