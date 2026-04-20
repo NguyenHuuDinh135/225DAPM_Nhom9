@@ -2,6 +2,7 @@ using backend.Application.Common.Interfaces;
 using backend.Domain.Constants;
 using backend.Infrastructure.Data;
 using backend.Infrastructure.Data.Interceptors;
+using backend.Infrastructure.Files;
 using backend.Infrastructure.Identity;
 using backend.Infrastructure.Services;
 using Hangfire;
@@ -65,6 +66,8 @@ public static class DependencyInjection
             builder.Services.AddSingleton<IRedisCacheService>(sp => sp.GetRequiredService<RedisCacheService>());
             builder.Services.AddSingleton<ICacheService>(sp => sp.GetRequiredService<RedisCacheService>());
         }
+
+        builder.Services.AddTransient<IExcelService, ExcelService>();
 
         // Maintenance job service
         builder.Services.AddScoped<IMaintenanceJobService, MaintenanceJobService>();
