@@ -35,9 +35,7 @@ public class UpdateWorkItemCommandHandler : IRequestHandler<UpdateWorkItemComman
         if (work is null)
             return StatusResult.Failure($"WorkItem {request.Id} not found.");
 
-        work.StartDate = request.StartDate;
-        work.EndDate = request.EndDate;
-        work.Status = request.Status;
+        work.Update(request.StartDate, request.EndDate);
 
         await _context.SaveChangesAsync(cancellationToken);
         return StatusResult.Success();

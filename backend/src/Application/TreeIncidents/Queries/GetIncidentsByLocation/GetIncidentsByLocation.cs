@@ -1,3 +1,5 @@
+using backend.Application.Common.Interfaces;
+
 namespace backend.Application.TreeIncidents.Queries.GetIncidentsByLocation;
 
 public record GetIncidentsByLocationQuery : IRequest<List<TreeIncidentDto>>
@@ -8,22 +10,29 @@ public record GetIncidentsByLocationQuery : IRequest<List<TreeIncidentDto>>
 public class GetIncidentsByLocationQueryHandler : IRequestHandler<GetIncidentsByLocationQuery, List<TreeIncidentDto>>
 {
     private readonly IApplicationDbContext _context;
-    private readonly IMapper _mapper;
 
-    public GetIncidentsByLocationQueryHandler(IApplicationDbContext context, IMapper mapper)
+    public GetIncidentsByLocationQueryHandler(IApplicationDbContext context)
     {
         _context = context;
-        _mapper = mapper;
     }
 
     public async Task<List<TreeIncidentDto>> Handle(GetIncidentsByLocationQuery request, CancellationToken cancellationToken)
     {
-        var incidents = await _context.TreeIncidents
-            .Include(i => i.Images)
+        return await _context.TreeIncidents
+            .AsNoTracking()
             .Include(i => i.Tree)
-            .Where(i => i.Status != "Resolved")
+                .ThenInclude(t => t.TreeLocationHistories)
+            .Where(i => i.Status != "Resolved"
+                && i.Tree.TreeLocationHistories.Any(h => h.LocationId == request.LocationId && h.ToDate == null))
+            .Select(i => new TreeIncidentDto
+            {
+                Id = i.Id,
+                TreeId = i.TreeId,
+                TreeName = i.Tree.Name,
+                Description = i.Content,
+                ReportedDate = i.ReportedDate ?? DateTime.UtcNow,
+                ReportedBy = i.ReporterName ?? i.ReporterId
+            })
             .ToListAsync(cancellationToken);
-
-        return incidents.Select(i => _mapper.Map<TreeIncidentDto>(i)).ToList();
     }
 }

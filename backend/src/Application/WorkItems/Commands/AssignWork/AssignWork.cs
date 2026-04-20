@@ -35,16 +35,12 @@ public class AssignWorkCommandHandler : IRequestHandler<AssignWorkCommand, IStat
 
     public async Task<IStatusResult> Handle(AssignWorkCommand request, CancellationToken cancellationToken)
     {
-        var work = new Work
-        {
-            WorkTypeId = request.WorkTypeId,
-            PlanId = request.PlanId,
-            CreatorId = request.CreatorId,
-            StartDate = request.StartDate,
-            EndDate = request.EndDate,
-            CreatedDate = DateTime.UtcNow,
-            Status = WorkStatus.New
-        };
+        var work = Work.Create(
+            request.WorkTypeId,
+            request.PlanId,
+            request.CreatorId,
+            request.StartDate,
+            request.EndDate);
 
         _context.Works.Add(work);
         await _context.SaveChangesAsync(cancellationToken);

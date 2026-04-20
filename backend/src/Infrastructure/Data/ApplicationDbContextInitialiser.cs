@@ -173,14 +173,11 @@ public class ApplicationDbContextInitialiser
         {
             for (int i = 1; i <= 10; i++)
             {
-                _context.Plans.Add(new Plan
-                {
-                    Name = $"Kế hoạch chăm sóc cây xanh quý {i % 4 + 1}/2026",
-                    CreatorId = admin.Id,
-                    StartDate = DateTime.UtcNow.AddMonths(-rand.Next(0, 6)),
-                    EndDate = DateTime.UtcNow.AddMonths(rand.Next(6, 12)),
-                    Status = rand.Next(0, 2) == 0 ? "Active" : "Completed"
-                });
+                _context.Plans.Add(Plan.Create(
+                    $"Kế hoạch chăm sóc cây xanh quý {i % 4 + 1}/2026",
+                    admin.Id,
+                    DateTime.UtcNow.AddMonths(-rand.Next(0, 6)),
+                    DateTime.UtcNow.AddMonths(rand.Next(6, 12))));
             }
             await _context.SaveChangesAsync();
         }
@@ -210,15 +207,12 @@ public class ApplicationDbContextInitialiser
         {
             for (int i = 1; i <= 10; i++)
             {
-                _context.Works.Add(new Work
-                {
-                    WorkTypeId = rand.Next(1, 11),
-                    CreatorId = admin.Id,
-                    PlanId = rand.Next(1, 11),
-                    StartDate = DateTime.UtcNow.AddDays(-rand.Next(5, 30)),
-                    EndDate = DateTime.UtcNow.AddDays(rand.Next(10, 45)),
-                    Status = rand.Next(0, 3) == 0 ? WorkStatus.InProgress : WorkStatus.Completed
-                });
+                _context.Works.Add(Work.Create(
+                    rand.Next(1, 11),
+                    rand.Next(1, 11),
+                    admin.Id,
+                    DateTime.UtcNow.AddDays(-rand.Next(5, 30)),
+                    DateTime.UtcNow.AddDays(rand.Next(10, 45))));
             }
             await _context.SaveChangesAsync();
         }

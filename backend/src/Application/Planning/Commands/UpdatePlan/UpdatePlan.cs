@@ -9,7 +9,6 @@ public record UpdatePlanCommand : IRequest<IStatusResult>
     public string? Name { get; init; }
     public DateTime? StartDate { get; init; }
     public DateTime? EndDate { get; init; }
-    public string? Status { get; init; }
 }
 
 public class UpdatePlanCommandValidator : AbstractValidator<UpdatePlanCommand>
@@ -35,10 +34,7 @@ public class UpdatePlanCommandHandler : IRequestHandler<UpdatePlanCommand, IStat
         if (plan is null)
             return StatusResult.Failure($"Plan {request.Id} not found.");
 
-        plan.Name = request.Name ?? plan.Name;
-        plan.StartDate = request.StartDate ?? plan.StartDate;
-        plan.EndDate = request.EndDate ?? plan.EndDate;
-        plan.Status = request.Status ?? plan.Status;
+        plan.Update(request.Name, request.StartDate, request.EndDate);
 
         await _context.SaveChangesAsync(cancellationToken);
         return StatusResult.Success();

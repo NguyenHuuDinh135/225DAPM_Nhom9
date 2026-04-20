@@ -1,18 +1,8 @@
 using backend.Application.Common.Interfaces;
-using backend.Application.Trees.Queries.GetTreeMap;
 
 namespace backend.Application.Trees.Queries.GetTreeMap;
 
-public record GetTreeMapQuery : IRequest<TreeMapVm>
-{
-}
-
-public class GetTreeMapQueryValidator : AbstractValidator<GetTreeMapQuery>
-{
-    public GetTreeMapQueryValidator()
-    {
-    }
-}
+public record GetTreeMapQuery : IRequest<TreeMapVm>;
 
 public class GetTreeMapQueryHandler : IRequestHandler<GetTreeMapQuery, TreeMapVm>
 {
@@ -25,6 +15,21 @@ public class GetTreeMapQueryHandler : IRequestHandler<GetTreeMapQuery, TreeMapVm
 
     public async Task<TreeMapVm> Handle(GetTreeMapQuery request, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        var trees = await _context.Trees
+            .AsNoTracking()
+            .Include(t => t.TreeType)
+            .Where(t => t.Latitude != null && t.Longitude != null)
+            .Select(t => new TreeMapDto
+            {
+                Id = t.Id,
+                Name = t.Name,
+                Condition = t.Condition,
+                TreeTypeName = t.TreeType.Name,
+                Latitude = t.Latitude,
+                Longitude = t.Longitude
+            })
+            .ToListAsync(cancellationToken);
+
+        return new TreeMapVm { Trees = trees };
     }
 }

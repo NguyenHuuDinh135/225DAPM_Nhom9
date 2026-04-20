@@ -3,6 +3,7 @@ using backend.Application.WorkItems.Commands.AssignWork;
 using backend.Application.WorkItems.Commands.DeleteWorkItem;
 using backend.Application.WorkItems.Commands.ReportWorkProgress;
 using backend.Application.WorkItems.Commands.UpdateWorkItem;
+using backend.Application.WorkItems.Queries.GetWorkItemDetail;
 using backend.Application.WorkItems.Queries.GetWorkItems;
 using backend.Domain.Constants;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -15,6 +16,7 @@ public class WorkItems : EndpointGroupBase
     public override void Map(RouteGroupBuilder groupBuilder)
     {
         groupBuilder.MapGet(GetWorkItems).RequireAuthorization();
+        groupBuilder.MapGet(GetWorkItemDetail, "{id}").RequireAuthorization();
         groupBuilder.MapPost(CreateWorkItem).RequireAuthorization(Roles.Manager, Roles.Admin);
         groupBuilder.MapPut(UpdateWorkItem, "{id}").RequireAuthorization(Roles.Manager, Roles.Admin);
         groupBuilder.MapDelete(DeleteWorkItem, "{id}").RequireAuthorization(Roles.Manager, Roles.Admin);
@@ -27,6 +29,9 @@ public class WorkItems : EndpointGroupBase
         var result = await sender.Send(new GetWorkItemsQuery());
         return TypedResults.Ok(result);
     }
+
+    public async Task<Ok<WorkItemDetailVm>> GetWorkItemDetail(ISender sender, int id)
+        => TypedResults.Ok(await sender.Send(new GetWorkItemDetailQuery(id)));
 
     public async Task<Results<NoContent, BadRequest<string[]>>> CreateWorkItem(ISender sender, AssignWorkCommand command)
     {

@@ -11,6 +11,6 @@ public class TreeMapDto
     public string? Name { get; init; }
     public string? Condition { get; init; }
     public string? TreeTypeName { get; init; }
-    public decimal? Latitude { get; init; }
-    public decimal? Longitude { get; init; }
+    public double? Latitude { get; init; }
+    public double? Longitude { get; init; }
 }

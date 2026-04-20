@@ -33,8 +33,7 @@ public class ApprovePlanCommandHandler : IRequestHandler<ApprovePlanCommand, ISt
         if (plan is null)
             return StatusResult.Failure($"Plan {request.Id} not found.");
 
-        plan.ApproverId = request.ApproverId;
-        plan.Status = "Approved";
+        plan.Approve(request.ApproverId);
 
         await _context.SaveChangesAsync(cancellationToken);
         return StatusResult.Success();

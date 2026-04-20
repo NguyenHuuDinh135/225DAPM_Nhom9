@@ -4,6 +4,8 @@ public class TreeIncident : BaseAuditableEntity
 {
     public int TreeId { get; private set; }
     public string ReporterId { get; private set; } = null!;
+    public string? ReporterName { get; private set; }
+    public string? ReporterPhone { get; private set; }
     public string? ApproverId { get; private set; }
     public string? Content { get; private set; }
     public string? Status { get; private set; }
@@ -14,17 +16,18 @@ public class TreeIncident : BaseAuditableEntity
 
     private TreeIncident() { }
 
-    public static TreeIncident Create(int treeId, string reporterId, string? content)
-    {
-        return new TreeIncident
+    public static TreeIncident Create(int treeId, string reporterId, string? content,
+        string? reporterName = null, string? reporterPhone = null) =>
+        new TreeIncident
         {
             TreeId = treeId,
             ReporterId = reporterId,
+            ReporterName = reporterName,
+            ReporterPhone = reporterPhone,
             Content = content,
             Status = "Pending",
             ReportedDate = DateTime.UtcNow
         };
-    }
 
     public void AddImage(TreeIncidentImage image) => Images.Add(image);
 

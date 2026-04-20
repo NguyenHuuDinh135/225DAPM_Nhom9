@@ -32,7 +32,7 @@ public class MaintenanceJobServiceTests
         var tree = CreateTree(id: 1, treeType: treeType, lastMaintenanceDate: DateTime.UtcNow.AddDays(-35), relocationCount: 0, latitude: 10.0, longitude: 106.0);
 
         var workType = new WorkType { Id = 1, Name = "Bảo dưỡng định kỳ" };
-        var plan = new Plan { Id = 1, Name = "Kế hoạch bảo dưỡng tự động", CreatorId = "system" };
+        var plan = Plan.Create("Kế hoạch bảo dưỡng tự động", "system", null, null);
         var works = new List<Work>();
         var workDetails = new List<WorkDetail>();
 
@@ -100,7 +100,7 @@ public class MaintenanceJobServiceTests
 
         _dbContextMock.Setup(x => x.Trees).Returns(CreateQueryableMockDbSet(new[] { tree }).Object);
         _dbContextMock.Setup(x => x.WorkTypes).Returns(CreateQueryableMockDbSet(new[] { new WorkType { Id = 1, Name = "Bảo dưỡng định kỳ" } }).Object);
-        _dbContextMock.Setup(x => x.Plans).Returns(CreateQueryableMockDbSet(new[] { new Plan { Id = 1, Name = "Kế hoạch bảo dưỡng tự động", CreatorId = "system" } }).Object);
+        _dbContextMock.Setup(x => x.Plans).Returns(CreateQueryableMockDbSet(new[] { Plan.Create("Kế hoạch bảo dưỡng tự động", "system", null, null) }).Object);
         _dbContextMock.Setup(x => x.Works).Returns(CreateListMockDbSet(works).Object);
         _dbContextMock.Setup(x => x.WorkDetails).Returns(CreateListMockDbSet(workDetails).Object);
         _dbContextMock.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(0);
@@ -119,7 +119,7 @@ public class MaintenanceJobServiceTests
         var tree = CreateTree(id: 1, treeType: treeType, lastMaintenanceDate: null, relocationCount: 0, latitude: 10.0, longitude: 106.0);
 
         var workType = new WorkType { Id = 1, Name = "Bảo dưỡng định kỳ" };
-        var plan = new Plan { Id = 1, Name = "Kế hoạch bảo dưỡng tự động", CreatorId = "system" };
+        var plan = Plan.Create("Kế hoạch bảo dưỡng tự động", "system", null, null);
 
         var works = new List<Work>();
         var workDetails = new List<WorkDetail>();
@@ -145,7 +145,7 @@ public class MaintenanceJobServiceTests
 
         _dbContextMock.Setup(x => x.Trees).Returns(CreateQueryableMockDbSet(new[] { tree }).Object);
         _dbContextMock.Setup(x => x.WorkTypes).Returns(CreateQueryableMockDbSet(new[] { new WorkType { Id = 1, Name = "Bảo dưỡng định kỳ" } }).Object);
-        _dbContextMock.Setup(x => x.Plans).Returns(CreateQueryableMockDbSet(new[] { new Plan { Id = 1, Name = "Kế hoạch bảo dưỡng tự động", CreatorId = "system" } }).Object);
+        _dbContextMock.Setup(x => x.Plans).Returns(CreateQueryableMockDbSet(new[] { Plan.Create("Kế hoạch bảo dưỡng tự động", "system", null, null) }).Object);
         _dbContextMock.Setup(x => x.Works).Returns(CreateListMockDbSet(new List<Work>()).Object);
         _dbContextMock.Setup(x => x.WorkDetails).Returns(CreateListMockDbSet(new List<WorkDetail>()).Object);
         _dbContextMock.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>())).ThrowsAsync(new InvalidOperationException("Database failed"));

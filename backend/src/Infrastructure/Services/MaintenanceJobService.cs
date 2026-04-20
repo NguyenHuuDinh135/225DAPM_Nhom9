@@ -51,16 +51,12 @@ public class MaintenanceJobService : IMaintenanceJobService
 
             foreach (var tree in dueTrees)
             {
-                var work = new Work
-                {
-                    WorkTypeId = maintenanceWorkType.Id,
-                    WorkType = maintenanceWorkType,
-                    PlanId = maintenancePlan.Id,
-                    Plan = maintenancePlan,
-                    CreatorId = "system",
-                    CreatedDate = now,
-                    Status = WorkStatus.New
-                };
+                var work = Work.Create(
+                    maintenanceWorkType.Id,
+                    maintenancePlan.Id,
+                    "system",
+                    startDate: null,
+                    endDate: null);
 
                 _dbContext.Works.Add(work);
 

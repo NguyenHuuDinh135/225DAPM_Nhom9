@@ -3,30 +3,42 @@ using backend.Domain.Enums;
 
 namespace backend.Domain.Entities;
 
-/// <summary>
-/// Đại diện cho một công việc cụ thể trong kế hoạch chăm sóc cây xanh.
-/// Công việc được giao cho nhân viên thực hiện và theo dõi tiến độ.
-/// </summary>
 public class Work : BaseAuditableEntity
 {
-    public int WorkTypeId { get;  set; }
-    public string CreatorId { get;  set; } = null!;
-    public int PlanId { get;  set; }
-
-    public DateTime? CreatedDate { get;  set; }
-    public DateTime? StartDate { get;  set; }
-    public DateTime? EndDate { get;  set; }
-
-    public WorkStatus Status { get;  set; }
-
-    public WorkType WorkType { get;  set; } = null!;
-    public Plan Plan { get;  set; } = null!;
-
+    public int WorkTypeId { get; private set; }
+    public string CreatorId { get; private set; } = null!;
+    public int PlanId { get; private set; }
+    public DateTime? CreatedDate { get; private set; }
+    public DateTime? StartDate { get; private set; }
+    public DateTime? EndDate { get; private set; }
+    public WorkStatus Status { get; private set; }
     public string? RejectionFeedback { get; private set; }
 
-    public ICollection<WorkDetail> WorkDetails { get;  set; } = new List<WorkDetail>();
-    public ICollection<WorkUser> WorkUsers { get;  set; } = new List<WorkUser>();
-    public ICollection<WorkProgress> WorkProgresses { get;  set; } = new List<WorkProgress>();
+    public WorkType WorkType { get; set; } = null!;
+    public Plan Plan { get; set; } = null!;
+    public ICollection<WorkDetail> WorkDetails { get; set; } = new List<WorkDetail>();
+    public ICollection<WorkUser> WorkUsers { get; set; } = new List<WorkUser>();
+    public ICollection<WorkProgress> WorkProgresses { get; set; } = new List<WorkProgress>();
+
+    private Work() { }
+
+    public static Work Create(int workTypeId, int planId, string creatorId, DateTime? startDate, DateTime? endDate) =>
+        new Work
+        {
+            WorkTypeId = workTypeId,
+            PlanId = planId,
+            CreatorId = creatorId,
+            StartDate = startDate,
+            EndDate = endDate,
+            CreatedDate = DateTime.UtcNow,
+            Status = WorkStatus.New
+        };
+
+    public void Update(DateTime? startDate, DateTime? endDate)
+    {
+        StartDate = startDate;
+        EndDate = endDate;
+    }
 
     public void SubmitForApproval() => Status = WorkStatus.WaitingForApproval;
 

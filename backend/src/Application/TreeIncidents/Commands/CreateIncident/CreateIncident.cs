@@ -1,7 +1,7 @@
 using backend.Application.Common.Interfaces;
 using backend.Domain.Entities;
 
-namespace backend.Application.Incidents.Commands.CreateIncident;
+namespace backend.Application.TreeIncidents.Commands.CreateIncident;
 
 public record CreateIncidentCommand : IRequest<int>
 {
