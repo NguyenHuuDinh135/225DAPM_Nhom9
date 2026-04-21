@@ -1,20 +1,18 @@
 var builder = DistributedApplication.CreateBuilder(args);
 
-var databaseName = "backendDb";
+var postgres = builder.AddPostgres("postgres")
+    .WithDataVolume()
+    .WithLifetime(ContainerLifetime.Session)
+    .WithPgAdmin()
+    .AddDatabase("QLCayXanhDb");
 
-// Tạo parameter password cố định (bí mật)
-var postgresPassword = builder.AddParameter("postgres-password", "123", secret: true); // Đổi "123" thành password bạn muốn
+var redis = builder.AddRedis("cache");
 
-var postgres = builder
-    .AddPostgres("postgres", 
-                 password: postgresPassword,   // Fix password
-                 port: 5432)                   // Fix port host = 5432
-    .WithEnvironment("POSTGRES_DB", databaseName);
-
-var database = postgres.AddDatabase(databaseName);
-
-builder.AddProject<Projects.Web>("web")
-    .WithReference(database)
-    .WaitFor(database);
+builder.AddProject<Projects.Web>("api")
+    .WithEndpoint("http", e => e.Port = 5000)
+    .WithReference(postgres)
+    .WithReference(redis)
+    .WaitFor(postgres)
+    .WaitFor(redis);
 
 builder.Build().Run();

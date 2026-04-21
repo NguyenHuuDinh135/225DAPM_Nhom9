@@ -1,4 +1,4 @@
-﻿using backend.Domain.Constants;
+using backend.Domain.Constants;
 using backend.Domain.Entities;
 using backend.Domain.Enums;
 using backend.Infrastructure.Identity;
@@ -15,7 +15,6 @@ public static class InitialiserExtensions
     {
         using var scope = app.Services.CreateScope();
         var initialiser = scope.ServiceProvider.GetRequiredService<ApplicationDbContextInitialiser>();
-
         await initialiser.InitialiseAsync();
         await initialiser.SeedAsync();
     }
@@ -43,10 +42,8 @@ public class ApplicationDbContextInitialiser
     {
         try
         {
-            _logger.LogInformation("Bắt đầu khởi tạo Database...");
             await _context.Database.EnsureDeletedAsync();
             await _context.Database.EnsureCreatedAsync();
-            _logger.LogInformation("Khởi tạo Database thành công.");
         }
         catch (Exception ex)
         {
@@ -59,9 +56,7 @@ public class ApplicationDbContextInitialiser
     {
         try
         {
-            _logger.LogInformation("Bắt đầu Seed dữ liệu quản lý cây xanh Hải Châu...");
             await TrySeedAsync();
-            _logger.LogInformation("✅ Seed dữ liệu thành công (10 records mỗi bảng).");
         }
         catch (Exception ex)
         {
@@ -72,264 +67,262 @@ public class ApplicationDbContextInitialiser
 
     public async Task TrySeedAsync()
     {
-        var rand = new Random();
-        var admin = await GetOrCreateAdminUser();
+        var rand = new Random(42);
 
-        // ==================== 1. TreeType ====================
+        // ── Roles & Users ──────────────────────────────────────────────
+        foreach (var role in new[] { Roles.Administrator, Roles.Manager, Roles.Employee })
+            if (!await _roleManager.RoleExistsAsync(role))
+                await _roleManager.CreateAsync(new IdentityRole(role));
+
+        var admin   = await EnsureUser("admin@localhost",   "Admin1!",    "Nguyễn Văn Admin",      Roles.Administrator);
+        var manager = await EnsureUser("manager@localhost", "Manager1!",  "Trần Thị Manager",       Roles.Manager);
+        var emp1    = await EnsureUser("emp1@localhost",    "Employee1!", "Lê Văn Nhân Viên",       Roles.Employee);
+        var emp2    = await EnsureUser("emp2@localhost",    "Employee1!", "Phạm Thị Công Nhân",     Roles.Employee);
+        var emp3    = await EnsureUser("emp3@localhost",    "Employee1!", "Nguyễn Thị Hoa",         Roles.Employee);
+        var emp4    = await EnsureUser("emp4@localhost",    "Employee1!", "Trần Văn Bình",          Roles.Employee);
+        var emp5    = await EnsureUser("emp5@localhost",    "Employee1!", "Võ Thị Lan",             Roles.Employee);
+
+        var employees = new[] { emp1.Id, emp2.Id, emp3.Id, emp4.Id, emp5.Id };
+
+        // ── 1. Master Data ─────────────────────────────────────────────
         if (!_context.TreeTypes.Any())
         {
-            var treeTypes = new List<TreeType>
-            {
-                new TreeType { Name = "Xà Cừ", Group = "Cây bóng mát" },
-                new TreeType { Name = "Phượng Vĩ", Group = "Cây hoa" },
-                new TreeType { Name = "Bàng", Group = "Cây bóng mát" },
-                new TreeType { Name = "Sấu", Group = "Cây ăn quả" },
-                new TreeType { Name = "Bồ Đề", Group = "Cây bóng mát" },
-                new TreeType { Name = "Me", Group = "Cây ăn quả" },
-                new TreeType { Name = "Sao", Group = "Cây gỗ lớn" },
-                new TreeType { Name = "Dừa", Group = "Cây ăn quả" },
-                new TreeType { Name = "Hoa Sữa", Group = "Cây bóng mát" },
-                new TreeType { Name = "Lim Xanh", Group = "Cây gỗ lớn" }
-            };
-            _context.TreeTypes.AddRange(treeTypes);
+            _context.TreeTypes.AddRange(
+                new TreeType { Name = "Phượng vĩ",       Group = "Cây hoa",      MaintenanceIntervalDays = 90  },
+                new TreeType { Name = "Bàng đài loan",   Group = "Cây bóng mát", MaintenanceIntervalDays = 120 },
+                new TreeType { Name = "Muồng hoàng yến", Group = "Cây hoa",      MaintenanceIntervalDays = 90  },
+                new TreeType { Name = "Xà cừ",           Group = "Cây bóng mát", MaintenanceIntervalDays = 180 },
+                new TreeType { Name = "Lim sẹt",         Group = "Cây gỗ lớn",   MaintenanceIntervalDays = 180 },
+                new TreeType { Name = "Sao đen",         Group = "Cây gỗ lớn",   MaintenanceIntervalDays = 180 },
+                new TreeType { Name = "Dầu rái",         Group = "Cây bóng mát", MaintenanceIntervalDays = 150 }
+            );
             await _context.SaveChangesAsync();
         }
 
-        // ==================== 2. Ward ====================
         if (!_context.Wards.Any())
         {
-            var wards = new List<Ward>
-            {
-                new Ward { Name = "Hải Châu I" }, new Ward { Name = "Hải Châu II" },
-                new Ward { Name = "Thạch Thang" }, new Ward { Name = "Thanh Bình" },
-                new Ward { Name = "Nam Dương" }, new Ward { Name = "Bình Hiên" },
-                new Ward { Name = "Hòa Thuận Tây" }, new Ward { Name = "Hòa Thuận Đông" },
-                new Ward { Name = "Hòa Cường Bắc" }, new Ward { Name = "Hòa Cường Nam" }
-            };
-            _context.Wards.AddRange(wards);
+            _context.Wards.AddRange(
+                new Ward { Name = "Hải Châu I"  },
+                new Ward { Name = "Hải Châu II" },
+                new Ward { Name = "Thạch Thang" },
+                new Ward { Name = "Nam Dương"   },
+                new Ward { Name = "Phước Ninh"  }
+            );
             await _context.SaveChangesAsync();
         }
 
-        // ==================== 3. Street ====================
+        var wards = _context.Wards.ToList();
+
         if (!_context.Streets.Any())
         {
-            var streets = new List<Street>
+            var streetDefs = new[]
             {
-                new Street { Name = "Nguyễn Văn Linh", WardId = 1 },
-                new Street { Name = "Trần Phú", WardId = 2 },
-                new Street { Name = "Phan Chu Trinh", WardId = 3 },
-                new Street { Name = "Bạch Đằng", WardId = 4 },
-                new Street { Name = "Hùng Vương", WardId = 5 },
-                new Street { Name = "Hải Phòng", WardId = 6 },
-                new Street { Name = "Lê Duẩn", WardId = 7 },
-                new Street { Name = "Ông Ích Khiêm", WardId = 8 },
-                new Street { Name = "Châu Thị Vĩnh Tế", WardId = 9 },
-                new Street { Name = "Nguyễn Thị Minh Khai", WardId = 10 }
+                ("Trần Phú",           0), ("Bạch Đằng",         0), ("Lý Tự Trọng",      0),
+                ("Phan Chu Trinh",     1), ("Nguyễn Chí Thanh",  1), ("Hoàng Diệu",       1),
+                ("Hùng Vương",         2), ("Lê Duẩn",           2), ("Điện Biên Phủ",    2),
+                ("Nguyễn Văn Linh",    3), ("Trưng Nữ Vương",    3), ("Ông Ích Khiêm",    3),
+                ("Phan Đình Phùng",    4), ("Lê Lợi",            4), ("Nguyễn Tất Thành", 4),
             };
-            _context.Streets.AddRange(streets);
+            foreach (var (name, wardIdx) in streetDefs)
+                _context.Streets.Add(new Street { Name = name, WardId = wards[wardIdx].Id });
             await _context.SaveChangesAsync();
         }
 
-        // ==================== 4. Location ====================
+        // ── 2. Locations (100) ─────────────────────────────────────────
         if (!_context.Locations.Any())
         {
-            var locations = new List<Location>
+            var streets = _context.Streets.ToList();
+            for (int i = 0; i < 100; i++)
             {
-                new Location { StreetId = 1, HouseNumber = 120, Latitude = 16.0602m, Longitude = 108.2210m, Description = "Công viên Nguyễn Văn Linh" },
-                new Location { StreetId = 2, HouseNumber = 45,  Latitude = 16.0585m, Longitude = 108.2187m, Description = "Trước trụ sở UBND" },
-                new Location { StreetId = 3, HouseNumber = null, Latitude = 16.0621m, Longitude = 108.2254m, Description = "Gần chùa Phước Ninh" },
-                new Location { StreetId = 4, HouseNumber = 78,  Latitude = 16.0558m, Longitude = 108.2301m, Description = "Bờ sông Hàn" },
-                new Location { StreetId = 5, HouseNumber = 210, Latitude = 16.0597m, Longitude = 108.2123m, Description = "Trung tâm hành chính" },
-                new Location { StreetId = 6, HouseNumber = null, Latitude = 16.0634m, Longitude = 108.2198m, Description = "Công viên 29/3" },
-                new Location { StreetId = 7, HouseNumber = 156, Latitude = 16.0579m, Longitude = 108.2265m, Description = "Khu dân cư Hòa Thuận" },
-                new Location { StreetId = 8, HouseNumber = 89,  Latitude = 16.0615m, Longitude = 108.2147m, Description = "Gần cầu Rồng" },
-                new Location { StreetId = 9, HouseNumber = 67,  Latitude = 16.0582m, Longitude = 108.2239m, Description = "Trường THPT Phan Chu Trinh" },
-                new Location { StreetId = 10, HouseNumber = 134, Latitude = 16.0648m, Longitude = 108.2172m, Description = "Chợ Hàn" }
-            };
-            _context.Locations.AddRange(locations);
+                var street = streets[i % streets.Count];
+                _context.Locations.Add(new Location
+                {
+                    StreetId    = street.Id,
+                    HouseNumber = rand.Next(1, 400),
+                    Latitude    = (decimal)Math.Round(16.0500 + rand.NextDouble() * 0.0400, 6),
+                    Longitude   = (decimal)Math.Round(108.2100 + rand.NextDouble() * 0.0400, 6),
+                    Description = $"Vị trí {i + 1} - {street.Name}"
+                });
+            }
             await _context.SaveChangesAsync();
         }
 
-        // ==================== 5. Tree ====================
+        // ── 3. Trees (100) ────────────────────────────────────────────
         if (!_context.Trees.Any())
         {
-            for (int i = 1; i <= 10; i++)
+            var treeTypes  = _context.TreeTypes.ToList();
+            var locations  = _context.Locations.ToList();
+            var conditions = new[] { "Bình thường", "Cần cắt tỉa", "Mới trồng", "Sâu bệnh", "Tốt" };
+
+            for (int i = 0; i < 100; i++)
             {
-                _context.Trees.Add(new Tree
+                var tt  = treeTypes[i % treeTypes.Count];
+                var loc = locations[i];
+                var tree = new Tree
                 {
-                    TreeTypeId = rand.Next(1, 11),
-                    Name = $"Cây xanh Hải Châu {i}",
-                    Condition = rand.Next(0, 3) == 0 ? "Yếu" : "Tốt",
-                    Height = decimal.Round(7m + (decimal)(rand.NextDouble() * 18), 1),
-                    TrunkDiameter = decimal.Round(25m + (decimal)(rand.NextDouble() * 35), 1),
-                    RecordedDate = DateTime.UtcNow.AddMonths(-rand.Next(1, 24))
-                });
+                    TreeTypeId    = tt.Id,
+                    Name          = $"{tt.Name} #{i + 1}",
+                    Condition     = conditions[i % conditions.Length],
+                    Height        = Math.Round(3m + (decimal)(rand.NextDouble() * 15), 1),
+                    TrunkDiameter = Math.Round(10m + (decimal)(rand.NextDouble() * 50), 1),
+                    RecordedDate  = DateTime.UtcNow.AddMonths(-rand.Next(1, 48)),
+                };
+                tree.Relocate((double)loc.Latitude!.Value, (double)loc.Longitude!.Value);
+                _context.Trees.Add(tree);
             }
             await _context.SaveChangesAsync();
-        }
 
-        // ==================== 6. Plan ====================
-        if (!_context.Plans.Any())
-        {
-            for (int i = 1; i <= 10; i++)
-            {
-                _context.Plans.Add(Plan.Create(
-                    $"Kế hoạch chăm sóc cây xanh quý {i % 4 + 1}/2026",
-                    admin.Id,
-                    DateTime.UtcNow.AddMonths(-rand.Next(0, 6)),
-                    DateTime.UtcNow.AddMonths(rand.Next(6, 12))));
-            }
-            await _context.SaveChangesAsync();
-        }
-
-        // ==================== 7. WorkType ====================
-        if (!_context.WorkTypes.Any())
-        {
-            var workTypes = new List<WorkType>
-            {
-                new WorkType { Name = "Trồng cây mới" },
-                new WorkType { Name = "Cắt tỉa cành" },
-                new WorkType { Name = "Tưới nước & bón phân" },
-                new WorkType { Name = "Xử lý sâu bệnh" },
-                new WorkType { Name = "Thay thế cây chết" },
-                new WorkType { Name = "Kiểm tra định kỳ" },
-                new WorkType { Name = "Xử lý cây nguy hiểm" },
-                new WorkType { Name = "Lắp biển báo" },
-                new WorkType { Name = "Vệ sinh gốc cây" },
-                new WorkType { Name = "Theo dõi tăng trưởng" }
-            };
-            _context.WorkTypes.AddRange(workTypes);
-            await _context.SaveChangesAsync();
-        }
-
-        // ==================== 8. Work ====================
-        if (!_context.Works.Any())
-        {
-            for (int i = 1; i <= 10; i++)
-            {
-                _context.Works.Add(Work.Create(
-                    rand.Next(1, 11),
-                    rand.Next(1, 11),
-                    admin.Id,
-                    DateTime.UtcNow.AddDays(-rand.Next(5, 30)),
-                    DateTime.UtcNow.AddDays(rand.Next(10, 45))));
-            }
-            await _context.SaveChangesAsync();
-        }
-
-        // ==================== 9. WorkDetail ====================
-        if (!_context.WorkDetails.Any())
-        {
-            for (int i = 1; i <= 10; i++)
-            {
-                _context.WorkDetails.Add(new WorkDetail
-                {
-                    WorkId = i,
-                    TreeId = rand.Next(1, 11),
-                    NewLocationId = rand.Next(1, 11),
-                    Content = $"Thực hiện công việc {i} cho cây xanh",
-                    Status = "Completed"
-                });
-            }
-            await _context.SaveChangesAsync();
-        }
-
-        // ==================== 10. WorkProgress ====================
-        if (!_context.WorkProgresses.Any())
-        {
-            for (int i = 1; i <= 10; i++)
-            {
-                _context.WorkProgresses.Add(new WorkProgress
-                {
-                    WorkId = i,
-                    UpdaterId = admin.Id,
-                    Percentage = rand.Next(70, 101),
-                    Note = "Đã hoàn thành tốt",
-                    UpdatedDate = DateTime.UtcNow.AddDays(-rand.Next(0, 8))
-                });
-            }
-            await _context.SaveChangesAsync();
-        }
-
-        // ==================== 11. WorkUser ====================
-        if (!_context.WorkUsers.Any())
-        {
-            for (int i = 1; i <= 10; i++)
-            {
-                _context.WorkUsers.Add(new WorkUser
-                {
-                    WorkId = i,
-                    UserId = admin.Id,
-                    Role = "Người thực hiện",
-                    Status = "Assigned"
-                });
-            }
-            await _context.SaveChangesAsync();
-        }
-
-        // ==================== 12. TreeIncident ====================
-        if (!_context.TreeIncidents.Any())
-        {
-            for (int i = 1; i <= 10; i++)
-            {
-                var incident = TreeIncident.Create(rand.Next(1, 11), admin.Id, $"Cây có dấu hiệu sâu bệnh / gãy cành {i}");
-                incident.UpdateStatus("Resolved");
-                _context.TreeIncidents.Add(incident);
-            }
-            await _context.SaveChangesAsync();
-        }
-
-        // ==================== 13. TreeIncidentImage ====================
-        if (!_context.TreeIncidentImages.Any())
-        {
-            for (int i = 1; i <= 10; i++)
-            {
-                _context.TreeIncidentImages.Add(new TreeIncidentImage
-                {
-                    TreeIncidentId = i,
-                    Path = $"/uploads/incidents/incident-{i}.jpg",
-                    Description = $"Hình ảnh sự cố cây số {i}"
-                });
-            }
-            await _context.SaveChangesAsync();
-        }
-
-        // ==================== 14. TreeLocationHistory ====================
-        if (!_context.TreeLocationHistories.Any())
-        {
-            for (int i = 1; i <= 10; i++)
+            var savedTrees = _context.Trees.ToList();
+            var savedLocs  = _context.Locations.ToList();
+            for (int i = 0; i < savedTrees.Count; i++)
             {
                 _context.TreeLocationHistories.Add(new TreeLocationHistory
                 {
-                    TreeId = rand.Next(1, 11),
-                    LocationId = rand.Next(1, 11),
-                    FromDate = DateTime.UtcNow.AddMonths(-rand.Next(6, 18)),
-                    ToDate = DateTime.UtcNow.AddMonths(-rand.Next(1, 6))
+                    TreeId     = savedTrees[i].Id,
+                    LocationId = savedLocs[i].Id,
+                    FromDate   = savedTrees[i].RecordedDate ?? DateTime.UtcNow.AddYears(-1),
+                    ToDate     = null
                 });
+            }
+            await _context.SaveChangesAsync();
+        }
+
+        // ── 4. WorkTypes ───────────────────────────────────────────────
+        if (!_context.WorkTypes.Any())
+        {
+            _context.WorkTypes.AddRange(
+                new WorkType { Name = "Cắt tỉa cành"          },
+                new WorkType { Name = "Tưới nước & bón phân"  },
+                new WorkType { Name = "Xử lý sâu bệnh"        },
+                new WorkType { Name = "Kiểm tra định kỳ"      },
+                new WorkType { Name = "Trồng cây mới"         },
+                new WorkType { Name = "Di dời cây"            },
+                new WorkType { Name = "Phun thuốc phòng bệnh" }
+            );
+            await _context.SaveChangesAsync();
+        }
+
+        // ── 5. Plans (5) & Works (75) ─────────────────────────────────
+        if (!_context.Plans.Any())
+        {
+            var workTypes = _context.WorkTypes.ToList();
+            var trees     = _context.Trees.ToList();
+
+            var planDefs = new[]
+            {
+                ("Kế hoạch mùa mưa 2024",      DateTime.UtcNow.AddMonths(-10), DateTime.UtcNow.AddMonths(-6)),
+                ("Kế hoạch định kỳ Q4/2024",   DateTime.UtcNow.AddMonths(-6),  DateTime.UtcNow.AddMonths(-3)),
+                ("Kế hoạch định kỳ Q1/2025",   DateTime.UtcNow.AddMonths(-3),  DateTime.UtcNow.AddMonths(0)),
+                ("Kế hoạch bảo dưỡng hè 2025", DateTime.UtcNow.AddMonths(0),   DateTime.UtcNow.AddMonths(3)),
+                ("Kế hoạch cuối năm 2025",     DateTime.UtcNow.AddMonths(3),   DateTime.UtcNow.AddMonths(6)),
+            };
+
+            foreach (var (planName, start, end) in planDefs)
+            {
+                var plan = Plan.Create(planName, manager.Id, start, end);
+                plan.Approve(admin.Id);
+                _context.Plans.Add(plan);
+                await _context.SaveChangesAsync();
+
+                for (int w = 0; w < 15; w++)
+                {
+                    var wt   = workTypes[rand.Next(workTypes.Count)];
+                    var work = Work.Create(wt.Id, plan.Id, manager.Id,
+                        start.AddDays(rand.Next(0, 20)),
+                        end.AddDays(-rand.Next(0, 10)));
+
+                    switch (w % 5)
+                    {
+                        case 1: work.SubmitForApproval(); break;
+                        case 2: work.SubmitForApproval(); work.Reject("Cần bổ sung thêm thông tin"); break;
+                        case 3: work.SubmitForApproval(); work.Complete(); break;
+                    }
+
+                    _context.Works.Add(work);
+                    await _context.SaveChangesAsync();
+
+                    _context.WorkUsers.Add(new WorkUser
+                    {
+                        WorkId = work.Id,
+                        UserId = employees[rand.Next(employees.Length)],
+                        Role   = "Người thực hiện",
+                        Status = "Assigned"
+                    });
+
+                    var tree = trees[rand.Next(trees.Count)];
+                    _context.WorkDetails.Add(new WorkDetail
+                    {
+                        WorkId  = work.Id,
+                        TreeId  = tree.Id,
+                        Content = $"{wt.Name} cho {tree.Name}",
+                        Status  = (w % 5 == 3) ? "Completed" : "Pending"
+                    });
+
+                    if (w % 5 == 2 || w % 5 == 3)
+                    {
+                        _context.WorkProgresses.Add(new WorkProgress
+                        {
+                            WorkId      = work.Id,
+                            UpdaterId   = employees[rand.Next(employees.Length)],
+                            Percentage  = w % 5 == 3 ? 100 : rand.Next(20, 80),
+                            Note        = w % 5 == 3 ? "Hoàn thành công việc" : "Đang thực hiện",
+                            UpdatedDate = start.AddDays(rand.Next(1, 15))
+                        });
+                    }
+                }
+                await _context.SaveChangesAsync();
+            }
+        }
+
+        // ── 6. Incidents (30) ─────────────────────────────────────────
+        if (!_context.TreeIncidents.Any())
+        {
+            var trees    = _context.Trees.ToList();
+            var contents = new[]
+            {
+                "Gãy cành lớn, nguy cơ rơi xuống đường",
+                "Sâu bệnh tấn công, lá vàng úa",
+                "Rễ cây trồi lên mặt đường, gây nguy hiểm",
+                "Cây nghiêng sau mưa bão",
+                "Mối mọt đục thân cây",
+                "Cành khô có nguy cơ gãy",
+                "Cây bị va chạm phương tiện",
+                "Nấm mốc xuất hiện ở gốc cây",
+                "Cây thiếu nước, lá héo",
+                "Vỏ cây bị bóc tách",
+            };
+            var statuses = new[] { "Pending", "InProgress", "Resolved", "Pending", "Resolved" };
+
+            for (int i = 0; i < 30; i++)
+            {
+                var tree     = trees[rand.Next(trees.Count)];
+                var incident = TreeIncident.Create(
+                    tree.Id,
+                    employees[i % employees.Length],
+                    contents[i % contents.Length],
+                    reporterName:  $"Người dân {i + 1}",
+                    reporterPhone: $"09{rand.Next(10000000, 99999999)}"
+                );
+                var status = statuses[i % statuses.Length];
+                incident.UpdateStatus(status);
+                if (status != "Pending")
+                    incident.Approve(manager.Id);
+                _context.TreeIncidents.Add(incident);
             }
             await _context.SaveChangesAsync();
         }
     }
 
-    private async Task<ApplicationUser> GetOrCreateAdminUser()
+    private async Task<ApplicationUser> EnsureUser(string email, string password, string fullName, string role)
     {
-        var admin = await _userManager.FindByEmailAsync("administrator@localhost");
-        if (admin == null)
+        var user = await _userManager.FindByEmailAsync(email);
+        if (user == null)
         {
-            admin = new ApplicationUser
-            {
-                UserName = "administrator@localhost",
-                Email = "administrator@localhost",
-                FullName = "Nguyễn Văn Admin"
-            };
-
-            await _userManager.CreateAsync(admin, "Administrator1!");
-            var adminRole = new IdentityRole(Roles.Administrator);
-            if (!await _roleManager.RoleExistsAsync(Roles.Administrator))
-                await _roleManager.CreateAsync(adminRole);
-
-            await _userManager.AddToRoleAsync(admin, Roles.Administrator);
+            user = new ApplicationUser { UserName = email, Email = email, FullName = fullName };
+            await _userManager.CreateAsync(user, password);
         }
-        return admin;
+        if (!await _userManager.IsInRoleAsync(user, role))
+            await _userManager.AddToRoleAsync(user, role);
+        return user;
     }
 }

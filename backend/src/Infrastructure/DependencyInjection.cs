@@ -5,6 +5,7 @@ using backend.Infrastructure.Data.Interceptors;
 using backend.Infrastructure.Files;
 using backend.Infrastructure.Identity;
 using backend.Infrastructure.Services;
+using backend.Infrastructure.Storage;
 using Hangfire;
 using Hangfire.PostgreSql;
 using Microsoft.AspNetCore.Identity;
@@ -20,8 +21,7 @@ public static class DependencyInjection
 {
     public static void AddInfrastructureServices(this IHostApplicationBuilder builder)
     {
-        var connectionString = builder.Configuration.GetConnectionString("backendDb");
-        Guard.Against.Null(connectionString, message: "Connection string 'backendDb' not found.");
+        var connectionString = builder.Configuration.GetConnectionString("QLCayXanhDb");
 
         builder.Services.AddScoped<ISaveChangesInterceptor, AuditableEntityInterceptor>();
         builder.Services.AddScoped<ISaveChangesInterceptor, DispatchDomainEventsInterceptor>();
@@ -29,14 +29,16 @@ public static class DependencyInjection
         builder.Services.AddDbContext<ApplicationDbContext>((sp, options) =>
         {
             options.AddInterceptors(sp.GetServices<ISaveChangesInterceptor>());
-            options.UseNpgsql(connectionString);
+            if (!string.IsNullOrEmpty(connectionString))
+                options.UseNpgsql(connectionString);
             options.ConfigureWarnings(warnings => warnings.Ignore(RelationalEventId.PendingModelChangesWarning));
         });
 
-        builder.EnrichNpgsqlDbContext<ApplicationDbContext>();
+        // Let Aspire enrich the DbContext with health checks, tracing, etc.
+        if (!string.IsNullOrEmpty(connectionString))
+            builder.EnrichNpgsqlDbContext<ApplicationDbContext>();
 
         builder.Services.AddScoped<IApplicationDbContext>(provider => provider.GetRequiredService<ApplicationDbContext>());
-
         builder.Services.AddScoped<ApplicationDbContextInitialiser>();
 
         builder.Services.AddAuthentication()
@@ -56,28 +58,34 @@ public static class DependencyInjection
         builder.Services.AddAuthorization(options =>
             options.AddPolicy(Policies.CanPurge, policy => policy.RequireRole(Roles.Administrator)));
 
-        // Add Redis configuration (optional)
-        var redisConnectionString = builder.Configuration.GetConnectionString("Redis");
+        // Redis — optional, only when connection string is available
+        var redisConnectionString = builder.Configuration.GetConnectionString("cache");
         if (!string.IsNullOrEmpty(redisConnectionString))
         {
-            builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
+            builder.Services.AddSingleton<IConnectionMultiplexer>(_ =>
                 ConnectionMultiplexer.Connect(redisConnectionString));
             builder.Services.AddSingleton<RedisCacheService>();
             builder.Services.AddSingleton<IRedisCacheService>(sp => sp.GetRequiredService<RedisCacheService>());
             builder.Services.AddSingleton<ICacheService>(sp => sp.GetRequiredService<RedisCacheService>());
         }
+        else
+        {
+            builder.Services.AddSingleton<ICacheService, NullCacheService>();
+        }
 
         builder.Services.AddTransient<IExcelService, ExcelService>();
-
-        // Maintenance job service
         builder.Services.AddScoped<IMaintenanceJobService, MaintenanceJobService>();
+        builder.Services.AddScoped<IFileService, FileService>();
 
-        // Hangfire
-        builder.Services.AddHangfire(config => config
-            .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
-            .UseSimpleAssemblyNameTypeSerializer()
-            .UseRecommendedSerializerSettings()
-            .UsePostgreSqlStorage(c => c.UseNpgsqlConnection(connectionString)));
-        builder.Services.AddHangfireServer();
+        // Hangfire — only configure when connection string is available
+        if (!string.IsNullOrEmpty(connectionString))
+        {
+            builder.Services.AddHangfire(config => config
+                .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+                .UseSimpleAssemblyNameTypeSerializer()
+                .UseRecommendedSerializerSettings()
+                .UsePostgreSqlStorage(c => c.UseNpgsqlConnection(connectionString)));
+            builder.Services.AddHangfireServer();
+        }
     }
 }

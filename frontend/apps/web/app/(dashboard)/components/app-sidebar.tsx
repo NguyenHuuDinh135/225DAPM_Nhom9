@@ -39,10 +39,11 @@ import {
   CollapsibleTrigger,
 } from "@workspace/ui/components/collapsible"
 import { NavUser } from "@/components/nav-user"
+import { useAuth } from "@/hooks/use-auth"
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type Role = "staff" | "team_leader" | "director" | "admin"
+type Role = "Administrator" | "Manager" | "Employee"
 
 interface NavItem {
   title: string
@@ -58,7 +59,7 @@ interface NavItem {
 const NAV_MAIN: NavItem[] = [
   {
     title: "Overview",
-    url: "/overview",
+    url: "/dashboard",
     icon: <LayoutDashboardIcon className="size-4" />,
   },
   {
@@ -79,7 +80,7 @@ const NAV_MAIN: NavItem[] = [
     title: "Plans",
     url: "/plans",
     icon: <ClipboardListIcon className="size-4" />,
-    roles: ["team_leader", "director", "admin"],
+    roles: ["Manager", "Administrator"],
     items: [
       { title: "All plans", url: "/plans" },
       { title: "Create plan", url: "/plans/new" },
@@ -89,7 +90,7 @@ const NAV_MAIN: NavItem[] = [
     title: "Tasks",
     url: "/tasks",
     icon: <CheckSquareIcon className="size-4" />,
-    roles: ["staff", "team_leader"],
+    roles: ["Employee", "Manager"],
     items: [
       { title: "My tasks", url: "/tasks" },
       { title: "Assign tasks", url: "/tasks/assign" },
@@ -99,20 +100,20 @@ const NAV_MAIN: NavItem[] = [
     title: "Works",
     url: "/works",
     icon: <ClipboardListIcon className="size-4" />,
-    roles: ["staff", "team_leader", "admin"],
+    roles: ["Employee", "Manager", "Administrator"],
     items: [
-      { title: "Danh sách", url: "/works" },
-      { title: "Phân công", url: "/works/1/assign" },
-      { title: "Tiến độ", url: "/works/1/progress" },
+      { title: "All works", url: "/works" },
+      { title: "Assign work", url: "/works/1/assign" },
+      { title: "Progress", url: "/works/1/progress" },
     ],
   },
   {
     title: "Incidents",
     url: "/incidents",
     icon: <TriangleAlertIcon className="size-4" />,
-    roles: ["staff", "team_leader", "admin"],
+    roles: ["Employee", "Manager", "Administrator"],
     items: [
-      { title: "Incident list", url: "/incidents" },
+      { title: "All incidents", url: "/incidents" },
       { title: "Report incident", url: "/incidents/report" },
     ],
   },
@@ -120,13 +121,13 @@ const NAV_MAIN: NavItem[] = [
     title: "Replacements",
     url: "/replacements",
     icon: <ArrowLeftRightIcon className="size-4" />,
-    roles: ["team_leader", "admin"],
+    roles: ["Manager", "Administrator"],
   },
   {
     title: "Staff",
     url: "/staff",
     icon: <UsersIcon className="size-4" />,
-    roles: ["team_leader", "admin"],
+    roles: ["Manager", "Administrator"],
   },
 ]
 
@@ -135,13 +136,13 @@ const NAV_REPORTING: NavItem[] = [
     title: "Analytics",
     url: "/analytics",
     icon: <BarChart3Icon className="size-4" />,
-    roles: ["director", "admin"],
+    roles: ["Administrator"],
   },
   {
     title: "Reports",
     url: "/reports",
     icon: <FileTextIcon className="size-4" />,
-    roles: ["team_leader", "director", "admin"],
+    roles: ["Manager", "Administrator"],
   },
 ]
 
@@ -155,18 +156,9 @@ const NAV_SETTINGS: NavItem[] = [
     title: "Admin panel",
     url: "/settings/admin",
     icon: <ShieldIcon className="size-4" />,
-    roles: ["admin"],
+    roles: ["Administrator"],
   },
 ]
-
-// ─── Mock user — replace with real session / auth context ─────────────────────
-
-const MOCK_USER = {
-  name: "Nguyễn Hữu Định",
-  email: "dinh@cayxanh.danang.gov.vn",
-  avatar: "",
-  role: "team_leader" as Role,
-}
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -198,7 +190,7 @@ function NavGroup({
         {visible.map((item) => {
           const isActive =
             pathname === item.url ||
-            (item.url !== "/overview" && pathname.startsWith(item.url))
+            (item.url !== "/dashboard" && pathname.startsWith(item.url))
 
           // Flat item — no sub-menu
           if (!item.items || item.items.length === 0) {
@@ -254,8 +246,8 @@ function NavGroup({
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const pathname = usePathname()
-  // TODO: replace MOCK_USER.role with real session role, e.g. useSession() or an auth context
-  const role = MOCK_USER.role
+  const { user } = useAuth()
+  const role = (user?.role ?? "Employee") as Role
 
   return (
     <Sidebar collapsible="icon" {...props}>
@@ -264,7 +256,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
-              <Link href="/overview">
+              <Link href="/dashboard">
                 <div className="flex size-8 items-center justify-center rounded-md bg-green-600 text-white">
                   <TreePineIcon className="size-4" />
                 </div>
@@ -289,7 +281,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
       {/* Footer — user info + dropdown */}
       <SidebarFooter>
-        <NavUser user={MOCK_USER} />
+        <NavUser user={{
+          name: user?.name ?? user?.email ?? "User",
+          email: user?.email ?? "",
+          avatar: "",
+          role: user?.role,
+        }} />
       </SidebarFooter>
     </Sidebar>
   )

@@ -3,7 +3,6 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { apiClient } from "@/lib/api-client";
-import { jwtDecode } from "jwt-decode";
 
 export interface User {
   id: string;
@@ -21,8 +20,10 @@ interface AuthState {
 }
 
 interface LoginResponse {
-  token: string;
-  user: User;
+  accessToken: string;
+  tokenType: string;
+  expiresIn: number;
+  refreshToken: string;
 }
 
 const AuthContext = createContext<AuthState | null>(null);
@@ -42,19 +43,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   async function login(email: string, password: string) {
-    const res = await apiClient.post<LoginResponse>("/api/identity/login", {
+    const res = await apiClient.post<LoginResponse>("/api/Users/login?useCookies=false&useSessionCookies=false", {
       email,
       password,
     });
-    localStorage.setItem("access_token", res.token);
-    localStorage.setItem("user", JSON.stringify(res.user));
-    const decoded = jwtDecode<{ sub?: string; nameid?: string }>(res.token);
-    const userId = decoded.sub ?? decoded.nameid ?? "";
-    localStorage.setItem("user_id", userId);
-    document.cookie = `access_token=${res.token}; path=/; SameSite=Lax`;
-    setToken(res.token);
-    setUser(res.user);
-    router.push("/dashboard");
+    localStorage.setItem("access_token", res.accessToken);
+    document.cookie = `access_token=${res.accessToken}; path=/; SameSite=Lax`;
+    setToken(res.accessToken);
+
+    const userInfo = await apiClient.get<User>("/api/Users/me");
+    localStorage.setItem("user_id", userInfo.id);
+    localStorage.setItem("user", JSON.stringify(userInfo));
+    setUser(userInfo);
+
+    router.push("/overview");
   }
 
   function logout() {

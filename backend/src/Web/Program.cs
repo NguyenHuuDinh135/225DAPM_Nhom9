@@ -17,15 +17,20 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    await app.InitialiseDatabaseAsync();
-    app.UseHangfireDashboard("/hangfire");
+    if (app.Configuration.GetConnectionString("QLCayXanhDb") is not null)
+    {
+        await app.InitialiseDatabaseAsync();
+        app.UseHangfireDashboard("/hangfire");
+    }
 }
 else
 {
     app.UseHsts();
 }
 
-app.UseHttpsRedirection();
+app.UseCors();
+if (!app.Environment.IsDevelopment())
+    app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseSwaggerUi(settings =>
@@ -42,10 +47,13 @@ app.MapDefaultEndpoints();
 app.MapEndpoints();
 app.MapHub<IncidentHub>("/hubs/incidents");
 
-RecurringJob.AddOrUpdate<IMaintenanceJobService>(
-    "tree-maintenance",
-    svc => svc.CheckAndGenerateMaintenanceWorkAsync(CancellationToken.None),
-    Cron.Daily);
+if (app.Configuration.GetConnectionString("QLCayXanhDb") is not null)
+{
+    RecurringJob.AddOrUpdate<IMaintenanceJobService>(
+        "tree-maintenance",
+        svc => svc.CheckAndGenerateMaintenanceWorkAsync(CancellationToken.None),
+        Cron.Daily);
+}
 
 app.Run();
 
