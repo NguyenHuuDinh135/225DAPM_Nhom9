@@ -2,17 +2,14 @@
 
 import * as React from "react"
 import { Button } from "@workspace/ui/components/button"
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@workspace/ui/components/dialog"
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@workspace/ui/components/dialog"
 import { Input } from "@workspace/ui/components/input"
 import { Label } from "@workspace/ui/components/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@workspace/ui/components/select"
 import { apiClient } from "@/lib/api-client"
 import { type Tree, treeFormSchema, type TreeFormValues } from "../data/schema"
+
+interface TreeType { id: number; name: string | null; group: string | null }
 
 interface TreeFormDialogProps {
   open: boolean
@@ -27,6 +24,11 @@ export function TreeFormDialog({ open, onOpenChange, tree, onSuccess }: TreeForm
   const [values, setValues] = React.useState<TreeFormValues>(EMPTY)
   const [errors, setErrors] = React.useState<Partial<Record<keyof TreeFormValues, string>>>({})
   const [loading, setLoading] = React.useState(false)
+  const [treeTypes, setTreeTypes] = React.useState<TreeType[]>([])
+
+  React.useEffect(() => {
+    apiClient.get<TreeType[]>("/api/lookups/tree-types").then(setTreeTypes).catch(() => {})
+  }, [])
 
   React.useEffect(() => {
     if (open) {
@@ -62,7 +64,6 @@ export function TreeFormDialog({ open, onOpenChange, tree, onSuccess }: TreeForm
       onSuccess()
       onOpenChange(false)
     } catch {
-      // errors handled by apiClient
     } finally {
       setLoading(false)
     }
@@ -81,19 +82,25 @@ export function TreeFormDialog({ open, onOpenChange, tree, onSuccess }: TreeForm
             {errors.name && <p className="text-xs text-destructive">{errors.name}</p>}
           </div>
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="treeTypeId">ID Loại cây</Label>
-            <Input
-              id="treeTypeId"
-              type="number"
-              min={1}
-              value={values.treeTypeId || ""}
-              onChange={(e) => set("treeTypeId", e.target.value)}
-            />
+            <Label>Loại cây</Label>
+            <Select
+              value={values.treeTypeId ? String(values.treeTypeId) : ""}
+              onValueChange={(v) => set("treeTypeId", v)}
+            >
+              <SelectTrigger><SelectValue placeholder="Chọn loại cây..." /></SelectTrigger>
+              <SelectContent>
+                {treeTypes.map((t) => (
+                  <SelectItem key={t.id} value={String(t.id)}>
+                    {t.name ?? `#${t.id}`}{t.group ? ` (${t.group})` : ""}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             {errors.treeTypeId && <p className="text-xs text-destructive">{errors.treeTypeId}</p>}
           </div>
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="condition">Tình trạng</Label>
-            <Input id="condition" value={values.condition ?? ""} onChange={(e) => set("condition", e.target.value)} placeholder="Good / Fair / Poor" />
+            <Input id="condition" value={values.condition ?? ""} onChange={(e) => set("condition", e.target.value)} placeholder="Bình thường / Cần cắt tỉa / Sâu bệnh" />
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Hủy</Button>

@@ -90,7 +90,7 @@ export function CardsActivityGoal() {
             disabled={goal <= 200}
           >
             <MinusIcon />
-            <span className="sr-only">Decrease</span>
+            <span className="sr-only">Giảm</span>
           </Button>
           <div className="text-center">
             <div className="text-4xl font-bold tracking-tighter tabular-nums">
@@ -108,7 +108,7 @@ export function CardsActivityGoal() {
             disabled={goal >= 400}
           >
             <PlusIcon />
-            <span className="sr-only">Increase</span>
+            <span className="sr-only">Tăng</span>
           </Button>
         </div>
         <div className="flex-1">

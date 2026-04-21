@@ -1,32 +1,52 @@
 using backend.Application.Common.Interfaces;
-
-using backend.Application.Common.Interfaces;
 using backend.Application.Common.Models;
+using backend.Domain.Enums;
 
 namespace backend.Application.Employees.Commands.ManageEmployees;
 
-public record ManageEmployeesCommand : IRequest<IStatusResult>
-{
-}
+public record CreateEmployeeCommand(string Email, string Password, string FullName, string Role) : IRequest<IStatusResult>;
 
-public class ManageEmployeesCommandValidator : AbstractValidator<ManageEmployeesCommand>
+public class CreateEmployeeCommandHandler : IRequestHandler<CreateEmployeeCommand, IStatusResult>
 {
-    public ManageEmployeesCommandValidator()
+    private readonly IIdentityService _identityService;
+    public CreateEmployeeCommandHandler(IIdentityService identityService) => _identityService = identityService;
+
+    public async Task<IStatusResult> Handle(CreateEmployeeCommand request, CancellationToken cancellationToken)
     {
+        var (result, _) = await _identityService.CreateEmployeeAsync(request.Email, request.Password, request.FullName, request.Role);
+        return result.Succeeded ? StatusResult.Success() : StatusResult.Failure(result.Errors);
     }
 }
 
-public class ManageEmployeesCommandHandler : IRequestHandler<ManageEmployeesCommand, IStatusResult>
+public record UpdateEmployeeCommand : IRequest<IStatusResult>
 {
-    private readonly IApplicationDbContext _context;
+    public string UserId { get; init; } = string.Empty;
+    public string? FullName { get; init; }
+    public UserStatus? Status { get; init; }
+}
 
-    public ManageEmployeesCommandHandler(IApplicationDbContext context)
+public class UpdateEmployeeCommandHandler : IRequestHandler<UpdateEmployeeCommand, IStatusResult>
+{
+    private readonly IIdentityService _identityService;
+    public UpdateEmployeeCommandHandler(IIdentityService identityService) => _identityService = identityService;
+
+    public async Task<IStatusResult> Handle(UpdateEmployeeCommand request, CancellationToken cancellationToken)
     {
-        _context = context;
+        var result = await _identityService.UpdateEmployeeAsync(request.UserId, request.FullName, request.Status);
+        return result.Succeeded ? StatusResult.Success() : StatusResult.Failure(result.Errors);
     }
+}
 
-    public async Task<IStatusResult> Handle(ManageEmployeesCommand request, CancellationToken cancellationToken)
+public record DeleteEmployeeCommand(string UserId) : IRequest<IStatusResult>;
+
+public class DeleteEmployeeCommandHandler : IRequestHandler<DeleteEmployeeCommand, IStatusResult>
+{
+    private readonly IIdentityService _identityService;
+    public DeleteEmployeeCommandHandler(IIdentityService identityService) => _identityService = identityService;
+
+    public async Task<IStatusResult> Handle(DeleteEmployeeCommand request, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        var result = await _identityService.DeleteUserAsync(request.UserId);
+        return result.Succeeded ? StatusResult.Success() : StatusResult.Failure(result.Errors);
     }
 }

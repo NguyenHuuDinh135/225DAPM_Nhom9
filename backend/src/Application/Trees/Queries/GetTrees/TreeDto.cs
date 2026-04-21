@@ -6,5 +6,6 @@ public class TreeDto
     public string? Name { get; set; }
     public string? Condition { get; set; }
     public int TreeTypeId { get; set; }
+    public string? TreeTypeName { get; set; }
     public DateTime? LastMaintenanceDate { get; set; }
 }

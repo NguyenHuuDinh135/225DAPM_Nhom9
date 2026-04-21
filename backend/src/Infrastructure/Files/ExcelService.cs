@@ -10,7 +10,6 @@ public class ExcelService : IExcelService
     {
         using var wb = new XLWorkbook();
 
-        // Sheet 1: Tổng quan
         var ws1 = wb.AddWorksheet("Tổng quan");
         ws1.Cell(1, 1).Value = "Chỉ số";
         ws1.Cell(1, 2).Value = "Giá trị";
@@ -23,7 +22,6 @@ public class ExcelService : IExcelService
         ws1.Cell(5, 1).Value = "Công việc đang chờ trong tháng";
         ws1.Cell(5, 2).Value = stats.PendingWorksThisMonth;
 
-        // Sheet 2: Công việc quá hạn
         var ws2 = wb.AddWorksheet("Công việc quá hạn");
         ws2.Cell(1, 1).Value = "ID";
         ws2.Cell(1, 2).Value = "Loại công việc";
@@ -42,4 +40,32 @@ public class ExcelService : IExcelService
         wb.SaveAs(ms);
         return Task.FromResult(ms.ToArray());
     }
+
+    // Expected columns: TreeTypeId | Name | Condition | Height | TrunkDiameter
+    public List<TreeImportRow> ParseTreeImport(Stream stream)
+    {
+        using var wb = new XLWorkbook(stream);
+        var ws = wb.Worksheets.First();
+        var rows = new List<TreeImportRow>();
+
+        foreach (var row in ws.RowsUsed().Skip(1))
+        {
+            if (!row.Cell(1).TryGetValue<int>(out var treeTypeId) || treeTypeId == 0) continue;
+
+            rows.Add(new TreeImportRow(
+                TreeTypeId: treeTypeId,
+                Name: row.Cell(2).GetString().NullIfEmpty(),
+                Condition: row.Cell(3).GetString().NullIfEmpty(),
+                Height: row.Cell(4).TryGetValue<decimal>(out var h) ? h : null,
+                TrunkDiameter: row.Cell(5).TryGetValue<decimal>(out var d) ? d : null
+            ));
+        }
+
+        return rows;
+    }
+}
+
+file static class StringExtensions
+{
+    public static string? NullIfEmpty(this string? s) => string.IsNullOrWhiteSpace(s) ? null : s;
 }

@@ -19,17 +19,17 @@ export const metadata: Metadata = {
   },
   // metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL!),
   description: siteConfig.description,
-  keywords: ["Next.js", "React", "Tailwind CSS", "Components", "shadcn"],
+  keywords: ["Cây xanh", "Đà Nẵng", "Quản lý đô thị", "Hệ thống cây xanh"],
   authors: [
     {
-      name: "shadcn",
-      url: "https://shadcn.com",
+      name: "Nhóm 9",
+      url: "",
     },
   ],
-  creator: "shadcn",
+  creator: "Nhóm 9",
   openGraph: {
     type: "website",
-    locale: "en_US",
+    locale: "vi_VN",
     url: process.env.NEXT_PUBLIC_APP_URL!,
     title: siteConfig.name,
     description: siteConfig.description,
@@ -69,7 +69,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="vi" suppressHydrationWarning>
       <head>
         <script
           dangerouslySetInnerHTML={{

@@ -5,36 +5,17 @@ import { notFound } from "next/navigation"
 import { ArrowLeftIcon } from "lucide-react"
 import { Badge } from "@workspace/ui/components/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@workspace/ui/components/card"
-import { Separator } from "@workspace/ui/components/separator"
 import { Skeleton } from "@workspace/ui/components/skeleton"
+import { ApproveWorkItem } from "../components/approve-work-item"
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080"
 
-interface WorkProgress {
-  id: number
-  updaterId: string
-  note: string | null
-  updatedDate: string | null
-  images: string[]
-}
-
-interface WorkUser {
-  userId: string
-  role: string | null
-  status: string | null
-}
-
+interface WorkProgress { id: number; updaterId: string; note: string | null; updatedDate: string | null; images: string[] }
+interface WorkUser { userId: string; role: string | null; status: string | null }
 interface WorkDetail {
-  id: number
-  workTypeName: string | null
-  planName: string | null
-  creatorId: string
-  startDate: string | null
-  endDate: string | null
-  status: number
-  rejectionFeedback: string | null
-  progresses: WorkProgress[]
-  users: WorkUser[]
+  id: number; workTypeName: string | null; planName: string | null; creatorId: string
+  startDate: string | null; endDate: string | null; status: number; rejectionFeedback: string | null
+  progresses: WorkProgress[]; users: WorkUser[]
 }
 
 async function fetchWork(id: string): Promise<WorkDetail | null> {
@@ -69,16 +50,14 @@ function Row({ label, value }: { label: string; value: React.ReactNode }) {
 async function WorkDetailContent({ id }: { id: string }) {
   const work = await fetchWork(id)
   if (!work) notFound()
-
   const statusInfo = STATUS_MAP[work.status] ?? { label: String(work.status), className: "bg-muted text-muted-foreground" }
 
   return (
     <div className="flex flex-col gap-4">
-      {/* Info */}
       <Card>
         <CardHeader>
           <div className="flex items-start justify-between gap-4">
-            <CardTitle className="text-base">{work.workTypeName ?? `Công việc #${work.id}`}</CardTitle>
+            <CardTitle className="text-base">{work.workTypeName ?? `#${work.id}`}</CardTitle>
             <Badge className={statusInfo.className}>{statusInfo.label}</Badge>
           </div>
         </CardHeader>
@@ -93,8 +72,9 @@ async function WorkDetailContent({ id }: { id: string }) {
         </CardContent>
       </Card>
 
+      {work.status === 2 && <ApproveWorkItem workId={work.id} />}
+
       <div className="grid gap-4 md:grid-cols-2">
-        {/* Users */}
         <Card>
           <CardHeader><CardTitle className="text-base">Nhân viên phân công ({work.users.length})</CardTitle></CardHeader>
           <CardContent>
@@ -116,7 +96,6 @@ async function WorkDetailContent({ id }: { id: string }) {
           </CardContent>
         </Card>
 
-        {/* Progress */}
         <Card>
           <CardHeader><CardTitle className="text-base">Lịch sử tiến độ ({work.progresses.length})</CardTitle></CardHeader>
           <CardContent>
@@ -178,12 +157,8 @@ function WorkDetailSkeleton() {
   )
 }
 
-async function WorkDetailContentWrapper({ params }: { params: Promise<{ id: string }> }) {
+export default async function TaskDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  return <WorkDetailContent id={id} />
-}
-
-export default function TaskDetailPage({ params }: { params: Promise<{ id: string }> }) {
   return (
     <div className="flex flex-1 flex-col gap-4 p-4 md:p-6 min-w-0">
       <div className="flex items-center gap-3">
@@ -193,7 +168,7 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
         <h1 className="text-xl font-semibold md:text-2xl">Chi tiết công việc</h1>
       </div>
       <Suspense fallback={<WorkDetailSkeleton />}>
-        <WorkDetailContentWrapper params={params} />
+        <WorkDetailContent id={id} />
       </Suspense>
     </div>
   )

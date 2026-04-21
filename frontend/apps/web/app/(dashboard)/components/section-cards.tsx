@@ -1,12 +1,5 @@
 import { Badge } from "@workspace/ui/components/badge"
-import {
-  Card,
-  CardAction,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@workspace/ui/components/card"
+import { Card, CardAction, CardDescription, CardFooter, CardHeader, CardTitle } from "@workspace/ui/components/card"
 import { Skeleton } from "@workspace/ui/components/skeleton"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { ChartUpIcon, ChartDownIcon, Tree01Icon, AlertCircleIcon, CheckmarkCircle01Icon, Clock01Icon } from "@hugeicons/core-free-icons"
@@ -20,34 +13,10 @@ export interface DashboardStats {
 
 export function SectionCards({ stats }: { stats: DashboardStats }) {
   const cards = [
-    {
-      label: "Tổng số cây xanh",
-      value: stats.totalTrees,
-      icon: Tree01Icon,
-      footer: "Toàn bộ cây trong hệ thống",
-      trend: "up" as const,
-    },
-    {
-      label: "Sự cố chờ xử lý",
-      value: stats.pendingIncidents,
-      icon: AlertCircleIcon,
-      footer: "Cần được xử lý sớm",
-      trend: "down" as const,
-    },
-    {
-      label: "Công việc hoàn thành",
-      value: stats.completedWorksThisMonth,
-      icon: CheckmarkCircle01Icon,
-      footer: "Trong tháng này",
-      trend: "up" as const,
-    },
-    {
-      label: "Công việc đang chờ",
-      value: stats.pendingWorksThisMonth,
-      icon: Clock01Icon,
-      footer: "Trong tháng này",
-      trend: "down" as const,
-    },
+    { label: "Tổng số cây xanh", value: stats.totalTrees, icon: Tree01Icon, footer: "Toàn bộ cây trong hệ thống", trend: "up" as const },
+    { label: "Sự cố chờ xử lý", value: stats.pendingIncidents, icon: AlertCircleIcon, footer: "Cần được xử lý sớm", trend: "down" as const },
+    { label: "Công việc hoàn thành", value: stats.completedWorksThisMonth, icon: CheckmarkCircle01Icon, footer: "Trong tháng này", trend: "up" as const },
+    { label: "Công việc đang chờ", value: stats.pendingWorksThisMonth, icon: Clock01Icon, footer: "Trong tháng này", trend: "down" as const },
   ]
 
   return (

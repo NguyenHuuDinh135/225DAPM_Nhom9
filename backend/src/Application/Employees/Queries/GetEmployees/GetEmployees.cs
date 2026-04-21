@@ -1,30 +1,28 @@
 using backend.Application.Common.Interfaces;
-using backend.Application.Employees.Queries.GetEmployees;
 
 namespace backend.Application.Employees.Queries.GetEmployees;
 
-public record GetEmployeesQuery : IRequest<EmployeesVm>
-{
-}
-
-public class GetEmployeesQueryValidator : AbstractValidator<GetEmployeesQuery>
-{
-    public GetEmployeesQueryValidator()
-    {
-    }
-}
+public record GetEmployeesQuery : IRequest<EmployeesVm>;
 
 public class GetEmployeesQueryHandler : IRequestHandler<GetEmployeesQuery, EmployeesVm>
 {
-    private readonly IApplicationDbContext _context;
-
-    public GetEmployeesQueryHandler(IApplicationDbContext context)
-    {
-        _context = context;
-    }
+    private readonly IIdentityService _identityService;
+    public GetEmployeesQueryHandler(IIdentityService identityService) => _identityService = identityService;
 
     public async Task<EmployeesVm> Handle(GetEmployeesQuery request, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        var users = await _identityService.GetUsersAsync();
+        return new EmployeesVm
+        {
+            Employees = users.Select(u => new EmployeeDto
+            {
+                Id = u.Id,
+                UserName = u.UserName,
+                Email = u.Email,
+                FullName = u.FullName,
+                Status = u.Status,
+                Role = u.Role
+            }).ToList()
+        };
     }
 }

@@ -11,6 +11,7 @@ public record ReportWorkProgressCommand : IRequest<IStatusResult>
     public List<IFormFile> Images { get; init; } = [];
     public string? Note { get; init; }
     public string UpdaterId { get; init; } = string.Empty;
+    public int? Percentage { get; init; }
 }
 
 public class ReportWorkProgressCommandHandler : IRequestHandler<ReportWorkProgressCommand, IStatusResult>
@@ -35,6 +36,7 @@ public class ReportWorkProgressCommandHandler : IRequestHandler<ReportWorkProgre
             WorkId = work.Id,
             UpdaterId = request.UpdaterId,
             Note = request.Note,
+            Percentage = request.Percentage,
             UpdatedDate = DateTime.UtcNow
         };
 

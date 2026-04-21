@@ -1,5 +1,6 @@
 using backend.Application.Common.Interfaces;
 using backend.Application.Common.Models;
+using backend.Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -23,59 +24,86 @@ public class IdentityService : IIdentityService
     }
 
     public async Task<string?> GetUserNameAsync(string userId)
-    {
-        var user = await _userManager.FindByIdAsync(userId);
-
-        return user?.UserName;
-    }
+        => (await _userManager.FindByIdAsync(userId))?.UserName;
 
     public async Task<(Result Result, string UserId)> CreateUserAsync(string userName, string password)
     {
-        var user = new ApplicationUser
-        {
-            UserName = userName,
-            Email = userName,
-        };
-
+        var user = new ApplicationUser { UserName = userName, Email = userName };
         var result = await _userManager.CreateAsync(user, password);
-
         return (result.ToApplicationResult(), user.Id);
     }
 
     public async Task<bool> IsInRoleAsync(string userId, string role)
     {
         var user = await _userManager.FindByIdAsync(userId);
-
         return user != null && await _userManager.IsInRoleAsync(user, role);
     }
 
     public async Task<bool> AuthorizeAsync(string userId, string policyName)
     {
         var user = await _userManager.FindByIdAsync(userId);
-
-        if (user == null)
-        {
-            return false;
-        }
-
+        if (user == null) return false;
         var principal = await _userClaimsPrincipalFactory.CreateAsync(user);
-
         var result = await _authorizationService.AuthorizeAsync(principal, policyName);
-
         return result.Succeeded;
     }
 
     public async Task<Result> DeleteUserAsync(string userId)
     {
         var user = await _userManager.FindByIdAsync(userId);
-
-        return user != null ? await DeleteUserAsync(user) : Result.Success();
+        return user != null ? (await _userManager.DeleteAsync(user)).ToApplicationResult() : Result.Success();
     }
 
-    public async Task<Result> DeleteUserAsync(ApplicationUser user)
+    public async Task<List<UserDto>> GetUsersAsync()
     {
-        var result = await _userManager.DeleteAsync(user);
+        var users = await _userManager.Users.ToListAsync();
+        var dtos = new List<UserDto>();
+        foreach (var user in users)
+        {
+            var roles = await _userManager.GetRolesAsync(user);
+            dtos.Add(new UserDto
+            {
+                Id = user.Id,
+                UserName = user.UserName,
+                Email = user.Email,
+                FullName = user.FullName,
+                Status = user.Status,
+                Role = roles.FirstOrDefault()
+            });
+        }
+        return dtos;
+    }
 
-        return result.ToApplicationResult();
+    public async Task<(Result Result, string UserId)> CreateEmployeeAsync(string email, string password, string fullName, string role)
+    {
+        var user = new ApplicationUser
+        {
+            UserName = email,
+            Email = email,
+            FullName = fullName,
+            Status = UserStatus.Active
+        };
+        var result = await _userManager.CreateAsync(user, password);
+        if (!result.Succeeded) return (result.ToApplicationResult(), string.Empty);
+        await _userManager.AddToRoleAsync(user, role);
+        return (Result.Success(), user.Id);
+    }
+
+    public async Task<Result> UpdateEmployeeAsync(string userId, string? fullName, UserStatus? status)
+    {
+        var user = await _userManager.FindByIdAsync(userId);
+        if (user == null) return Result.Failure(["User not found."]);
+        if (fullName != null) user.FullName = fullName;
+        if (status.HasValue) user.Status = status.Value;
+        return (await _userManager.UpdateAsync(user)).ToApplicationResult();
+    }
+
+    public async Task<Result> AssignRoleAsync(string userId, string role)
+    {
+        var user = await _userManager.FindByIdAsync(userId);
+        if (user == null) return Result.Failure(["User not found."]);
+        var currentRoles = await _userManager.GetRolesAsync(user);
+        await _userManager.RemoveFromRolesAsync(user, currentRoles);
+        return (await _userManager.AddToRoleAsync(user, role)).ToApplicationResult();
     }
 }

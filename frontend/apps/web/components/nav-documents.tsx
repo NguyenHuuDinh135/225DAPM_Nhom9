@@ -49,7 +49,7 @@ export function NavDocuments({
                   className="rounded-sm data-[state=open]:bg-accent"
                 >
                   <HugeiconsIcon icon={MoreHorizontalCircle01Icon} strokeWidth={2} />
-                  <span className="sr-only">More</span>
+                  <span className="sr-only">Thêm</span>
                 </SidebarMenuAction>
               </DropdownMenuTrigger>
               <DropdownMenuContent

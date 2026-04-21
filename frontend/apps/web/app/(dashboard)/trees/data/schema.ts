@@ -5,6 +5,7 @@ export const treeSchema = z.object({
   name: z.string().nullable(),
   condition: z.string().nullable(),
   treeTypeId: z.number(),
+  treeTypeName: z.string().nullable().optional(),
   lastMaintenanceDate: z.string().nullable(),
 })
 

@@ -38,7 +38,7 @@ export function NavMain({
               variant="outline"
             >
               <HugeiconsIcon icon={Mail01Icon} strokeWidth={2} />
-              <span className="sr-only">Inbox</span>
+              <span className="sr-only">Hộp thư</span>
             </Button>
           </SidebarMenuItem>
         </SidebarMenu>

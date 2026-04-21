@@ -4,44 +4,18 @@ import * as React from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import {
-  LayoutDashboardIcon,
-  TreePineIcon,
-  MapIcon,
-  ClipboardListIcon,
-  CheckSquareIcon,
-  TriangleAlertIcon,
-  ArrowLeftRightIcon,
-  UsersIcon,
-  BarChart3Icon,
-  FileTextIcon,
-  SettingsIcon,
-  ShieldIcon,
-  ChevronRightIcon,
+  LayoutDashboardIcon, TreePineIcon, MapIcon, ClipboardListIcon, CheckSquareIcon,
+  TriangleAlertIcon, ArrowLeftRightIcon, UsersIcon, BarChart3Icon, FileTextIcon,
+  SettingsIcon, ShieldIcon, ChevronRightIcon,
 } from "lucide-react"
-
 import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarHeader,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarGroup,
-  SidebarGroupLabel,
-  SidebarMenuSub,
-  SidebarMenuSubButton,
-  SidebarMenuSubItem,
+  Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu,
+  SidebarMenuButton, SidebarMenuItem, SidebarGroup, SidebarGroupLabel,
+  SidebarMenuSub, SidebarMenuSubButton, SidebarMenuSubItem,
 } from "@workspace/ui/components/sidebar"
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@workspace/ui/components/collapsible"
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@workspace/ui/components/collapsible"
 import { NavUser } from "@/components/nav-user"
 import { useAuth } from "@/hooks/use-auth"
-
-// ─── Types ────────────────────────────────────────────────────────────────────
 
 type Role = "Administrator" | "Manager" | "Employee"
 
@@ -49,137 +23,72 @@ interface NavItem {
   title: string
   url: string
   icon: React.ReactNode
-  /** Roles that can see this item. Omit = visible to all authenticated roles. */
   roles?: Role[]
   items?: { title: string; url: string }[]
 }
 
-// ─── Nav definition ───────────────────────────────────────────────────────────
-
 const NAV_MAIN: NavItem[] = [
+  { title: "Tổng quan", url: "/dashboard", icon: <LayoutDashboardIcon className="size-4" /> },
   {
-    title: "Overview",
-    url: "/dashboard",
-    icon: <LayoutDashboardIcon className="size-4" />,
-  },
-  {
-    title: "Trees",
-    url: "/trees",
-    icon: <TreePineIcon className="size-4" />,
+    title: "Cây xanh", url: "/trees", icon: <TreePineIcon className="size-4" />,
     items: [
-      { title: "All trees", url: "/trees" },
-      { title: "Add tree", url: "/trees/new" },
+      { title: "Tất cả cây", url: "/trees" },
+      { title: "Thêm cây", url: "/trees/new" },
     ],
   },
+  { title: "Bản đồ", url: "/map", icon: <MapIcon className="size-4" /> },
   {
-    title: "Map",
-    url: "/map",
-    icon: <MapIcon className="size-4" />,
-  },
-  {
-    title: "Plans",
-    url: "/plans",
-    icon: <ClipboardListIcon className="size-4" />,
+    title: "Kế hoạch", url: "/plans", icon: <ClipboardListIcon className="size-4" />,
     roles: ["Manager", "Administrator"],
     items: [
-      { title: "All plans", url: "/plans" },
-      { title: "Create plan", url: "/plans/new" },
+      { title: "Tất cả kế hoạch", url: "/plans" },
+      { title: "Tạo kế hoạch", url: "/plans/new" },
     ],
   },
   {
-    title: "Tasks",
-    url: "/tasks",
-    icon: <CheckSquareIcon className="size-4" />,
+    title: "Công việc", url: "/tasks", icon: <CheckSquareIcon className="size-4" />,
     roles: ["Employee", "Manager"],
     items: [
-      { title: "My tasks", url: "/tasks" },
-      { title: "Assign tasks", url: "/tasks/assign" },
+      { title: "Công việc của tôi", url: "/tasks" },
+      { title: "Phân công", url: "/tasks/assign" },
     ],
   },
   {
-    title: "Works",
-    url: "/works",
-    icon: <ClipboardListIcon className="size-4" />,
+    title: "Công tác", url: "/works", icon: <ClipboardListIcon className="size-4" />,
     roles: ["Employee", "Manager", "Administrator"],
     items: [
-      { title: "All works", url: "/works" },
-      { title: "Assign work", url: "/works/1/assign" },
-      { title: "Progress", url: "/works/1/progress" },
+      { title: "Tất cả công tác", url: "/works" },
+      { title: "Phân công", url: "/works/1/assign" },
+      { title: "Tiến độ", url: "/works/1/progress" },
     ],
   },
   {
-    title: "Incidents",
-    url: "/incidents",
-    icon: <TriangleAlertIcon className="size-4" />,
+    title: "Sự cố", url: "/incidents", icon: <TriangleAlertIcon className="size-4" />,
     roles: ["Employee", "Manager", "Administrator"],
     items: [
-      { title: "All incidents", url: "/incidents" },
-      { title: "Report incident", url: "/incidents/report" },
+      { title: "Tất cả sự cố", url: "/incidents" },
+      { title: "Báo cáo sự cố", url: "/incidents/report" },
     ],
   },
-  {
-    title: "Replacements",
-    url: "/replacements",
-    icon: <ArrowLeftRightIcon className="size-4" />,
-    roles: ["Manager", "Administrator"],
-  },
-  {
-    title: "Staff",
-    url: "/staff",
-    icon: <UsersIcon className="size-4" />,
-    roles: ["Manager", "Administrator"],
-  },
+  { title: "Thay thế", url: "/replacements", icon: <ArrowLeftRightIcon className="size-4" />, roles: ["Manager", "Administrator"] },
+  { title: "Nhân viên", url: "/staff", icon: <UsersIcon className="size-4" />, roles: ["Manager", "Administrator"] },
 ]
 
 const NAV_REPORTING: NavItem[] = [
-  {
-    title: "Analytics",
-    url: "/analytics",
-    icon: <BarChart3Icon className="size-4" />,
-    roles: ["Administrator"],
-  },
-  {
-    title: "Reports",
-    url: "/reports",
-    icon: <FileTextIcon className="size-4" />,
-    roles: ["Manager", "Administrator"],
-  },
+  { title: "Phân tích", url: "/analytics", icon: <BarChart3Icon className="size-4" />, roles: ["Administrator"] },
+  { title: "Báo cáo", url: "/reports", icon: <FileTextIcon className="size-4" />, roles: ["Manager", "Administrator"] },
 ]
 
 const NAV_SETTINGS: NavItem[] = [
-  {
-    title: "Settings",
-    url: "/settings",
-    icon: <SettingsIcon className="size-4" />,
-  },
-  {
-    title: "Admin panel",
-    url: "/settings/admin",
-    icon: <ShieldIcon className="size-4" />,
-    roles: ["Administrator"],
-  },
+  { title: "Cài đặt", url: "/settings", icon: <SettingsIcon className="size-4" /> },
+  { title: "Quản trị", url: "/settings/admin", icon: <ShieldIcon className="size-4" />, roles: ["Administrator"] },
 ]
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
-function isVisible(item: NavItem, role: Role): boolean {
-  if (!item.roles) return true
-  return item.roles.includes(role)
+function isVisible(item: NavItem, role: Role) {
+  return !item.roles || item.roles.includes(role)
 }
 
-// ─── NavGroup — renders a labeled section with flat + collapsible items ───────
-
-function NavGroup({
-  label,
-  items,
-  role,
-  pathname,
-}: {
-  label: string
-  items: NavItem[]
-  role: Role
-  pathname: string
-}) {
+function NavGroup({ label, items, role, pathname }: { label: string; items: NavItem[]; role: Role; pathname: string }) {
   const visible = items.filter((item) => isVisible(item, role))
   if (visible.length === 0) return null
 
@@ -188,37 +97,24 @@ function NavGroup({
       <SidebarGroupLabel>{label}</SidebarGroupLabel>
       <SidebarMenu>
         {visible.map((item) => {
-          const isActive =
-            pathname === item.url ||
-            (item.url !== "/dashboard" && pathname.startsWith(item.url))
+          const isActive = pathname === item.url || (item.url !== "/dashboard" && pathname.startsWith(item.url))
 
-          // Flat item — no sub-menu
-          if (!item.items || item.items.length === 0) {
+          if (!item.items?.length) {
             return (
               <SidebarMenuItem key={item.title}>
                 <SidebarMenuButton asChild isActive={isActive} tooltip={item.title}>
-                  <Link href={item.url}>
-                    {item.icon}
-                    <span>{item.title}</span>
-                  </Link>
+                  <Link href={item.url}>{item.icon}<span>{item.title}</span></Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             )
           }
 
-          // Collapsible item — with sub-menu
           return (
-            <Collapsible
-              key={item.title}
-              asChild
-              defaultOpen={isActive}
-              className="group/collapsible"
-            >
+            <Collapsible key={item.title} asChild defaultOpen={isActive} className="group/collapsible">
               <SidebarMenuItem>
                 <CollapsibleTrigger asChild>
                   <SidebarMenuButton isActive={isActive} tooltip={item.title}>
-                    {item.icon}
-                    <span>{item.title}</span>
+                    {item.icon}<span>{item.title}</span>
                     <ChevronRightIcon className="ml-auto size-4 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
                   </SidebarMenuButton>
                 </CollapsibleTrigger>
@@ -242,8 +138,6 @@ function NavGroup({
   )
 }
 
-// ─── AppSidebar ───────────────────────────────────────────────────────────────
-
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const pathname = usePathname()
   const { user } = useAuth()
@@ -251,7 +145,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   return (
     <Sidebar collapsible="icon" {...props}>
-      {/* Header — logo + app name */}
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
@@ -262,9 +155,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 </div>
                 <div className="flex flex-col leading-tight">
                   <span className="text-sm font-semibold">Cây Xanh Đà Nẵng</span>
-                  <span className="text-[10px] text-muted-foreground">
-                    Urban Tree Management
-                  </span>
+                  <span className="text-[10px] text-muted-foreground">Quản lý Cây xanh Đô thị</span>
                 </div>
               </Link>
             </SidebarMenuButton>
@@ -272,17 +163,15 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarMenu>
       </SidebarHeader>
 
-      {/* Content */}
       <SidebarContent>
-        <NavGroup label="Main" items={NAV_MAIN} role={role} pathname={pathname} />
-        <NavGroup label="Reporting" items={NAV_REPORTING} role={role} pathname={pathname} />
-        <NavGroup label="System" items={NAV_SETTINGS} role={role} pathname={pathname} />
+        <NavGroup label="Chính" items={NAV_MAIN} role={role} pathname={pathname} />
+        <NavGroup label="Báo cáo" items={NAV_REPORTING} role={role} pathname={pathname} />
+        <NavGroup label="Hệ thống" items={NAV_SETTINGS} role={role} pathname={pathname} />
       </SidebarContent>
 
-      {/* Footer — user info + dropdown */}
       <SidebarFooter>
         <NavUser user={{
-          name: user?.name ?? user?.email ?? "User",
+          name: user?.name ?? user?.email ?? "Người dùng",
           email: user?.email ?? "",
           avatar: "",
           role: user?.role,

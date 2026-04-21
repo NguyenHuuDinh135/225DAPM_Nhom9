@@ -4,7 +4,7 @@ import { z } from "zod"
 import { DataTable } from "./components/data-table"
 import { incidentSchema } from "./data/schema"
 
-export const metadata: Metadata = { title: "Sự cố" }
+export const metadata: Metadata = { title: "Quản lý Sự cố" }
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080"
 
@@ -22,7 +22,6 @@ async function getIncidents() {
 
 export default async function IncidentsPage() {
   const incidents = await getIncidents()
-
   return (
     <div className="hidden h-full flex-1 flex-col gap-8 p-8 md:flex">
       <div className="flex flex-col gap-1">

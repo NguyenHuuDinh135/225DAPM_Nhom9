@@ -1,4 +1,5 @@
 using backend.Application.WorkItems.Commands.ApproveWorkItem;
+using backend.Application.WorkItems.Commands.AssignUserToWork;
 using backend.Application.WorkItems.Commands.AssignWork;
 using backend.Application.WorkItems.Commands.DeleteWorkItem;
 using backend.Application.WorkItems.Commands.ReportWorkProgress;
@@ -17,11 +18,12 @@ public class WorkItems : EndpointGroupBase
     {
         groupBuilder.MapGet(GetWorkItems).RequireAuthorization();
         groupBuilder.MapGet(GetWorkItemDetail, "{id}").RequireAuthorization();
-        groupBuilder.MapPost(CreateWorkItem).RequireAuthorization(Roles.Manager, Roles.Admin);
-        groupBuilder.MapPut(UpdateWorkItem, "{id}").RequireAuthorization(Roles.Manager, Roles.Admin);
-        groupBuilder.MapDelete(DeleteWorkItem, "{id}").RequireAuthorization(Roles.Manager, Roles.Admin);
+        groupBuilder.MapPost(CreateWorkItem).RequireAuthorization(Roles.Manager, Roles.Admin, Roles.Administrator);
+        groupBuilder.MapPut(UpdateWorkItem, "{id}").RequireAuthorization(Roles.Manager, Roles.Admin, Roles.Administrator);
+        groupBuilder.MapDelete(DeleteWorkItem, "{id}").RequireAuthorization(Roles.Manager, Roles.Admin, Roles.Administrator);
         groupBuilder.MapPost(ReportProgress, "{id}/report-progress").RequireAuthorization(Roles.Employee).DisableAntiforgery();
-        groupBuilder.MapPut(ApproveWork, "{id}/approve").RequireAuthorization(Roles.Manager, Roles.Admin);
+        groupBuilder.MapPut(ApproveWork, "{id}/approve").RequireAuthorization(Roles.Manager, Roles.Admin, Roles.Administrator);
+        groupBuilder.MapPost(AssignUser, "{id}/assign-user").RequireAuthorization(Roles.Manager, Roles.Admin, Roles.Administrator);
     }
 
     public async Task<Ok<WorkItemsVm>> GetWorkItems(ISender sender)
@@ -71,6 +73,12 @@ public class WorkItems : EndpointGroupBase
     {
         var cmd = command with { WorkItemId = id };
         var result = await sender.Send(cmd);
+        return result.Succeeded ? TypedResults.NoContent() : TypedResults.BadRequest(result.Errors);
+    }
+
+    public async Task<Results<NoContent, BadRequest<string[]>>> AssignUser(ISender sender, int id, AssignUserToWorkCommand command)
+    {
+        var result = await sender.Send(command with { WorkId = id });
         return result.Succeeded ? TypedResults.NoContent() : TypedResults.BadRequest(result.Errors);
     }
 }

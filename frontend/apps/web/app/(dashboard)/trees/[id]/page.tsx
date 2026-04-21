@@ -2,43 +2,40 @@ import { Suspense } from "react"
 import { cookies } from "next/headers"
 import Link from "next/link"
 import { notFound } from "next/navigation"
-import { ArrowLeftIcon, MapPinIcon, CalendarIcon, RulerIcon } from "lucide-react"
+import { ArrowLeftIcon, MapPinIcon } from "lucide-react"
 import { Badge } from "@workspace/ui/components/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@workspace/ui/components/card"
-import { Separator } from "@workspace/ui/components/separator"
 import { Skeleton } from "@workspace/ui/components/skeleton"
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080"
 
 interface TreeDetail {
-  id: number
-  name: string | null
-  condition: string | null
-  treeTypeName: string | null
-  height: number | null
-  trunkDiameter: number | null
-  recordedDate: string | null
-  lastMaintenanceDate: string | null
-  latitude: number | null
-  longitude: number | null
+  id: number; name: string | null; condition: string | null; treeTypeName: string | null
+  height: number | null; trunkDiameter: number | null; recordedDate: string | null
+  lastMaintenanceDate: string | null; latitude: number | null; longitude: number | null
+  relocationCount: number
 }
 
-async function fetchTree(id: string): Promise<TreeDetail | null> {
-  const cookieStore = await cookies()
-  const token = cookieStore.get("access_token")?.value
-  const res = await fetch(`${BASE_URL}/api/trees/${id}`, {
-    headers: token ? { Authorization: `Bearer ${token}` } : {},
-    next: { revalidate: 0 },
-  })
-  if (res.status === 404) return null
-  if (!res.ok) throw new Error("fetch failed")
-  return res.json()
+interface LocationHistory {
+  locationId: number; streetName: string | null; houseNumber: number | null
+  fromDate: string; toDate: string | null
+}
+
+async function fetchTree(id: string) {
+  const token = (await cookies()).get("access_token")?.value
+  const headers = token ? { Authorization: `Bearer ${token}` } : {}
+  const [treeRes, histRes] = await Promise.all([
+    fetch(`${BASE_URL}/api/trees/${id}`, { headers, cache: "no-store" }),
+    fetch(`${BASE_URL}/api/trees/${id}/location-history`, { headers, cache: "no-store" }),
+  ])
+  if (!treeRes.ok) return null
+  const tree: TreeDetail = await treeRes.json()
+  const history: LocationHistory[] = histRes.ok ? await histRes.json() : []
+  return { tree, history }
 }
 
 const conditionColor: Record<string, string> = {
-  Good: "bg-green-100 text-green-700",
-  Fair: "bg-yellow-100 text-yellow-700",
-  Poor: "bg-red-100 text-red-700",
+  Good: "bg-green-100 text-green-700", Fair: "bg-yellow-100 text-yellow-700", Poor: "bg-red-100 text-red-700",
 }
 
 function Row({ label, value }: { label: string; value: React.ReactNode }) {
@@ -51,9 +48,9 @@ function Row({ label, value }: { label: string; value: React.ReactNode }) {
 }
 
 async function TreeDetailContent({ id }: { id: string }) {
-  const tree = await fetchTree(id)
-  if (!tree) notFound()
-
+  const data = await fetchTree(id)
+  if (!data) notFound()
+  const { tree, history } = data
   const cls = conditionColor[tree.condition ?? ""] ?? "bg-muted text-muted-foreground"
 
   return (
@@ -64,9 +61,8 @@ async function TreeDetailContent({ id }: { id: string }) {
           <Row label="Mã cây" value={`#${tree.id}`} />
           <Row label="Tên cây" value={tree.name} />
           <Row label="Loại cây" value={tree.treeTypeName} />
-          <Row label="Tình trạng" value={
-            <Badge className={cls}>{tree.condition ?? "—"}</Badge>
-          } />
+          <Row label="Tình trạng" value={<Badge className={cls}>{tree.condition ?? "—"}</Badge>} />
+          <Row label="Số lần di dời" value={tree.relocationCount ?? 0} />
         </CardContent>
       </Card>
 
@@ -81,12 +77,31 @@ async function TreeDetailContent({ id }: { id: string }) {
       </Card>
 
       {(tree.latitude != null || tree.longitude != null) && (
-        <Card className="md:col-span-2">
-          <CardHeader><CardTitle className="text-base flex items-center gap-2"><MapPinIcon className="size-4" />Tọa độ</CardTitle></CardHeader>
+        <Card>
+          <CardHeader><CardTitle className="text-base flex items-center gap-2"><MapPinIcon className="size-4" />Tọa độ hiện tại</CardTitle></CardHeader>
           <CardContent>
-            <p className="text-sm font-mono">
-              {tree.latitude?.toFixed(6)}, {tree.longitude?.toFixed(6)}
-            </p>
+            <p className="text-sm font-mono">{tree.latitude?.toFixed(6)}, {tree.longitude?.toFixed(6)}</p>
+          </CardContent>
+        </Card>
+      )}
+
+      {history.length > 0 && (
+        <Card>
+          <CardHeader><CardTitle className="text-base">Lịch sử vị trí</CardTitle></CardHeader>
+          <CardContent>
+            <ol className="relative border-l border-border ml-2 flex flex-col gap-4">
+              {history.map((h) => (
+                <li key={h.locationId} className="ml-4">
+                  <div className="absolute -left-1.5 mt-1.5 size-3 rounded-full border border-background bg-primary" />
+                  <p className="text-sm font-medium">{h.streetName ?? "—"}{h.houseNumber ? ` số ${h.houseNumber}` : ""}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {new Date(h.fromDate).toLocaleDateString("vi-VN")}
+                    {" → "}
+                    {h.toDate ? new Date(h.toDate).toLocaleDateString("vi-VN") : "Hiện tại"}
+                  </p>
+                </li>
+              ))}
+            </ol>
           </CardContent>
         </Card>
       )}
@@ -94,33 +109,16 @@ async function TreeDetailContent({ id }: { id: string }) {
   )
 }
 
-function TreeDetailSkeleton() {
-  return (
-    <div className="grid gap-4 md:grid-cols-2">
-      {[0, 1].map((i) => (
-        <Card key={i}>
-          <CardHeader><Skeleton className="h-5 w-32" /></CardHeader>
-          <CardContent className="flex flex-col gap-3">
-            {[0, 1, 2, 3].map((j) => <Skeleton key={j} className="h-4 w-full" />)}
-          </CardContent>
-        </Card>
-      ))}
-    </div>
-  )
-}
-
 export default function TreeDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const resolvedParams = params as unknown as { id: string }
-  // Next.js 15: params is a Promise, but we use it in Server Component via Suspense
   return (
-    <div className="flex flex-1 flex-col gap-4 p-4 md:p-6 min-w-0">
+    <div className="flex flex-1 flex-col gap-4 p-4 md:p-6">
       <div className="flex items-center gap-3">
         <Link href="/trees" className="inline-flex items-center justify-center size-9 rounded-md hover:bg-muted">
           <ArrowLeftIcon className="size-4" />
         </Link>
         <h1 className="text-xl font-semibold md:text-2xl">Chi tiết cây xanh</h1>
       </div>
-      <Suspense fallback={<TreeDetailSkeleton />}>
+      <Suspense fallback={<div className="grid gap-4 md:grid-cols-2">{[0,1].map(i=><Card key={i}><CardContent className="p-6"><Skeleton className="h-40 w-full"/></CardContent></Card>)}</div>}>
         <TreeDetailContentWrapper params={params} />
       </Suspense>
     </div>

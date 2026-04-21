@@ -197,7 +197,7 @@ function CarouselPrevious({
       {...props}
     >
       <HugeiconsIcon icon={ArrowLeft01Icon} strokeWidth={2} className="rtl:rotate-180" />
-      <span className="sr-only">Previous slide</span>
+      <span className="sr-only">Trang trước</span>
     </Button>
   )
 }
@@ -227,7 +227,7 @@ function CarouselNext({
       {...props}
     >
       <HugeiconsIcon icon={ArrowRight01Icon} strokeWidth={2} className="rtl:rotate-180" />
-      <span className="sr-only">Next slide</span>
+      <span className="sr-only">Trang sau</span>
     </Button>
   )
 }

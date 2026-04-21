@@ -4,7 +4,7 @@ import { z } from "zod"
 import { DataTable } from "./components/data-table"
 import { planSchema } from "./data/schema"
 
-export const metadata: Metadata = { title: "Kế hoạch" }
+export const metadata: Metadata = { title: "Quản lý Kế hoạch" }
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080"
 
@@ -21,7 +21,6 @@ async function getPlans() {
 
 export default async function PlansPage() {
   const plans = await getPlans()
-
   return (
     <div className="hidden h-full flex-1 flex-col gap-8 p-8 md:flex">
       <div className="flex flex-col gap-1">

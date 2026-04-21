@@ -70,7 +70,7 @@ export function SignupForm({
                       fill="currentColor"
                     />
                   </svg>
-                  <span className="sr-only">Sign up with Apple</span>
+                  <span className="sr-only">Đăng ký với Apple</span>
                 </Button>
                 <Button variant="outline" type="button">
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
@@ -79,7 +79,7 @@ export function SignupForm({
                       fill="currentColor"
                     />
                   </svg>
-                  <span className="sr-only">Sign up with Google</span>
+                  <span className="sr-only">Đăng ký với Google</span>
                 </Button>
                 <Button variant="outline" type="button">
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
@@ -88,7 +88,7 @@ export function SignupForm({
                       fill="currentColor"
                     />
                   </svg>
-                  <span className="sr-only">Sign up with Meta</span>
+                  <span className="sr-only">Đăng ký với Meta</span>
                 </Button>
               </Field>
               <FieldDescription className="text-center">

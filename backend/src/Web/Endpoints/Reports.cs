@@ -1,5 +1,6 @@
 using backend.Application.Reports.Queries.ExportDashboardStats;
 using backend.Application.Reports.Queries.GetDashboardStatistics;
+using backend.Application.Reports.Queries.GetMonthlyStats;
 using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace backend.Web.Endpoints;
@@ -9,14 +10,15 @@ public class Reports : EndpointGroupBase
     public override void Map(RouteGroupBuilder app)
     {
         app.MapGet("dashboard-stats", GetDashboardStats).RequireAuthorization();
+        app.MapGet("monthly-stats", GetMonthlyStats).RequireAuthorization();
         app.MapGet("export", ExportDashboardStats).RequireAuthorization();
     }
 
     public async Task<Ok<DashboardStatsVm>> GetDashboardStats(ISender sender)
-    {
-        var result = await sender.Send(new GetDashboardStatisticsQuery());
-        return TypedResults.Ok(result);
-    }
+        => TypedResults.Ok(await sender.Send(new GetDashboardStatisticsQuery()));
+
+    public async Task<Ok<List<MonthlyStatDto>>> GetMonthlyStats(ISender sender, int months = 6)
+        => TypedResults.Ok(await sender.Send(new GetMonthlyStatsQuery(months)));
 
     public async Task<IResult> ExportDashboardStats(ISender sender)
     {

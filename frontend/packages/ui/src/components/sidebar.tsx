@@ -272,7 +272,7 @@ function SidebarTrigger({
       {...props}
     >
       <HugeiconsIcon icon={SidebarLeftIcon} strokeWidth={2} className="rtl:rotate-180" />
-      <span className="sr-only">Toggle Sidebar</span>
+      <span className="sr-only">Mở/Đóng thanh bên</span>
     </Button>
   )
 }
@@ -284,7 +284,7 @@ function SidebarRail({ className, ...props }: React.ComponentProps<"button">) {
     <button
       data-sidebar="rail"
       data-slot="sidebar-rail"
-      aria-label="Toggle Sidebar"
+      aria-label="Mở/Đóng thanh bên"
       tabIndex={-1}
       onClick={toggleSidebar}
       title="Toggle Sidebar"

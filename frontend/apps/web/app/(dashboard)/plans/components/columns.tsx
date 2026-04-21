@@ -1,5 +1,6 @@
 "use client"
 
+import Link from "next/link"
 import { type ColumnDef } from "@tanstack/react-table"
 import { MoreHorizontal } from "lucide-react"
 import { Checkbox } from "@workspace/ui/components/checkbox"
@@ -36,7 +37,7 @@ function RowActions({ row, onRefresh }: { row: { original: Plan }; onRefresh: ()
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="icon" className="size-8 data-[state=open]:bg-muted">
           <MoreHorizontal />
-          <span className="sr-only">Open menu</span>
+          <span className="sr-only">Mở menu</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-[160px]">
@@ -77,7 +78,9 @@ export function makeColumns(onRefresh: () => void): ColumnDef<Plan>[] {
       accessorKey: "name",
       header: ({ column }) => <DataTableColumnHeader column={column} title="Tiêu đề" />,
       cell: ({ row }) => (
-        <span className="max-w-[280px] truncate font-medium">{row.getValue("name") ?? "—"}</span>
+        <Link href={`/plans/${row.original.id}`} className="max-w-[280px] truncate font-medium hover:underline text-primary">
+          {row.getValue("name") ?? "—"}
+        </Link>
       ),
     },
     {

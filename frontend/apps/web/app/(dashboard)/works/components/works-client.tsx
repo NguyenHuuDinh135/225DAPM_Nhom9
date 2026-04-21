@@ -14,12 +14,12 @@ import { UsersIcon, BarChart3Icon, MoreHorizontalIcon } from "lucide-react"
 import { CreateWorkDialog } from "./create-work-dialog"
 import type { WorkItem, WorkStatus } from "../page"
 
-const statusConfig: Record<WorkStatus, { label: string; className: string }> = {
-  New: { label: "Mới", className: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400" },
-  InProgress: { label: "Đang thực hiện", className: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400" },
-  WaitingForApproval: { label: "Chờ duyệt", className: "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400" },
-  Completed: { label: "Hoàn thành", className: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" },
-  Cancelled: { label: "Đã hủy", className: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400" },
+const STATUS_CLASSES: Record<WorkStatus, string> = {
+  New: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
+  InProgress: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400",
+  WaitingForApproval: "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400",
+  Completed: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
+  Cancelled: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
 }
 
 export function WorksClient({ initialWorks }: { initialWorks: WorkItem[] }) {
@@ -29,8 +29,8 @@ export function WorksClient({ initialWorks }: { initialWorks: WorkItem[] }) {
     <div className="flex flex-1 flex-col gap-4 p-4 md:p-6 min-w-0">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-xl font-semibold md:text-2xl">Danh sách công việc</h1>
-          <p className="text-sm text-muted-foreground">Quản lý và theo dõi tiến độ công việc</p>
+          <h1 className="text-xl font-semibold md:text-2xl">Danh sách công tác</h1>
+          <p className="text-sm text-muted-foreground">Quản lý và theo dõi tiến độ công tác</p>
         </div>
         <CreateWorkDialog onCreated={(w) => setWorks((prev) => [w, ...prev])} />
       </div>
@@ -39,7 +39,7 @@ export function WorksClient({ initialWorks }: { initialWorks: WorkItem[] }) {
         <Table>
           <TableHeader className="bg-muted/60">
             <TableRow>
-              <TableHead>Loại công việc</TableHead>
+              <TableHead>Loại công tác</TableHead>
               <TableHead className="hidden md:table-cell">Kế hoạch</TableHead>
               <TableHead className="hidden lg:table-cell">Thời gian</TableHead>
               <TableHead>Trạng thái</TableHead>
@@ -50,26 +50,24 @@ export function WorksClient({ initialWorks }: { initialWorks: WorkItem[] }) {
             {works.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={5} className="text-center text-muted-foreground py-10">
-                  Chưa có công việc nào.
+                  Chưa có công tác nào.
                 </TableCell>
               </TableRow>
             ) : works.map((work) => {
-              const status = statusConfig[work.status] ?? { label: work.statusName, className: "bg-muted text-muted-foreground" }
+              const cls = STATUS_CLASSES[work.status] ?? "bg-muted text-muted-foreground"
               return (
                 <TableRow key={work.id}>
                   <TableCell>
                     <div className="font-medium">{work.workTypeName}</div>
                     <div className="text-xs text-muted-foreground md:hidden">{work.planName}</div>
                   </TableCell>
-                  <TableCell className="hidden md:table-cell text-sm text-muted-foreground">
-                    {work.planName}
-                  </TableCell>
+                  <TableCell className="hidden md:table-cell text-sm text-muted-foreground">{work.planName}</TableCell>
                   <TableCell className="hidden lg:table-cell text-sm text-muted-foreground whitespace-nowrap">
                     {work.startDate} → {work.endDate}
                   </TableCell>
                   <TableCell>
-                    <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium whitespace-nowrap ${status.className}`}>
-                      {status.label}
+                    <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium whitespace-nowrap ${cls}`}>
+                      {work.statusName}
                     </span>
                   </TableCell>
                   <TableCell>

@@ -124,7 +124,7 @@ export function CardsChat() {
                   onClick={() => setOpen(true)}
                 >
                   <PlusIcon />
-                  <span className="sr-only">New message</span>
+                  <span className="sr-only">Tin nhắn mới</span>
                 </Button>
               </TooltipTrigger>
               <TooltipContent sideOffset={10}>New message</TooltipContent>
@@ -179,7 +179,7 @@ export function CardsChat() {
                   className="rounded-full"
                 >
                   <ArrowUpIcon />
-                  <span className="sr-only">Send</span>
+                  <span className="sr-only">Gửi</span>
                 </InputGroupButton>
               </InputGroupAddon>
             </InputGroup>

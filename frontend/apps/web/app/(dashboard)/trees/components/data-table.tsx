@@ -10,7 +10,6 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
-  type ColumnDef,
   type ColumnFiltersState,
   type SortingState,
   type VisibilityState,
@@ -29,20 +28,39 @@ import { Plus } from "lucide-react"
 import { DataTablePagination } from "../../tasks/components/data-table-pagination"
 import { DataTableViewOptions } from "../../tasks/components/data-table-view-options"
 import { TreeFormDialog } from "./tree-form-dialog"
+import { ImportTreesDialog } from "./import-trees-dialog"
+import { makeColumns } from "./columns"
 import { type Tree } from "../data/schema"
 
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080"
+
 interface DataTableProps {
-  columns: ColumnDef<Tree>[]
   data: Tree[]
 }
 
-export function DataTable({ columns, data: initialData }: DataTableProps) {
+export function DataTable({ data: initialData }: DataTableProps) {
   const [data, setData] = React.useState(initialData)
   const [rowSelection, setRowSelection] = React.useState({})
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [dialogOpen, setDialogOpen] = React.useState(false)
+  const [editTree, setEditTree] = React.useState<Tree | undefined>()
+
+  async function refresh() {
+    const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null
+    const res = await fetch(`${BASE_URL}/api/trees`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    })
+    if (res.ok) setData(await res.json() as Tree[])
+  }
+
+  function handleEdit(tree: Tree) {
+    setEditTree(tree)
+    setDialogOpen(true)
+  }
+
+  const columns = React.useMemo(() => makeColumns(handleEdit, refresh), [])
 
   const table = useReactTable({
     data,
@@ -62,18 +80,8 @@ export function DataTable({ columns, data: initialData }: DataTableProps) {
     getFacetedUniqueValues: getFacetedUniqueValues(),
   })
 
-  async function refresh() {
-    const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080"
-    const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null
-    const res = await fetch(`${BASE_URL}/api/trees`, {
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
-    })
-    if (res.ok) setData(await res.json() as Tree[])
-  }
-
   return (
     <div className="flex flex-col gap-4">
-      {/* Toolbar */}
       <div className="flex items-center justify-between">
         <div className="flex flex-1 items-center gap-2">
           <Input
@@ -85,13 +93,13 @@ export function DataTable({ columns, data: initialData }: DataTableProps) {
         </div>
         <div className="flex items-center gap-2">
           <DataTableViewOptions table={table} />
-          <Button size="sm" onClick={() => setDialogOpen(true)}>
+          <ImportTreesDialog onSuccess={refresh} />
+          <Button size="sm" onClick={() => { setEditTree(undefined); setDialogOpen(true) }}>
             <Plus className="mr-1 size-4" /> Thêm cây
           </Button>
         </div>
       </div>
 
-      {/* Table */}
       <div className="overflow-hidden rounded-md border">
         <Table>
           <TableHeader>
@@ -131,7 +139,8 @@ export function DataTable({ columns, data: initialData }: DataTableProps) {
 
       <TreeFormDialog
         open={dialogOpen}
-        onOpenChange={setDialogOpen}
+        onOpenChange={(open) => { setDialogOpen(open); if (!open) setEditTree(undefined) }}
+        tree={editTree}
         onSuccess={refresh}
       />
     </div>

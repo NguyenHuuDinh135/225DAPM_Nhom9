@@ -43,7 +43,7 @@ function RowActions({ row, onRefresh }: { row: { original: Incident }; onRefresh
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="icon" className="size-8 data-[state=open]:bg-muted">
           <MoreHorizontal />
-          <span className="sr-only">Open menu</span>
+          <span className="sr-only">Mở menu</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-[180px]">

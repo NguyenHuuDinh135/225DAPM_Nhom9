@@ -7,18 +7,14 @@ import { Badge } from "@workspace/ui/components/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@workspace/ui/components/card"
 import { Separator } from "@workspace/ui/components/separator"
 import { Skeleton } from "@workspace/ui/components/skeleton"
+import { IncidentFeedbackForm } from "../components/incident-feedback-form"
+import { ApproveIncidentButton } from "../components/approve-incident-button"
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080"
 
 interface IncidentDetail {
-  id: number
-  treeId: number
-  treeName: string | null
-  description: string | null
-  status: string | null
-  reportedDate: string
-  reportedBy: string | null
-  images: string[]
+  id: number; treeId: number; treeName: string | null; description: string | null
+  status: string | null; reportedDate: string; reportedBy: string | null; images: string[]
 }
 
 async function fetchIncident(id: string): Promise<IncidentDetail | null> {
@@ -42,7 +38,6 @@ const statusColor: Record<string, string> = {
 async function IncidentDetailContent({ id }: { id: string }) {
   const incident = await fetchIncident(id)
   if (!incident) notFound()
-
   const cls = statusColor[incident.status ?? ""] ?? "bg-muted text-muted-foreground"
 
   return (
@@ -88,17 +83,15 @@ async function IncidentDetailContent({ id }: { id: string }) {
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4">
               {incident.images.map((src, i) => (
                 <a key={i} href={src} target="_blank" rel="noreferrer">
-                  <img
-                    src={src}
-                    alt={`Ảnh ${i + 1}`}
-                    className="w-full aspect-square object-cover rounded-lg border hover:opacity-90 transition-opacity"
-                  />
+                  <img src={src} alt={`Ảnh ${i + 1}`} className="w-full aspect-square object-cover rounded-lg border hover:opacity-90 transition-opacity" />
                 </a>
               ))}
             </div>
           </CardContent>
         </Card>
       )}
+
+      <IncidentFeedbackForm incidentId={incident.id} />
     </div>
   )
 }
@@ -114,12 +107,8 @@ function IncidentDetailSkeleton() {
   )
 }
 
-async function IncidentDetailContentWrapper({ params }: { params: Promise<{ id: string }> }) {
+export default async function IncidentDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  return <IncidentDetailContent id={id} />
-}
-
-export default function IncidentDetailPage({ params }: { params: Promise<{ id: string }> }) {
   return (
     <div className="flex flex-1 flex-col gap-4 p-4 md:p-6 min-w-0">
       <div className="flex items-center gap-3">
@@ -127,9 +116,12 @@ export default function IncidentDetailPage({ params }: { params: Promise<{ id: s
           <ArrowLeftIcon className="size-4" />
         </Link>
         <h1 className="text-xl font-semibold md:text-2xl">Chi tiết sự cố</h1>
+        <div className="ml-auto">
+          <ApproveIncidentButton incidentId={Number(id)} />
+        </div>
       </div>
       <Suspense fallback={<IncidentDetailSkeleton />}>
-        <IncidentDetailContentWrapper params={params} />
+        <IncidentDetailContent id={id} />
       </Suspense>
     </div>
   )
