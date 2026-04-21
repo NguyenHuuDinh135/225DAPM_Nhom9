@@ -5,7 +5,7 @@ import { Trees, Leaf, Droplets, Layers, MapPin, Route } from "lucide-react"
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080"
 
-interface Stats { totalTrees: number; pendingIncidents: number; completedWorksThisMonth: number; pendingWorksThisMonth: number }
+interface Stats { totalTrees: number; pendingIncidents: number; completedWorksThisMonth: number; pendingWorksThisMonth: number; totalStreets: number; totalWards: number }
 
 export function HomeStats() {
   const [stats, setStats] = useState<Stats | null>(null)
@@ -22,8 +22,8 @@ export function HomeStats() {
     { icon: Leaf, value: stats?.completedWorksThisMonth ?? "—", label: "Hoàn thành tháng này" },
     { icon: Droplets, value: stats?.pendingWorksThisMonth ?? "—", label: "Công việc chờ" },
     { icon: Layers, value: stats?.pendingIncidents ?? "—", label: "Sự cố chờ xử lý" },
-    { icon: MapPin, value: "—", label: "Khu vực" },
-    { icon: Route, value: "—", label: "Tuyến" },
+    { icon: MapPin, value: stats?.totalWards ?? "—", label: "Khu vực" },
+    { icon: Route, value: stats?.totalStreets ?? "—", label: "Tuyến" },
   ]
 
   return (

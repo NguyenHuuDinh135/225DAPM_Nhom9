@@ -18,7 +18,7 @@ public class Trees : EndpointGroupBase
     {
         groupBuilder.MapGet("", GetAllTrees).RequireAuthorization();
         groupBuilder.MapGet("map", GetTreeMap).AllowAnonymous();
-        groupBuilder.MapGet("{id}", GetTreeDetail).RequireAuthorization();
+        groupBuilder.MapGet("{id}", GetTreeDetail).AllowAnonymous();
         groupBuilder.MapGet("{id}/location-history", GetLocationHistory).RequireAuthorization();
         groupBuilder.MapPost("", CreateTree).RequireAuthorization(Roles.Manager, Roles.Admin, Roles.Administrator);
         groupBuilder.MapPost("import", ImportTrees).RequireAuthorization(Roles.Manager, Roles.Admin, Roles.Administrator).DisableAntiforgery();

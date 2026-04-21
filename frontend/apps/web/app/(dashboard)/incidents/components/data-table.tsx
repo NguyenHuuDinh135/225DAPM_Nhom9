@@ -28,6 +28,7 @@ import { DataTableViewOptions } from "../../tasks/components/data-table-view-opt
 import { DataTableFacetedFilter } from "../../tasks/components/data-table-faceted-filter"
 import { makeColumns } from "./columns"
 import { type Incident, STATUSES } from "../data/schema"
+import { useAuth } from "@/hooks/use-auth"
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080"
 
@@ -37,6 +38,8 @@ const statusOptions = STATUSES.map((s) => ({
 }))
 
 export function DataTable({ data: initialData }: { data: Incident[] }) {
+  const { user } = useAuth()
+  const canChangeStatus = user?.role !== "Employee"
   const [data, setData] = React.useState(initialData)
   const [rowSelection, setRowSelection] = React.useState({})
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
@@ -54,7 +57,7 @@ export function DataTable({ data: initialData }: { data: Incident[] }) {
     }
   }
 
-  const columns = React.useMemo(() => makeColumns(refresh), [])
+  const columns = React.useMemo(() => makeColumns(refresh, canChangeStatus), [canChangeStatus])
 
   const table = useReactTable({
     data,

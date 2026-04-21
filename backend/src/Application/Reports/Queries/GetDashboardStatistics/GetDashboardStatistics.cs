@@ -26,6 +26,8 @@ public class GetDashboardStatisticsQueryHandler : IRequestHandler<GetDashboardSt
         var startOfMonth = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc);
 
         var totalTrees = await _context.Trees.AsNoTracking().CountAsync(cancellationToken);
+        var totalStreets = await _context.Streets.AsNoTracking().CountAsync(cancellationToken);
+        var totalWards = await _context.Wards.AsNoTracking().CountAsync(cancellationToken);
 
         var pendingIncidents = await _context.TreeIncidents.AsNoTracking()
             .CountAsync(i => i.Status == "Pending", cancellationToken);
@@ -52,6 +54,8 @@ public class GetDashboardStatisticsQueryHandler : IRequestHandler<GetDashboardSt
         var result = new DashboardStatsVm
         {
             TotalTrees = totalTrees,
+            TotalStreets = totalStreets,
+            TotalWards = totalWards,
             PendingIncidents = pendingIncidents,
             CompletedWorksThisMonth = completedThisMonth,
             PendingWorksThisMonth = pendingThisMonth,

@@ -28,10 +28,13 @@ import { DataTableViewOptions } from "../../tasks/components/data-table-view-opt
 import { PlanFormDialog } from "./plan-form-dialog"
 import { makeColumns } from "./columns"
 import { type Plan } from "../data/schema"
+import { useAuth } from "@/hooks/use-auth"
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080"
 
 export function DataTable({ data: initialData }: { data: Plan[] }) {
+  const { user } = useAuth()
+  const canCreate = user?.role === "Administrator" || user?.role === "Manager"
   const [data, setData] = React.useState(initialData)
   const [rowSelection, setRowSelection] = React.useState({})
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
@@ -78,9 +81,11 @@ export function DataTable({ data: initialData }: { data: Plan[] }) {
         </div>
         <div className="flex items-center gap-2">
           <DataTableViewOptions table={table} />
-          <Button size="sm" onClick={() => setDialogOpen(true)}>
-            <Plus className="mr-1 size-4" /> Tạo kế hoạch
-          </Button>
+          {canCreate && (
+            <Button size="sm" onClick={() => setDialogOpen(true)}>
+              <Plus className="mr-1 size-4" /> Tạo kế hoạch
+            </Button>
+          )}
         </div>
       </div>
 

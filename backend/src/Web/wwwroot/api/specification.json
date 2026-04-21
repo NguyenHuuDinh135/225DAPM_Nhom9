@@ -296,12 +296,7 @@
               }
             }
           }
-        },
-        "security": [
-          {
-            "JWT": []
-          }
-        ]
+        }
       }
     },
     "/api/Lookups/work-types": {
@@ -1116,12 +1111,7 @@
               }
             }
           }
-        },
-        "security": [
-          {
-            "JWT": []
-          }
-        ]
+        }
       },
       "put": {
         "tags": [
@@ -2551,6 +2541,14 @@
             "type": "integer",
             "format": "int32"
           },
+          "totalStreets": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalWards": {
+            "type": "integer",
+            "format": "int32"
+          },
           "overdueWorks": {
             "type": "array",
             "items": {
@@ -3288,6 +3286,12 @@
           },
           "statusName": {
             "type": "string"
+          },
+          "treeLocations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WorkTreeLocationDto"
+            }
           }
         }
       },
@@ -3308,6 +3312,30 @@
           3,
           4
         ]
+      },
+      "WorkTreeLocationDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "treeId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "treeName": {
+            "type": "string",
+            "nullable": true
+          },
+          "latitude": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "longitude": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          }
+        }
       },
       "WorkItemDetailVm": {
         "type": "object",

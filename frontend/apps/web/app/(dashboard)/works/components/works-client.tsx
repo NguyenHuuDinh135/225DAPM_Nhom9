@@ -8,11 +8,13 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@workspace/ui/components/table"
 import {
-  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@workspace/ui/components/dropdown-menu"
-import { UsersIcon, BarChart3Icon, MoreHorizontalIcon } from "lucide-react"
+import { UsersIcon, BarChart3Icon, MoreHorizontalIcon, Trash2Icon } from "lucide-react"
 import { CreateWorkDialog } from "./create-work-dialog"
 import type { WorkItem, WorkStatus } from "../page"
+import { useAuth } from "@/hooks/use-auth"
+import { apiClient } from "@/lib/api-client"
 
 const STATUS_CLASSES: Record<WorkStatus, string> = {
   New: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
@@ -23,7 +25,15 @@ const STATUS_CLASSES: Record<WorkStatus, string> = {
 }
 
 export function WorksClient({ initialWorks }: { initialWorks: WorkItem[] }) {
+  const { user } = useAuth()
+  const canManage = user?.role === "Administrator" || user?.role === "Manager"
   const [works, setWorks] = useState<WorkItem[]>(initialWorks)
+
+  async function handleDelete(id: number) {
+    if (!confirm("Xác nhận xóa công tác này?")) return
+    await apiClient.delete(`/api/work-items/${id}`)
+    setWorks((prev) => prev.filter((w) => w.id !== id))
+  }
 
   return (
     <div className="flex flex-1 flex-col gap-4 p-4 md:p-6 min-w-0">
@@ -32,7 +42,7 @@ export function WorksClient({ initialWorks }: { initialWorks: WorkItem[] }) {
           <h1 className="text-xl font-semibold md:text-2xl">Danh sách công tác</h1>
           <p className="text-sm text-muted-foreground">Quản lý và theo dõi tiến độ công tác</p>
         </div>
-        <CreateWorkDialog onCreated={(w) => setWorks((prev) => [w, ...prev])} />
+        {canManage && <CreateWorkDialog onCreated={(w) => setWorks((prev) => [w, ...prev])} />}
       </div>
 
       <div className="rounded-lg border w-full overflow-x-auto">
@@ -79,19 +89,26 @@ export function WorksClient({ initialWorks }: { initialWorks: WorkItem[] }) {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem asChild>
-                          <Link href={`/works/${work.id}/assign`} className="flex items-center gap-2">
-                            <UsersIcon className="size-4" />
-                            Phân công
-                          </Link>
-                        </DropdownMenuItem>
+                        {canManage && (
+                          <DropdownMenuItem asChild>
+                            <Link href={`/works/${work.id}/assign`} className="flex items-center gap-2">
+                              <UsersIcon className="size-4" />
+                              Phân công
+                            </Link>
+                          </DropdownMenuItem>
+                        )}
                         <DropdownMenuItem asChild>
                           <Link href={`/works/${work.id}/progress`} className="flex items-center gap-2">
                             <BarChart3Icon className="size-4" />
                             Cập nhật tiến độ
                           </Link>
                         </DropdownMenuItem>
-                      </DropdownMenuContent>
+                        {canManage && (
+                          <DropdownMenuItem variant="destructive" onClick={() => handleDelete(work.id)} className="flex items-center gap-2">
+                            <Trash2Icon className="size-4" />
+                            Xóa
+                          </DropdownMenuItem>
+                        )}                      </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>
                 </TableRow>

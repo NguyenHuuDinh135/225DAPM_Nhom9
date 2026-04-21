@@ -30,13 +30,15 @@ const statusLabel: Record<string, string> = {
   Resolved: "Đã giải quyết",
 }
 
-function RowActions({ row, onRefresh }: { row: { original: Incident }; onRefresh: () => void }) {
+function RowActions({ row, onRefresh, canChangeStatus }: { row: { original: Incident }; onRefresh: () => void; canChangeStatus: boolean }) {
   const incident = row.original
 
   async function changeStatus(status: string) {
     await apiClient.put(`/api/tree-incidents/${incident.id}/status`, { id: incident.id, status })
     onRefresh()
   }
+
+  if (!canChangeStatus) return null
 
   return (
     <DropdownMenu>
@@ -62,7 +64,7 @@ function RowActions({ row, onRefresh }: { row: { original: Incident }; onRefresh
   )
 }
 
-export function makeColumns(onRefresh: () => void): ColumnDef<Incident>[] {
+export function makeColumns(onRefresh: () => void, canChangeStatus = true): ColumnDef<Incident>[] {
   return [
     {
       id: "select",
@@ -126,7 +128,7 @@ export function makeColumns(onRefresh: () => void): ColumnDef<Incident>[] {
     },
     {
       id: "actions",
-      cell: ({ row }) => <RowActions row={row} onRefresh={onRefresh} />,
+      cell: ({ row }) => <RowActions row={row} onRefresh={onRefresh} canChangeStatus={canChangeStatus} />,
     },
   ]
 }

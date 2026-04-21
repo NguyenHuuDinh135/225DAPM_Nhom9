@@ -3,36 +3,42 @@
 import { use, useEffect, useState } from "react"
 import Link from "next/link"
 import { Button } from "@workspace/ui/components/button"
-import { Input } from "@workspace/ui/components/input"
 import { Label } from "@workspace/ui/components/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@workspace/ui/components/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@workspace/ui/components/table"
 import { Badge } from "@workspace/ui/components/badge"
-import {
-  Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle,
-} from "@workspace/ui/components/dialog"
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@workspace/ui/components/dialog"
 import { ArrowLeftIcon, PlusIcon } from "lucide-react"
 import { toast } from "@workspace/ui/components/sonner"
 
 interface WorkUser { userId: string; role: string | null; status: string | null }
 interface WorkDetail { id: number; workTypeName: string | null; planName: string | null; users: WorkUser[] }
+interface Employee { id: string; fullName: string | null; email: string | null }
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080"
 
 export default function AssignPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
   const [work, setWork] = useState<WorkDetail | null>(null)
+  const [employees, setEmployees] = useState<Employee[]>([])
   const [loading, setLoading] = useState(true)
   const [dialogOpen, setDialogOpen] = useState(false)
-  const [userId, setUserId] = useState("")
+  const [selectedUserId, setSelectedUserId] = useState("")
   const [role, setRole] = useState("")
   const [submitting, setSubmitting] = useState(false)
 
   function loadWork() {
     const token = localStorage.getItem("access_token")
-    fetch(`${BASE_URL}/api/work-items/${id}`, { headers: token ? { Authorization: `Bearer ${token}` } : {} })
-      .then((r) => r.ok ? r.json() : Promise.reject())
-      .then((data: WorkDetail) => setWork(data))
-      .catch(() => toast.error("Không thể tải thông tin công tác"))
+    const headers = token ? { Authorization: `Bearer ${token}` } : {}
+    Promise.all([
+      fetch(`${BASE_URL}/api/work-items/${id}`, { headers }).then((r) => r.ok ? r.json() : Promise.reject()),
+      fetch(`${BASE_URL}/api/employees`, { headers }).then((r) => r.ok ? r.json() : { employees: [] }),
+    ])
+      .then(([workData, empData]: [WorkDetail, { employees: Employee[] }]) => {
+        setWork(workData)
+        setEmployees(empData.employees ?? [])
+      })
+      .catch(() => toast.error("Không thể tải dữ liệu"))
       .finally(() => setLoading(false))
   }
 
@@ -40,22 +46,19 @@ export default function AssignPage({ params }: { params: Promise<{ id: string }>
 
   async function handleAssign(e: React.FormEvent) {
     e.preventDefault()
-    if (!userId.trim()) { toast.error("Vui lòng nhập mã nhân viên"); return }
+    if (!selectedUserId) { toast.error("Vui lòng chọn nhân viên"); return }
     const token = localStorage.getItem("access_token")
     setSubmitting(true)
     try {
-      const res = await fetch(`${BASE_URL}/api/work-items/${id}/assign`, {
+      const res = await fetch(`${BASE_URL}/api/work-items/${id}/assign-user`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify({ userId: userId.trim(), role: role.trim() || null }),
+        headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        body: JSON.stringify({ workId: Number(id), userId: selectedUserId, role: role.trim() || null }),
       })
       if (!res.ok) throw new Error(await res.text())
       toast.success("Đã phân công nhân viên")
       setDialogOpen(false)
-      setUserId(""); setRole("")
+      setSelectedUserId(""); setRole("")
       loadWork()
     } catch (err) {
       toast.error((err as Error).message || "Phân công thất bại")
@@ -88,7 +91,7 @@ export default function AssignPage({ params }: { params: Promise<{ id: string }>
         <Table>
           <TableHeader className="bg-muted/60">
             <TableRow>
-              <TableHead>Mã nhân viên</TableHead>
+              <TableHead>Nhân viên</TableHead>
               <TableHead>Vai trò</TableHead>
               <TableHead className="hidden sm:table-cell">Trạng thái</TableHead>
             </TableRow>
@@ -100,38 +103,50 @@ export default function AssignPage({ params }: { params: Promise<{ id: string }>
                   Chưa có nhân viên nào được phân công.
                 </TableCell>
               </TableRow>
-            ) : work.users.map((u) => (
-              <TableRow key={u.userId}>
-                <TableCell className="font-medium font-mono text-sm">{u.userId}</TableCell>
-                <TableCell><Badge variant="outline">{u.role ?? "—"}</Badge></TableCell>
-                <TableCell className="hidden sm:table-cell">
-                  <span className="text-xs text-green-600 font-medium">{u.status ?? "—"}</span>
-                </TableCell>
-              </TableRow>
-            ))}
+            ) : work.users.map((u) => {
+              const emp = employees.find((e) => e.id === u.userId)
+              return (
+                <TableRow key={u.userId}>
+                  <TableCell className="font-medium">
+                    {emp?.fullName ?? emp?.email ?? <span className="font-mono text-xs text-muted-foreground">{u.userId}</span>}
+                  </TableCell>
+                  <TableCell><Badge variant="outline">{u.role ?? "—"}</Badge></TableCell>
+                  <TableCell className="hidden sm:table-cell">
+                    <span className="text-xs text-green-600 font-medium">{u.status ?? "—"}</span>
+                  </TableCell>
+                </TableRow>
+              )
+            })}
           </TableBody>
         </Table>
       </div>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="sm:max-w-[380px]">
-          <DialogHeader>
-            <DialogTitle>Thêm nhân viên</DialogTitle>
-          </DialogHeader>
+          <DialogHeader><DialogTitle>Thêm nhân viên</DialogTitle></DialogHeader>
           <form onSubmit={handleAssign} className="flex flex-col gap-4 py-2">
             <div className="flex flex-col gap-1.5">
-              <Label htmlFor="userId">Mã nhân viên</Label>
-              <Input id="userId" value={userId} onChange={(e) => setUserId(e.target.value)} placeholder="user-id..." />
+              <Label>Nhân viên</Label>
+              <Select value={selectedUserId} onValueChange={setSelectedUserId}>
+                <SelectTrigger><SelectValue placeholder="Chọn nhân viên..." /></SelectTrigger>
+                <SelectContent>
+                  {employees.map((e) => (
+                    <SelectItem key={e.id} value={e.id}>
+                      {e.fullName ?? e.email ?? e.id}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="role">Vai trò (tuỳ chọn)</Label>
-              <Input id="role" value={role} onChange={(e) => setRole(e.target.value)} placeholder="Kỹ thuật viên..." />
+              <input id="role" value={role} onChange={(e) => setRole(e.target.value)}
+                placeholder="Kỹ thuật viên..."
+                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" />
             </div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>Hủy</Button>
-              <Button type="submit" disabled={submitting}>
-                {submitting ? "Đang phân công..." : "Phân công"}
-              </Button>
+              <Button type="submit" disabled={submitting}>{submitting ? "Đang phân công..." : "Phân công"}</Button>
             </DialogFooter>
           </form>
         </DialogContent>

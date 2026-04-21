@@ -6,6 +6,8 @@ public class DashboardStatsVm
     public int PendingIncidents { get; init; }
     public int CompletedWorksThisMonth { get; init; }
     public int PendingWorksThisMonth { get; init; }
+    public int TotalStreets { get; init; }
+    public int TotalWards { get; init; }
     public List<WorkItemBriefDto> OverdueWorks { get; init; } = [];
 }
 

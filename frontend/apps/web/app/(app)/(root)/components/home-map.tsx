@@ -4,7 +4,7 @@ import * as React from "react"
 import Link from "next/link"
 import { ChevronLeft, ChevronRight, X } from "lucide-react"
 import { Button } from "@workspace/ui/components/button"
-import { Map, MapControls, MapMarker, MapPopup, MarkerContent } from "@workspace/ui/components/ui/map"
+import { Map, MapControls, MapMarker, MapPopup, MarkerContent, type MapRef } from "@workspace/ui/components/ui/map"
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080"
 
@@ -28,6 +28,7 @@ function Row({ label, value }: { label: string; value: string }) {
 }
 
 export function TreeManagementMap() {
+  const mapRef = React.useRef<MapRef>(null)
   const [trees, setTrees] = React.useState<TreeMapDto[]>([])
   const [selectedIndex, setSelectedIndex] = React.useState<number | null>(null)
 
@@ -38,16 +39,24 @@ export function TreeManagementMap() {
       .catch(() => {})
   }, [])
 
+  function navigateTo(index: number) {
+    setSelectedIndex(index)
+    const tree = trees[index]
+    if (tree?.longitude != null && tree?.latitude != null) {
+      mapRef.current?.flyTo({ center: [tree.longitude, tree.latitude], zoom: 16, duration: 800 })
+    }
+  }
+
   const selected = selectedIndex !== null ? trees[selectedIndex] ?? null : null
 
   return (
     <div className="absolute inset-0 z-10 bg-muted/10">
-      <Map center={[108.2149, 16.0644]} zoom={13.5} className="relative h-full w-full">
+      <Map ref={mapRef} center={[108.2149, 16.0644]} zoom={13.5} className="relative h-full w-full">
         <MapControls position="top-right" showCompass showLocate showZoom />
         {trees.map((tree, index) => (
           <MapMarker key={tree.id} longitude={tree.longitude!} latitude={tree.latitude!}>
             <MarkerContent>
-              <div onClick={(e) => { e.stopPropagation(); setSelectedIndex(index) }} className="flex h-7 w-7 cursor-pointer items-center justify-center">
+              <div onClick={(e) => { e.stopPropagation(); navigateTo(index) }} className="flex h-7 w-7 cursor-pointer items-center justify-center">
                 <div className={`h-3 w-3 rounded-full border border-green-950 shadow-sm transition-transform hover:scale-[1.9] ${markerColor(tree.condition)}`} />
               </div>
             </MarkerContent>
@@ -83,11 +92,13 @@ export function TreeManagementMap() {
                 </Button>
                 <div className="flex-1" />
                 <Button variant="outline" className="h-7 w-7 rounded-sm border-none bg-[#007B22] p-0 text-white hover:bg-[#006400]"
-                  onClick={() => setSelectedIndex((i) => (i !== null && i > 0 ? i - 1 : i))}>
+                  disabled={selectedIndex === 0}
+                  onClick={() => selectedIndex !== null && navigateTo(selectedIndex - 1)}>
                   <ChevronLeft className="h-4 w-4" />
                 </Button>
                 <Button variant="outline" className="h-7 w-7 rounded-sm border-none bg-[#007B22] p-0 text-white hover:bg-[#006400]"
-                  onClick={() => setSelectedIndex((i) => (i !== null && i < trees.length - 1 ? i + 1 : i))}>
+                  disabled={selectedIndex === trees.length - 1}
+                  onClick={() => selectedIndex !== null && navigateTo(selectedIndex + 1)}>
                   <ChevronRight className="h-4 w-4" />
                 </Button>
               </div>

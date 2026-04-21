@@ -16,6 +16,8 @@ public class GetWorkItemsQueryHandler : IRequestHandler<GetWorkItemsQuery, WorkI
         var items = await _context.Works
             .Include(w => w.WorkType)
             .Include(w => w.Plan)
+            .Include(w => w.WorkDetails)
+                .ThenInclude(wd => wd.Tree)
             .Select(w => new WorkItemDto
             {
                 Id = w.Id,
@@ -26,7 +28,16 @@ public class GetWorkItemsQueryHandler : IRequestHandler<GetWorkItemsQuery, WorkI
                 CreatorId = w.CreatorId,
                 StartDate = w.StartDate,
                 EndDate = w.EndDate,
-                Status = w.Status
+                Status = w.Status,
+                TreeLocations = w.WorkDetails
+                    .Where(wd => wd.Tree.Latitude != null && wd.Tree.Longitude != null)
+                    .Select(wd => new WorkTreeLocationDto
+                    {
+                        TreeId = wd.TreeId,
+                        TreeName = wd.Tree.Name,
+                        Latitude = wd.Tree.Latitude,
+                        Longitude = wd.Tree.Longitude,
+                    }).ToList()
             })
             .ToListAsync(cancellationToken);
 

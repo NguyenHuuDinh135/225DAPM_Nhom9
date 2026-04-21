@@ -8,7 +8,7 @@ import { Textarea } from "@workspace/ui/components/textarea"
 import { ArrowLeftIcon, SendIcon } from "lucide-react"
 import { toast } from "@workspace/ui/components/sonner"
 
-interface ProgressEntry { id: number; updaterId: string; note: string | null; updatedDate: string | null; images: string[] }
+interface ProgressEntry { id: number; updaterId: string; percentage: number | null; note: string | null; updatedDate: string | null; images: string[] }
 interface WorkDetail { id: number; workTypeName: string | null; planName: string | null; progresses: ProgressEntry[] }
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080"
@@ -19,6 +19,7 @@ export default function ProgressPage({ params }: { params: Promise<{ id: string 
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [note, setNote] = useState("")
+  const [percentage, setPercentage] = useState("")
   const fileRef = useRef<HTMLInputElement>(null)
 
   function loadWork() {
@@ -39,6 +40,7 @@ export default function ProgressPage({ params }: { params: Promise<{ id: string 
     const fd = new FormData()
     fd.append("note", note)
     fd.append("updaterId", userId)
+    if (percentage) fd.append("percentage", percentage)
     const files = fileRef.current?.files
     if (files) for (const f of Array.from(files)) fd.append("images", f)
     setSubmitting(true)
@@ -51,6 +53,7 @@ export default function ProgressPage({ params }: { params: Promise<{ id: string 
       if (!res.ok) throw new Error()
       toast.success("Đã cập nhật tiến độ")
       setNote("")
+      setPercentage("")
       if (fileRef.current) fileRef.current.value = ""
       loadWork()
     } catch {
@@ -83,6 +86,12 @@ export default function ProgressPage({ params }: { params: Promise<{ id: string 
             <Textarea id="note" placeholder="Mô tả công việc đã thực hiện..." value={note} onChange={(e) => setNote(e.target.value)} rows={4} />
           </div>
           <div className="flex flex-col gap-2">
+            <Label htmlFor="pct">% Tiến độ (0–100)</Label>
+            <input id="pct" type="number" min={0} max={100} value={percentage}
+              onChange={(e) => setPercentage(e.target.value)} placeholder="80"
+              className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" />
+          </div>
+          <div className="flex flex-col gap-2">
             <Label htmlFor="images">Ảnh đính kèm</Label>
             <input id="images" ref={fileRef} type="file" accept="image/*" multiple
               className="text-sm file:mr-3 file:rounded file:border-0 file:bg-muted file:px-3 file:py-1 file:text-sm" />
@@ -108,6 +117,7 @@ export default function ProgressPage({ params }: { params: Promise<{ id: string 
                   <div className="pb-4 flex-1 min-w-0">
                     <div className="flex items-center gap-1.5 text-sm flex-wrap">
                       <span className="font-mono text-xs text-muted-foreground">{p.updaterId}</span>
+                      {p.percentage != null && <span className="text-xs font-semibold text-green-600">{p.percentage}%</span>}
                       {p.updatedDate && <span className="text-muted-foreground text-xs">· {new Date(p.updatedDate).toLocaleDateString("vi-VN")}</span>}
                     </div>
                     {p.note && <p className="text-sm text-muted-foreground mt-0.5 break-words">{p.note}</p>}

@@ -27,13 +27,9 @@ async function fetchReplacements(): Promise<WorkItem[]> {
     cache: "no-store",
   })
   if (!res.ok) return []
-  const json = await res.json() as { workItems: WorkItem[] }
-  const all = json.workItems ?? []
-  return all.filter((w) =>
-    w.workTypeName?.toLowerCase().includes("thay") ||
-    w.workTypeName?.toLowerCase().includes("reloc") ||
-    w.workTypeName?.toLowerCase().includes("replace")
-  )
+  const json = await res.json() as { workItems: (WorkItem & { treeLocations?: unknown[] })[] }
+  // Show work-items that have associated trees (WorkDetails)
+  return (json.workItems ?? []).filter((w) => (w.treeLocations?.length ?? 0) > 0)
 }
 
 export default async function ReplacementsPage() {

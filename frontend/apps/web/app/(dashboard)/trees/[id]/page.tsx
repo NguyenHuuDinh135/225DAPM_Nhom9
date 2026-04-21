@@ -6,6 +6,7 @@ import { ArrowLeftIcon, MapPinIcon } from "lucide-react"
 import { Badge } from "@workspace/ui/components/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@workspace/ui/components/card"
 import { Skeleton } from "@workspace/ui/components/skeleton"
+import { RelocateTreeForm } from "./relocate-form"
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080"
 
@@ -105,6 +106,8 @@ async function TreeDetailContent({ id }: { id: string }) {
           </CardContent>
         </Card>
       )}
+
+      <RelocateTreeForm treeId={tree.id} />
     </div>
   )
 }

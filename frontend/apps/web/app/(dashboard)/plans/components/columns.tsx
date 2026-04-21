@@ -32,6 +32,12 @@ function RowActions({ row, onRefresh }: { row: { original: Plan }; onRefresh: ()
     onRefresh()
   }
 
+  async function handleDelete() {
+    if (!confirm(`Xác nhận xóa kế hoạch "${plan.name}"?`)) return
+    await apiClient.delete(`/api/planning/${plan.id}`)
+    onRefresh()
+  }
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -45,7 +51,7 @@ function RowActions({ row, onRefresh }: { row: { original: Plan }; onRefresh: ()
           <DropdownMenuItem onClick={handleApprove}>Duyệt kế hoạch</DropdownMenuItem>
         )}
         <DropdownMenuSeparator />
-        <DropdownMenuItem variant="destructive">Xóa</DropdownMenuItem>
+        <DropdownMenuItem variant="destructive" onClick={handleDelete}>Xóa</DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   )

@@ -19,4 +19,13 @@ public class WorkItemDto
     public DateTime? EndDate { get; init; }
     public WorkStatus Status { get; init; }
     public string StatusName => Status.ToString();
+    public IList<WorkTreeLocationDto> TreeLocations { get; init; } = new List<WorkTreeLocationDto>();
+}
+
+public class WorkTreeLocationDto
+{
+    public int TreeId { get; init; }
+    public string? TreeName { get; init; }
+    public double? Latitude { get; init; }
+    public double? Longitude { get; init; }
 }

@@ -4,6 +4,7 @@ import { ChartAreaInteractive } from "@/app/(dashboard)/components/chart-area-in
 import { TaskMap } from "@/app/(dashboard)/components/task-map"
 import { SectionCards, SectionCardsSkeleton, type DashboardStats } from "@/app/(dashboard)/components/section-cards"
 import { ExportStatsButton } from "@/app/(dashboard)/components/export-stats-button"
+import { ForbiddenToast } from "@/app/(dashboard)/components/forbidden-toast"
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080"
 
@@ -27,6 +28,7 @@ async function StatsSection() {
 export default function Page() {
   return (
     <div className="flex flex-1 flex-col bg-background">
+      <ForbiddenToast />
       <div className="@container/main flex flex-1 flex-col gap-2">
         <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
 

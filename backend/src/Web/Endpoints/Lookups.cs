@@ -7,7 +7,7 @@ public class Lookups : EndpointGroupBase
 {
     public override void Map(RouteGroupBuilder app)
     {
-        app.MapGet("tree-types", GetTreeTypes).RequireAuthorization();
+        app.MapGet("tree-types", GetTreeTypes).AllowAnonymous();
         app.MapGet("work-types", GetWorkTypes).RequireAuthorization();
         app.MapGet("wards", GetWards).RequireAuthorization();
         app.MapGet("streets", GetStreets).RequireAuthorization();
