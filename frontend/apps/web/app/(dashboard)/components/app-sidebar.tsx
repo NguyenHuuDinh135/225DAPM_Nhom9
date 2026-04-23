@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation"
 import {
   LayoutDashboardIcon, TreePineIcon, MapIcon, ClipboardListIcon, CheckSquareIcon,
   TriangleAlertIcon, ArrowLeftRightIcon, UsersIcon, BarChart3Icon, FileTextIcon,
-  SettingsIcon, ShieldIcon, ChevronRightIcon,
+  SettingsIcon, ShieldIcon, ChevronRightIcon, MessageSquare,
 } from "lucide-react"
 import {
   Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu,
@@ -61,15 +61,22 @@ const NAV_MAIN: NavItem[] = [
     ],
   },
   {
+    title: "Phản hồi", url: "/feedback-inbox", icon: <MessageSquare className="size-4" />,
+    roles: ["Manager", "Administrator"],
+    items: [
+      { title: "Hòm thư góp ý", url: "/feedback-inbox" },
+    ],
+  },
+  {
     title: "Sự cố", url: "/incidents", icon: <TriangleAlertIcon className="size-4" />,
     roles: ["Employee", "Manager", "Administrator"],
     items: [
       { title: "Tất cả sự cố", url: "/incidents" },
-      { title: "Báo cáo sự cố", url: "/incidents/report" },
+      { title: "Báo cáo sự cố", url: "/incidents/report", roles: ["Manager"] },
     ],
   },
-  { title: "Thay thế", url: "/replacements", icon: <ArrowLeftRightIcon className="size-4" />, roles: ["Manager", "Administrator"] },
-  { title: "Nhân viên", url: "/staff", icon: <UsersIcon className="size-4" />, roles: ["Manager", "Administrator"] },
+  { title: "Thay thế", url: "/replacements", icon: <ArrowLeftRightIcon className="size-4" />, roles: ["Manager"] },
+  { title: "Nhân viên", url: "/staff", icon: <UsersIcon className="size-4" />, roles: ["Manager"] },
 ]
 
 const NAV_REPORTING: NavItem[] = [
