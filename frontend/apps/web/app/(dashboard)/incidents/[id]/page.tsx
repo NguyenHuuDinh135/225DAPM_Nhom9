@@ -10,7 +10,7 @@ import { Skeleton } from "@workspace/ui/components/skeleton"
 import { IncidentFeedbackForm } from "../components/incident-feedback-form"
 import { ApproveIncidentButton } from "../components/approve-incident-button"
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080"
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000"
 
 interface IncidentDetail {
   id: number; treeId: number; treeName: string | null; description: string | null

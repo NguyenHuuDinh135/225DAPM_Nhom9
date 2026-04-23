@@ -2,7 +2,7 @@ import { notFound } from "next/navigation"
 import Link from "next/link"
 import { ArrowLeftIcon, MapPinIcon } from "lucide-react"
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080"
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000"
 
 interface TreeDetail {
   id: number; name: string | null; condition: string | null; treeTypeName: string | null

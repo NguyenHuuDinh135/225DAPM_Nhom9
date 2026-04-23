@@ -6,7 +6,7 @@ import { planSchema } from "./data/schema"
 
 export const metadata: Metadata = { title: "Quản lý Kế hoạch" }
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080"
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000"
 
 async function getPlans() {
   const cookieStore = await cookies()

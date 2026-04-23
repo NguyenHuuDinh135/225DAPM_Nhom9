@@ -1,7 +1,7 @@
 import { cookies } from "next/headers"
 import { WorksClient } from "./components/works-client"
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080"
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000"
 
 export type WorkStatus = "New" | "InProgress" | "WaitingForApproval" | "Completed" | "Cancelled"
 

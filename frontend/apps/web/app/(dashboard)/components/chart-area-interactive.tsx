@@ -14,7 +14,7 @@ import { ToggleGroup, ToggleGroupItem } from "@workspace/ui/components/toggle-gr
 
 interface MonthlyStatDto { month: string; completedWorks: number; newIncidents: number }
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080"
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000"
 
 const chartConfig = {
   completedWorks: { label: "Công việc hoàn thành", color: "hsl(var(--primary))" },

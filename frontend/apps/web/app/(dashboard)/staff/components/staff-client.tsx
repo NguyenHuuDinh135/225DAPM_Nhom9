@@ -46,7 +46,7 @@ export function StaffClient({ employees: initial }: { employees: EmployeeDto[] }
   const [selected, setSelected] = React.useState<EmployeeDto | undefined>()
 
   async function refresh() {
-    const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080"
+    const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000"
     const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null
     const res = await fetch(`${BASE_URL}/api/employees`, {
       headers: token ? { Authorization: `Bearer ${token}` } : {},

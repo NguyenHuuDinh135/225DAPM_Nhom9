@@ -7,7 +7,7 @@ import { workItemSchema, type WorkItem } from "./data/schema"
 
 export const metadata: Metadata = { title: "Danh sách công việc" }
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080"
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000"
 
 async function getWorkItems(): Promise<WorkItem[]> {
   const cookieStore = await cookies()

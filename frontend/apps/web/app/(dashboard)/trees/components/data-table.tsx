@@ -32,7 +32,7 @@ import { ImportTreesDialog } from "./import-trees-dialog"
 import { makeColumns } from "./columns"
 import { type Tree } from "../data/schema"
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080"
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000"
 
 interface DataTableProps {
   data: Tree[]

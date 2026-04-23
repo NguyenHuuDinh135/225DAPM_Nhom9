@@ -744,10 +744,10 @@
         ]
       }
     },
-    "/api/TreeIncidents": {
+    "/api/tree-incidents": {
       "post": {
         "tags": [
-          "TreeIncidents"
+          "tree-incidents"
         ],
         "operationId": "PostApiTreeIncidents",
         "requestBody": {
@@ -778,7 +778,7 @@
       },
       "get": {
         "tags": [
-          "TreeIncidents"
+          "tree-incidents"
         ],
         "operationId": "GetApiTreeIncidents",
         "responses": {
@@ -800,10 +800,10 @@
         ]
       }
     },
-    "/api/TreeIncidents/report-incident": {
+    "/api/tree-incidents/report-incident": {
       "post": {
         "tags": [
-          "TreeIncidents"
+          "tree-incidents"
         ],
         "operationId": "PostApiTreeIncidentsReportIncident",
         "parameters": [
@@ -832,10 +832,10 @@
         }
       }
     },
-    "/api/TreeIncidents/{id}": {
+    "/api/tree-incidents/{id}": {
       "get": {
         "tags": [
-          "TreeIncidents"
+          "tree-incidents"
         ],
         "operationId": "GetApiTreeIncidents2",
         "parameters": [
@@ -869,10 +869,10 @@
         ]
       }
     },
-    "/api/TreeIncidents/{id}/status": {
+    "/api/tree-incidents/{id}/status": {
       "put": {
         "tags": [
-          "TreeIncidents"
+          "tree-incidents"
         ],
         "operationId": "PutApiTreeIncidentsStatus",
         "parameters": [
@@ -906,15 +906,19 @@
         },
         "security": [
           {
-            "JWT": []
+            "JWT": [
+              "Manager",
+              "Employee",
+              "Administrator"
+            ]
           }
         ]
       }
     },
-    "/api/TreeIncidents/{id}/approve": {
+    "/api/tree-incidents/{id}/approve": {
       "put": {
         "tags": [
-          "TreeIncidents"
+          "tree-incidents"
         ],
         "operationId": "PutApiTreeIncidentsApprove",
         "parameters": [
@@ -948,15 +952,18 @@
         },
         "security": [
           {
-            "JWT": []
+            "JWT": [
+              "Manager",
+              "Administrator"
+            ]
           }
         ]
       }
     },
-    "/api/TreeIncidents/{id}/feedback": {
+    "/api/tree-incidents/{id}/feedback": {
       "post": {
         "tags": [
-          "TreeIncidents"
+          "tree-incidents"
         ],
         "operationId": "PostApiTreeIncidentsFeedback",
         "parameters": [
@@ -990,7 +997,11 @@
         },
         "security": [
           {
-            "JWT": []
+            "JWT": [
+              "Manager",
+              "Employee",
+              "Administrator"
+            ]
           }
         ]
       }
@@ -1057,7 +1068,11 @@
         },
         "security": [
           {
-            "JWT": []
+            "JWT": [
+              "Manager",
+              "Admin",
+              "Administrator"
+            ]
           }
         ]
       }
@@ -1162,7 +1177,11 @@
         },
         "security": [
           {
-            "JWT": []
+            "JWT": [
+              "Manager",
+              "Admin",
+              "Administrator"
+            ]
           }
         ]
       },
@@ -1203,7 +1222,11 @@
         },
         "security": [
           {
-            "JWT": []
+            "JWT": [
+              "Manager",
+              "Admin",
+              "Administrator"
+            ]
           }
         ]
       }
@@ -1290,7 +1313,11 @@
         },
         "security": [
           {
-            "JWT": []
+            "JWT": [
+              "Manager",
+              "Admin",
+              "Administrator"
+            ]
           }
         ]
       }
@@ -1345,7 +1372,11 @@
         },
         "security": [
           {
-            "JWT": []
+            "JWT": [
+              "Manager",
+              "Admin",
+              "Administrator"
+            ]
           }
         ]
       }
@@ -1790,10 +1821,10 @@
         ]
       }
     },
-    "/api/WorkItems": {
+    "/api/work-items": {
       "get": {
         "tags": [
-          "WorkItems"
+          "work-items"
         ],
         "operationId": "GetWorkItems",
         "responses": {
@@ -1816,7 +1847,7 @@
       },
       "post": {
         "tags": [
-          "WorkItems"
+          "work-items"
         ],
         "operationId": "CreateWorkItem",
         "requestBody": {
@@ -1851,15 +1882,19 @@
         },
         "security": [
           {
-            "JWT": []
+            "JWT": [
+              "Manager",
+              "Admin",
+              "Administrator"
+            ]
           }
         ]
       }
     },
-    "/api/WorkItems/{id}": {
+    "/api/work-items/{id}": {
       "get": {
         "tags": [
-          "WorkItems"
+          "work-items"
         ],
         "operationId": "GetWorkItemDetail",
         "parameters": [
@@ -1894,7 +1929,7 @@
       },
       "put": {
         "tags": [
-          "WorkItems"
+          "work-items"
         ],
         "operationId": "UpdateWorkItem",
         "parameters": [
@@ -1941,13 +1976,17 @@
         },
         "security": [
           {
-            "JWT": []
+            "JWT": [
+              "Manager",
+              "Admin",
+              "Administrator"
+            ]
           }
         ]
       },
       "delete": {
         "tags": [
-          "WorkItems"
+          "work-items"
         ],
         "operationId": "DeleteWorkItem",
         "parameters": [
@@ -1982,15 +2021,19 @@
         },
         "security": [
           {
-            "JWT": []
+            "JWT": [
+              "Manager",
+              "Admin",
+              "Administrator"
+            ]
           }
         ]
       }
     },
-    "/api/WorkItems/{id}/report-progress": {
+    "/api/work-items/{id}/report-progress": {
       "post": {
         "tags": [
-          "WorkItems"
+          "work-items"
         ],
         "operationId": "ReportProgress",
         "parameters": [
@@ -2059,15 +2102,17 @@
         },
         "security": [
           {
-            "JWT": []
+            "JWT": [
+              "Employee"
+            ]
           }
         ]
       }
     },
-    "/api/WorkItems/{id}/approve": {
+    "/api/work-items/{id}/approve": {
       "put": {
         "tags": [
-          "WorkItems"
+          "work-items"
         ],
         "operationId": "ApproveWork",
         "parameters": [
@@ -2114,15 +2159,19 @@
         },
         "security": [
           {
-            "JWT": []
+            "JWT": [
+              "Manager",
+              "Admin",
+              "Administrator"
+            ]
           }
         ]
       }
     },
-    "/api/WorkItems/{id}/assign-user": {
+    "/api/work-items/{id}/assign-user": {
       "post": {
         "tags": [
-          "WorkItems"
+          "work-items"
         ],
         "operationId": "AssignUser",
         "parameters": [
@@ -2169,7 +2218,11 @@
         },
         "security": [
           {
-            "JWT": []
+            "JWT": [
+              "Manager",
+              "Admin",
+              "Administrator"
+            ]
           }
         ]
       }

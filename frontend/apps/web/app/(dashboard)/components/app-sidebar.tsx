@@ -33,7 +33,6 @@ const NAV_MAIN: NavItem[] = [
     title: "Cây xanh", url: "/trees", icon: <TreePineIcon className="size-4" />,
     items: [
       { title: "Tất cả cây", url: "/trees" },
-      { title: "Thêm cây", url: "/trees/new" },
     ],
   },
   { title: "Bản đồ", url: "/map", icon: <MapIcon className="size-4" /> },

@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@workspace/ui/componen
 import { Skeleton } from "@workspace/ui/components/skeleton"
 import { RelocateTreeForm } from "./relocate-form"
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080"
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000"
 
 interface TreeDetail {
   id: number; name: string | null; condition: string | null; treeTypeName: string | null

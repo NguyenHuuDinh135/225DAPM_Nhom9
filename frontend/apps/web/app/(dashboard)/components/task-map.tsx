@@ -7,7 +7,7 @@ import { Badge } from "@workspace/ui/components/badge";
 import { Button } from "@workspace/ui/components/button";
 import { Wrench, CheckCircle2, Clock, X, MapPin, Calendar, ArrowRight, AlertCircle } from "lucide-react";
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080";
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000";
 
 type WorkStatus = "New" | "InProgress" | "WaitingForApproval" | "Completed" | "Cancelled";
 
