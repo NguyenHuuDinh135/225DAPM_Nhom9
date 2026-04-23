@@ -24,7 +24,7 @@ interface NavItem {
   url: string
   icon: React.ReactNode
   roles?: Role[]
-  items?: { title: string; url: string }[]
+  items?: { title: string; url: string; roles?: Role[] }[]
 }
 
 const NAV_MAIN: NavItem[] = [
@@ -41,7 +41,6 @@ const NAV_MAIN: NavItem[] = [
     roles: ["Manager", "Administrator"],
     items: [
       { title: "Tất cả kế hoạch", url: "/plans" },
-      { title: "Tạo kế hoạch", url: "/plans/new" },
     ],
   },
   {
@@ -49,7 +48,7 @@ const NAV_MAIN: NavItem[] = [
     roles: ["Employee", "Manager"],
     items: [
       { title: "Công việc của tôi", url: "/tasks" },
-      { title: "Phân công", url: "/tasks/assign" },
+      { title: "Phân công", url: "/tasks/assign", roles: ["Manager"] },
     ],
   },
   {
@@ -57,7 +56,7 @@ const NAV_MAIN: NavItem[] = [
     roles: ["Employee", "Manager", "Administrator"],
     items: [
       { title: "Tất cả công tác", url: "/works" },
-      { title: "Phân công", url: "/works/1/assign" },
+      { title: "Phân công", url: "/works/1/assign", roles: ["Manager"] },
       { title: "Tiến độ", url: "/works/1/progress" },
     ],
   },
@@ -119,13 +118,15 @@ function NavGroup({ label, items, role, pathname }: { label: string; items: NavI
                 </CollapsibleTrigger>
                 <CollapsibleContent>
                   <SidebarMenuSub>
-                    {item.items.map((sub) => (
-                      <SidebarMenuSubItem key={sub.title}>
-                        <SidebarMenuSubButton asChild isActive={pathname === sub.url}>
-                          <Link href={sub.url}>{sub.title}</Link>
-                        </SidebarMenuSubButton>
-                      </SidebarMenuSubItem>
-                    ))}
+                    {item.items
+                      .filter((sub) => !sub.roles || sub.roles.includes(role))
+                      .map((sub) => (
+                        <SidebarMenuSubItem key={sub.title}>
+                          <SidebarMenuSubButton asChild isActive={pathname === sub.url}>
+                            <Link href={sub.url}>{sub.title}</Link>
+                          </SidebarMenuSubButton>
+                        </SidebarMenuSubItem>
+                      ))}
                   </SidebarMenuSub>
                 </CollapsibleContent>
               </SidebarMenuItem>

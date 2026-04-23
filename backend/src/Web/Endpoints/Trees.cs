@@ -8,6 +8,7 @@ using backend.Application.Trees.Queries.GetTreeLocationHistory;
 using backend.Application.Trees.Queries.GetTreeMap;
 using backend.Application.Trees.Queries.GetTrees;
 using backend.Domain.Constants;
+using backend.Infrastructure.Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 
@@ -26,6 +27,7 @@ public class Trees : EndpointGroupBase
         groupBuilder.MapPut("{id}", UpdateTree).RequireAuthorization(new AuthorizeAttribute { Roles = $"{Roles.Manager},{Roles.Admin},{Roles.Administrator}" });
         groupBuilder.MapPut("{id}/relocate", RelocateTree).RequireAuthorization(new AuthorizeAttribute { Roles = $"{Roles.Manager},{Roles.Admin},{Roles.Administrator}" });
         groupBuilder.MapDelete("{id}", DeleteTree).RequireAuthorization(new AuthorizeAttribute { Roles = $"{Roles.Manager},{Roles.Admin},{Roles.Administrator}" });
+        groupBuilder.MapPost("seed", SeedTrees).AllowAnonymous();
     }
 
     public async Task<IEnumerable<TreeDto>> GetAllTrees(ISender sender)
@@ -69,5 +71,11 @@ public class Trees : EndpointGroupBase
     {
         var result = await sender.Send(new DeleteTreeCommand(id));
         return result.Succeeded ? TypedResults.NoContent() : TypedResults.BadRequest(result.Errors);
+    }
+
+    public async Task<IResult> SeedTrees(ApplicationDbContextInitialiser initialiser)
+    {
+        await initialiser.TrySeedAsync();
+        return TypedResults.NoContent();
     }
 }

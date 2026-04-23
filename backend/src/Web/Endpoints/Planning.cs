@@ -15,9 +15,9 @@ public class Planning : EndpointGroupBase
     {
         groupBuilder.MapGet(GetPlans).RequireAuthorization();
         groupBuilder.MapGet(GetPlanDetail, "{id}").RequireAuthorization();
-        groupBuilder.MapPost(CreatePlan).RequireAuthorization(Roles.Manager, Roles.Admin, Roles.Administrator);
-        groupBuilder.MapPut(UpdatePlan, "{id}").RequireAuthorization(Roles.Manager, Roles.Admin, Roles.Administrator);
-        groupBuilder.MapDelete(DeletePlan, "{id}").RequireAuthorization(Roles.Manager, Roles.Admin, Roles.Administrator);
+        groupBuilder.MapPost(CreatePlan).RequireAuthorization(Roles.Manager);
+        groupBuilder.MapPut(UpdatePlan, "{id}").RequireAuthorization(Roles.Manager);
+        groupBuilder.MapDelete(DeletePlan, "{id}").RequireAuthorization(Roles.Manager);
         groupBuilder.MapPut(ApprovePlan, "{id}/approve").RequireAuthorization(Roles.Manager, Roles.Admin, Roles.Administrator);
     }
 

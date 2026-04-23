@@ -1381,6 +1381,19 @@
         ]
       }
     },
+    "/api/Trees/seed": {
+      "post": {
+        "tags": [
+          "Trees"
+        ],
+        "operationId": "PostApiTreesSeed",
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
     "/api/Users/register": {
       "post": {
         "tags": [
