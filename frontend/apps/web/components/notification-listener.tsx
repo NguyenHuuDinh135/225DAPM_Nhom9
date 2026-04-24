@@ -7,10 +7,21 @@ import { toast } from "@workspace/ui/components/sonner"
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080"
 
 export function NotificationListener() {
+  // Temporarily disabled - SignalR connection issues
+  // TODO: Fix SignalR authentication
+  return null
+  
+  /* eslint-disable @typescript-eslint/no-unused-vars */
   useEffect(() => {
+    // Only connect if we have a token (user is logged in)
+    const token = localStorage.getItem("access_token")
+    if (!token) {
+      return
+    }
+
     const connection = new HubConnectionBuilder()
       .withUrl(`${BASE_URL}/hubs/incidents`, {
-        accessTokenFactory: () => localStorage.getItem("access_token") ?? "",
+        accessTokenFactory: () => token,
       })
       .withAutomaticReconnect()
       .configureLogging(LogLevel.Warning)
@@ -20,10 +31,13 @@ export function NotificationListener() {
       toast.warning(message, { description: `Sự cố #${incidentId}` })
     })
 
-    connection.start().catch(() => {/* silent fail if hub unreachable */})
+    connection.start().catch((err) => {
+      console.warn("SignalR connection failed:", err)
+    })
 
-    return () => { connection.stop() }
+    return () => { 
+      connection.stop().catch(() => {/* ignore */})
+    }
   }, [])
-
-  return null
+  /* eslint-enable @typescript-eslint/no-unused-vars */
 }

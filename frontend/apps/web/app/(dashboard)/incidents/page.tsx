@@ -11,12 +11,26 @@ const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080"
 async function getIncidents() {
   const cookieStore = await cookies()
   const token = cookieStore.get("access_token")?.value
+  
+  console.log("🔍 Fetching incidents from:", `${BASE_URL}/api/tree-incidents`)
+  console.log("🔑 Token exists:", !!token)
+  
   const res = await fetch(`${BASE_URL}/api/tree-incidents`, {
     headers: token ? { Authorization: `Bearer ${token}` } : {},
     next: { revalidate: 30 },
   })
-  if (!res.ok) return []
+  
+  console.log("📡 Response status:", res.status)
+  
+  if (!res.ok) {
+    console.error("❌ Failed to fetch incidents:", res.status, res.statusText)
+    return []
+  }
+  
   const json = await res.json() as { treeIncidents: unknown[] }
+  console.log("📦 Response data:", json)
+  console.log("📊 Incidents count:", json.treeIncidents?.length ?? 0)
+  
   return z.array(incidentSchema).parse(json.treeIncidents)
 }
 

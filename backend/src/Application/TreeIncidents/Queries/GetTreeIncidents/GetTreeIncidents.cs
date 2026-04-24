@@ -1,5 +1,4 @@
 using backend.Application.Common.Interfaces;
-using backend.Application.TreeIncidents.Queries.GetIncidentsByLocation;
 
 namespace backend.Application.TreeIncidents.Queries.GetTreeIncidents;
 

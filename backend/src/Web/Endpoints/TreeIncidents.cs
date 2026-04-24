@@ -12,6 +12,8 @@ namespace backend.Web.Endpoints;
 
 public class TreeIncidents : EndpointGroupBase
 {
+    public override string? GroupName => "tree-incidents";
+
     public override void Map(RouteGroupBuilder app)
     {
         app.MapPost("", CreateIncident).AllowAnonymous();

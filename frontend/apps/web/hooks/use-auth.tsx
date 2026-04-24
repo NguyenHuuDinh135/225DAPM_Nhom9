@@ -43,30 +43,47 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   async function login(email: string, password: string) {
-    const res = await apiClient.post<LoginResponse>("/api/Users/login?useCookies=false&useSessionCookies=false", {
-      email,
-      password,
-    });
-    localStorage.setItem("access_token", res.accessToken);
-    document.cookie = `access_token=${res.accessToken}; path=/; SameSite=Lax`;
-    setToken(res.accessToken);
+    // Use Next.js API route to set cookie from server-side
+    const response = await fetch("/api/auth/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email, password }),
+    })
 
-    const userInfo = await apiClient.get<User>("/api/Users/me");
-    localStorage.setItem("user_id", userInfo.id);
-    localStorage.setItem("user", JSON.stringify(userInfo));
-    setUser(userInfo);
+    if (!response.ok) {
+      const error = await response.json()
+      throw new Error(error.message || "Login failed")
+    }
 
-    router.push("/dashboard");
+    const res = await response.json() as LoginResponse
+    
+    // Store in localStorage for client-side access
+    localStorage.setItem("access_token", res.accessToken)
+    setToken(res.accessToken)
+
+    // Fetch user info
+    const userInfo = await apiClient.get<User>("/api/Users/me")
+    localStorage.setItem("user_id", userInfo.id)
+    localStorage.setItem("user", JSON.stringify(userInfo))
+    setUser(userInfo)
+
+    router.push("/dashboard")
+    router.refresh() // Refresh server components
   }
 
-  function logout() {
-    localStorage.removeItem("access_token");
-    localStorage.removeItem("user");
-    localStorage.removeItem("user_id");
-    document.cookie = "access_token=; path=/; max-age=0";
-    setToken(null);
-    setUser(null);
-    router.push("/login");
+  async function logout() {
+    // Call API route to delete cookie
+    await fetch("/api/auth/logout", { method: "POST" })
+    
+    localStorage.removeItem("access_token")
+    localStorage.removeItem("user")
+    localStorage.removeItem("user_id")
+    setToken(null)
+    setUser(null)
+    router.push("/login")
+    router.refresh()
   }
 
   return (

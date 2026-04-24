@@ -14,6 +14,8 @@ namespace backend.Web.Endpoints;
 
 public class WorkItems : EndpointGroupBase
 {
+    public override string? GroupName => "work-items";
+
     public override void Map(RouteGroupBuilder groupBuilder)
     {
         groupBuilder.MapGet(GetWorkItems).RequireAuthorization();

@@ -56,6 +56,12 @@ public static class DependencyInjection
 
             configure.OperationProcessors.Add(new AspNetCoreOperationSecurityScopeProcessor("JWT"));
         });
+
+        // Configure JSON options to serialize enums as strings
+        builder.Services.ConfigureHttpJsonOptions(options =>
+        {
+            options.SerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
+        });
     }
 
     public static void AddKeyVaultIfConfigured(this IHostApplicationBuilder builder)
