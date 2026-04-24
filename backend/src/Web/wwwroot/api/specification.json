@@ -6,10 +6,10 @@
     "version": "1.0.0"
   },
   "paths": {
-    "/api/Employees": {
+    "/api/employees": {
       "get": {
         "tags": [
-          "Employees"
+          "employees"
         ],
         "operationId": "GetApiEmployees",
         "responses": {
@@ -32,7 +32,7 @@
       },
       "post": {
         "tags": [
-          "Employees"
+          "employees"
         ],
         "operationId": "PostApiEmployees",
         "requestBody": {
@@ -72,10 +72,10 @@
         ]
       }
     },
-    "/api/Employees/{id}": {
+    "/api/employees/{id}": {
       "put": {
         "tags": [
-          "Employees"
+          "employees"
         ],
         "operationId": "PutApiEmployees",
         "parameters": [
@@ -127,7 +127,7 @@
       },
       "delete": {
         "tags": [
-          "Employees"
+          "employees"
         ],
         "operationId": "DeleteApiEmployees",
         "parameters": [
@@ -166,10 +166,10 @@
         ]
       }
     },
-    "/api/Employees/{id}/roles": {
+    "/api/employees/{id}/roles": {
       "put": {
         "tags": [
-          "Employees"
+          "employees"
         ],
         "operationId": "PutApiEmployeesRoles",
         "parameters": [
@@ -220,10 +220,10 @@
         ]
       }
     },
-    "/api/Locations": {
+    "/api/locations": {
       "get": {
         "tags": [
-          "Locations"
+          "locations"
         ],
         "operationId": "GetLocations",
         "responses": {
@@ -246,7 +246,7 @@
       },
       "post": {
         "tags": [
-          "Locations"
+          "locations"
         ],
         "operationId": "CreateLocation",
         "requestBody": {
@@ -281,10 +281,10 @@
         ]
       }
     },
-    "/api/Lookups/tree-types": {
+    "/api/lookups/tree-types": {
       "get": {
         "tags": [
-          "Lookups"
+          "lookups"
         ],
         "operationId": "GetApiLookupsTreeTypes",
         "responses": {
@@ -299,10 +299,10 @@
         }
       }
     },
-    "/api/Lookups/work-types": {
+    "/api/lookups/work-types": {
       "get": {
         "tags": [
-          "Lookups"
+          "lookups"
         ],
         "operationId": "GetApiLookupsWorkTypes",
         "responses": {
@@ -322,10 +322,10 @@
         ]
       }
     },
-    "/api/Lookups/wards": {
+    "/api/lookups/wards": {
       "get": {
         "tags": [
-          "Lookups"
+          "lookups"
         ],
         "operationId": "GetApiLookupsWards",
         "responses": {
@@ -345,10 +345,10 @@
         ]
       }
     },
-    "/api/Lookups/streets": {
+    "/api/lookups/streets": {
       "get": {
         "tags": [
-          "Lookups"
+          "lookups"
         ],
         "operationId": "GetApiLookupsStreets",
         "parameters": [
@@ -411,10 +411,10 @@
         ]
       }
     },
-    "/api/Planning": {
+    "/api/planning": {
       "get": {
         "tags": [
-          "Planning"
+          "planning"
         ],
         "operationId": "GetPlans",
         "responses": {
@@ -431,16 +431,11 @@
               }
             }
           }
-        },
-        "security": [
-          {
-            "JWT": []
-          }
-        ]
+        }
       },
       "post": {
         "tags": [
-          "Planning"
+          "planning"
         ],
         "operationId": "CreatePlan",
         "requestBody": {
@@ -467,18 +462,13 @@
               }
             }
           }
-        },
-        "security": [
-          {
-            "JWT": []
-          }
-        ]
+        }
       }
     },
-    "/api/Planning/{id}": {
+    "/api/planning/{id}": {
       "get": {
         "tags": [
-          "Planning"
+          "planning"
         ],
         "operationId": "GetPlanDetail",
         "parameters": [
@@ -504,16 +494,11 @@
               }
             }
           }
-        },
-        "security": [
-          {
-            "JWT": []
-          }
-        ]
+        }
       },
       "put": {
         "tags": [
-          "Planning"
+          "planning"
         ],
         "operationId": "UpdatePlan",
         "parameters": [
@@ -557,16 +542,11 @@
               }
             }
           }
-        },
-        "security": [
-          {
-            "JWT": []
-          }
-        ]
+        }
       },
       "delete": {
         "tags": [
-          "Planning"
+          "planning"
         ],
         "operationId": "DeletePlan",
         "parameters": [
@@ -598,18 +578,13 @@
               }
             }
           }
-        },
-        "security": [
-          {
-            "JWT": []
-          }
-        ]
+        }
       }
     },
-    "/api/Planning/{id}/approve": {
+    "/api/planning/{id}/approve": {
       "put": {
         "tags": [
-          "Planning"
+          "planning"
         ],
         "operationId": "ApprovePlan",
         "parameters": [
@@ -653,18 +628,13 @@
               }
             }
           }
-        },
-        "security": [
-          {
-            "JWT": []
-          }
-        ]
+        }
       }
     },
-    "/api/Reports/dashboard-stats": {
+    "/api/reports/dashboard-stats": {
       "get": {
         "tags": [
-          "Reports"
+          "reports"
         ],
         "operationId": "GetApiReportsDashboardStats",
         "responses": {
@@ -686,10 +656,10 @@
         ]
       }
     },
-    "/api/Reports/monthly-stats": {
+    "/api/reports/monthly-stats": {
       "get": {
         "tags": [
-          "Reports"
+          "reports"
         ],
         "operationId": "GetApiReportsMonthlyStats",
         "parameters": [
@@ -726,10 +696,10 @@
         ]
       }
     },
-    "/api/Reports/export": {
+    "/api/reports/export": {
       "get": {
         "tags": [
-          "Reports"
+          "reports"
         ],
         "operationId": "GetApiReportsExport",
         "responses": {
@@ -742,6 +712,44 @@
             "JWT": []
           }
         ]
+      }
+    },
+    "/api/test/ping": {
+      "get": {
+        "tags": [
+          "test"
+        ],
+        "operationId": "GetApiTestPing",
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/api/test/echo": {
+      "post": {
+        "tags": [
+          "test"
+        ],
+        "operationId": "PostApiTestEcho",
+        "requestBody": {
+          "x-name": "request",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EchoRequest"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
       }
     },
     "/api/tree-incidents": {
@@ -995,10 +1003,10 @@
         ]
       }
     },
-    "/api/Trees": {
+    "/api/trees": {
       "get": {
         "tags": [
-          "Trees"
+          "trees"
         ],
         "operationId": "GetApiTreesAll",
         "responses": {
@@ -1024,7 +1032,7 @@
       },
       "post": {
         "tags": [
-          "Trees"
+          "trees"
         ],
         "operationId": "PostApiTrees",
         "requestBody": {
@@ -1062,10 +1070,10 @@
         ]
       }
     },
-    "/api/Trees/map": {
+    "/api/trees/map": {
       "get": {
         "tags": [
-          "Trees"
+          "trees"
         ],
         "operationId": "GetApiTreesMap",
         "responses": {
@@ -1082,10 +1090,10 @@
         }
       }
     },
-    "/api/Trees/{id}": {
+    "/api/trees/{id}": {
       "get": {
         "tags": [
-          "Trees"
+          "trees"
         ],
         "operationId": "GetApiTrees",
         "parameters": [
@@ -1115,7 +1123,7 @@
       },
       "put": {
         "tags": [
-          "Trees"
+          "trees"
         ],
         "operationId": "PutApiTrees",
         "parameters": [
@@ -1168,7 +1176,7 @@
       },
       "delete": {
         "tags": [
-          "Trees"
+          "trees"
         ],
         "operationId": "DeleteApiTrees",
         "parameters": [
@@ -1208,10 +1216,10 @@
         ]
       }
     },
-    "/api/Trees/{id}/location-history": {
+    "/api/trees/{id}/location-history": {
       "get": {
         "tags": [
-          "Trees"
+          "trees"
         ],
         "operationId": "GetApiTreesLocationHistory",
         "parameters": [
@@ -1248,10 +1256,10 @@
         ]
       }
     },
-    "/api/Trees/import": {
+    "/api/trees/import": {
       "post": {
         "tags": [
-          "Trees"
+          "trees"
         ],
         "operationId": "PostApiTreesImport",
         "requestBody": {
@@ -1295,10 +1303,10 @@
         ]
       }
     },
-    "/api/Trees/{id}/relocate": {
+    "/api/trees/{id}/relocate": {
       "put": {
         "tags": [
-          "Trees"
+          "trees"
         ],
         "operationId": "PutApiTreesRelocate",
         "parameters": [
@@ -1350,10 +1358,10 @@
         ]
       }
     },
-    "/api/Users/register": {
+    "/api/users/register": {
       "post": {
         "tags": [
-          "Users"
+          "users"
         ],
         "operationId": "PostApiUsersRegister",
         "requestBody": {
@@ -1385,10 +1393,10 @@
         }
       }
     },
-    "/api/Users/login": {
+    "/api/users/login": {
       "post": {
         "tags": [
-          "Users"
+          "users"
         ],
         "operationId": "PostApiUsersLogin",
         "parameters": [
@@ -1437,10 +1445,10 @@
         }
       }
     },
-    "/api/Users/refresh": {
+    "/api/users/refresh": {
       "post": {
         "tags": [
-          "Users"
+          "users"
         ],
         "operationId": "PostApiUsersRefresh",
         "requestBody": {
@@ -1469,10 +1477,10 @@
         }
       }
     },
-    "/api/Users/confirmEmail": {
+    "/api/users/confirmEmail": {
       "get": {
         "tags": [
-          "Users"
+          "users"
         ],
         "operationId": "GetApiUsersConfirmEmail",
         "parameters": [
@@ -1513,10 +1521,10 @@
         }
       }
     },
-    "/api/Users/resendConfirmationEmail": {
+    "/api/users/resendConfirmationEmail": {
       "post": {
         "tags": [
-          "Users"
+          "users"
         ],
         "operationId": "PostApiUsersResendConfirmationEmail",
         "requestBody": {
@@ -1538,10 +1546,10 @@
         }
       }
     },
-    "/api/Users/forgotPassword": {
+    "/api/users/forgotPassword": {
       "post": {
         "tags": [
-          "Users"
+          "users"
         ],
         "operationId": "PostApiUsersForgotPassword",
         "requestBody": {
@@ -1573,10 +1581,10 @@
         }
       }
     },
-    "/api/Users/resetPassword": {
+    "/api/users/resetPassword": {
       "post": {
         "tags": [
-          "Users"
+          "users"
         ],
         "operationId": "PostApiUsersResetPassword",
         "requestBody": {
@@ -1608,10 +1616,10 @@
         }
       }
     },
-    "/api/Users/manage/2fa": {
+    "/api/users/manage/2fa": {
       "post": {
         "tags": [
-          "Users"
+          "users"
         ],
         "operationId": "PostApiUsersManage2fa",
         "requestBody": {
@@ -1658,10 +1666,10 @@
         ]
       }
     },
-    "/api/Users/manage/info": {
+    "/api/users/manage/info": {
       "get": {
         "tags": [
-          "Users"
+          "users"
         ],
         "operationId": "GetApiUsersManageInfo",
         "responses": {
@@ -1697,7 +1705,7 @@
       },
       "post": {
         "tags": [
-          "Users"
+          "users"
         ],
         "operationId": "PostApiUsersManageInfo",
         "requestBody": {
@@ -1744,10 +1752,10 @@
         ]
       }
     },
-    "/api/Users/me": {
+    "/api/users/me": {
       "get": {
         "tags": [
-          "Users"
+          "users"
         ],
         "operationId": "GetApiUsersMe",
         "responses": {
@@ -1763,7 +1771,7 @@
       },
       "put": {
         "tags": [
-          "Users"
+          "users"
         ],
         "operationId": "PutApiUsersMe",
         "requestBody": {
@@ -2592,6 +2600,15 @@
           "newIncidents": {
             "type": "integer",
             "format": "int32"
+          }
+        }
+      },
+      "EchoRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "message": {
+            "type": "string"
           }
         }
       },

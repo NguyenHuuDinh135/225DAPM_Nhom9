@@ -6,8 +6,11 @@ namespace backend.Web.Endpoints;
 
 public class Users : EndpointGroupBase
 {
+    public override string? GroupName => "users";
+
     public override void Map(RouteGroupBuilder groupBuilder)
     {
+        // Map default Identity API endpoints
         groupBuilder.MapIdentityApi<ApplicationUser>();
 
         groupBuilder.MapGet("/me", async (

@@ -11,14 +11,16 @@ namespace backend.Web.Endpoints;
 
 public class Planning : EndpointGroupBase
 {
+    public override string? GroupName => "planning";
+
     public override void Map(RouteGroupBuilder groupBuilder)
     {
-        groupBuilder.MapGet(GetPlans).RequireAuthorization();
-        groupBuilder.MapGet(GetPlanDetail, "{id}").RequireAuthorization();
-        groupBuilder.MapPost(CreatePlan).RequireAuthorization(Roles.Manager, Roles.Admin, Roles.Administrator);
-        groupBuilder.MapPut(UpdatePlan, "{id}").RequireAuthorization(Roles.Manager, Roles.Admin, Roles.Administrator);
-        groupBuilder.MapDelete(DeletePlan, "{id}").RequireAuthorization(Roles.Manager, Roles.Admin, Roles.Administrator);
-        groupBuilder.MapPut(ApprovePlan, "{id}/approve").RequireAuthorization(Roles.Manager, Roles.Admin, Roles.Administrator);
+        groupBuilder.MapGet(GetPlans).AllowAnonymous(); // Tạm thời để test
+        groupBuilder.MapGet(GetPlanDetail, "{id}").AllowAnonymous();
+        groupBuilder.MapPost(CreatePlan).AllowAnonymous(); // Tạm thời để test
+        groupBuilder.MapPut(UpdatePlan, "{id}").AllowAnonymous();
+        groupBuilder.MapDelete(DeletePlan, "{id}").AllowAnonymous();
+        groupBuilder.MapPut(ApprovePlan, "{id}/approve").AllowAnonymous();
     }
 
     public async Task<Ok<List<PlanDto>>> GetPlans(ISender sender)

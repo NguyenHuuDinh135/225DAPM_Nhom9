@@ -14,6 +14,8 @@ namespace backend.Web.Endpoints;
 
 public class Trees : EndpointGroupBase
 {
+    public override string? GroupName => "trees";
+
     public override void Map(RouteGroupBuilder groupBuilder)
     {
         groupBuilder.MapGet("", GetAllTrees).RequireAuthorization();

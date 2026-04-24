@@ -8,6 +8,8 @@ namespace backend.Web.Endpoints;
 
 public class Employees : EndpointGroupBase
 {
+    public override string? GroupName => "employees";
+
     public override void Map(RouteGroupBuilder groupBuilder)
     {
         groupBuilder.MapGet("", GetEmployees).RequireAuthorization(Roles.Manager, Roles.Admin, Roles.Administrator);

@@ -19,10 +19,12 @@ public static class DependencyInjection
         builder.Services.AddCors(options =>
         {
             options.AddDefaultPolicy(policy =>
-                policy.WithOrigins("http://localhost:3000")
+            {
+                policy.WithOrigins("http://localhost:3000", "http://localhost:3001", "https://localhost:3000")
                       .AllowAnyHeader()
                       .AllowAnyMethod()
-                      .AllowCredentials());
+                      .AllowCredentials();
+            });
         });
 
         builder.Services.AddSignalR();
@@ -33,7 +35,6 @@ public static class DependencyInjection
         builder.Services.AddHttpContextAccessor();
 
         builder.Services.AddExceptionHandler<CustomExceptionHandler>();
-
 
         // Customise default API behaviour
         builder.Services.Configure<ApiBehaviorOptions>(options =>

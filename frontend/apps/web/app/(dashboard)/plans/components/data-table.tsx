@@ -34,7 +34,13 @@ const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080"
 
 export function DataTable({ data: initialData }: { data: Plan[] }) {
   const { user } = useAuth()
-  const canCreate = user?.role === "Administrator" || user?.role === "Manager"
+  
+  console.log("👤 Current user:", user)
+  console.log("🔑 User role:", user?.role)
+  
+  const canCreate = user?.role === "Administrator" || user?.role === "Manager" || user?.role === "Admin"
+  
+  console.log("✅ Can create plan:", canCreate)
   const [data, setData] = React.useState(initialData)
   const [rowSelection, setRowSelection] = React.useState({})
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})

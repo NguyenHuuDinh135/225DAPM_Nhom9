@@ -5,6 +5,8 @@ namespace backend.Web.Endpoints;
 
 public class Lookups : EndpointGroupBase
 {
+    public override string? GroupName => "lookups";
+
     public override void Map(RouteGroupBuilder app)
     {
         app.MapGet("tree-types", GetTreeTypes).AllowAnonymous();

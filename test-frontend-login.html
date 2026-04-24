@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Frontend Login Flow</title>
+    <style>
+        body { 
+            font-family: 'Segoe UI', Arial, sans-serif; 
+            padding: 20px; 
+            max-width: 900px; 
+            margin: 0 auto;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 { color: #2c3e50; margin-top: 0; }
+        h2 { color: #34495e; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
+        input { 
+            padding: 12px; 
+            margin: 8px 0; 
+            width: 100%; 
+            max-width: 400px;
+            font-size: 14px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+        button { 
+            padding: 12px 24px; 
+            margin: 10px 5px 10px 0; 
+            font-size: 16px; 
+            cursor: pointer; 
+            background: #3498db; 
+            color: white; 
+            border: none; 
+            border-radius: 5px;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+        button:hover { background: #2980b9; }
+        button:disabled { background: #95a5a6; cursor: not-allowed; }
+        .success { 
+            background: #d4edda; 
+            color: #155724;
+            padding: 15px; 
+            margin: 15px 0; 
+            border-radius: 5px;
+            border-left: 4px solid #28a745;
+        }
+        .error { 
+            background: #f8d7da; 
+            color: #721c24;
+            padding: 15px; 
+            margin: 15px 0; 
+            border-radius: 5px;
+            border-left: 4px solid #dc3545;
+        }
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+            border-left: 4px solid #17a2b8;
+        }
+        pre { 
+            background: #2c3e50; 
+            color: #ecf0f1;
+            padding: 15px; 
+            overflow-x: auto; 
+            font-size: 12px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+        }
+        .step {
+            background: #fff3cd;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+            border-left: 4px solid #ffc107;
+        }
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 3px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        .badge-success { background: #28a745; color: white; }
+        .badge-error { background: #dc3545; color: white; }
+        .badge-info { background: #17a2b8; color: white; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 Test Frontend Login Flow</h1>
+        <p>Kiểm tra toàn bộ flow đăng nhập của frontend</p>
+        
+        <div class="info">
+            <strong>📋 Checklist trước khi test:</strong>
+            <ul>
+                <li>✅ Backend đang chạy tại <code>http://localhost:5000</code></li>
+                <li>✅ Frontend đã được restart sau khi sửa code</li>
+                <li>✅ Đã xóa localStorage cũ (hoặc dùng nút bên dưới)</li>
+            </ul>
+        </div>
+
+        <h2>Bước 1: Xóa dữ liệu cũ</h2>
+        <button onclick="clearStorage()">🗑️ Xóa localStorage</button>
+        <div id="clearResult"></div>
+
+        <h2>Bước 2: Test Login API</h2>
+        <div>
+            <label><strong>Email:</strong></label><br>
+            <input type="email" id="email" value="manager@localhost" />
+        </div>
+        
+        <div>
+            <label><strong>Password:</strong></label><br>
+            <input type="password" id="password" value="Manager1!" />
+        </div>
+        
+        <button onclick="testLogin()">🚀 Test Login</button>
+        <div id="loginResult"></div>
+
+        <h2>Bước 3: Test Get User Info</h2>
+        <button onclick="testGetUserInfo()" id="btnGetUser" disabled>👤 Test /api/users/me</button>
+        <div id="userResult"></div>
+
+        <h2>Bước 4: Test Create Plan</h2>
+        <button onclick="testCreatePlan()" id="btnCreatePlan" disabled>📝 Test Create Plan</button>
+        <div id="planResult"></div>
+
+        <h2>Bước 5: Kiểm tra Frontend</h2>
+        <div class="step">
+            <strong>Nếu tất cả các test trên đều PASS:</strong>
+            <ol>
+                <li>Mở <a href="http://localhost:3000/login" target="_blank">http://localhost:3000/login</a></li>
+                <li>Nhập: <code>manager@localhost</code> / <code>Manager1!</code></li>
+                <li>Click Login</li>
+                <li>Sẽ redirect đến Dashboard</li>
+                <li>Thấy tên user ở góc phải</li>
+                <li>Vào trang Plans → Tạo plan mới → Thành công!</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        let accessToken = null;
+        let userId = null;
+        
+        function clearStorage() {
+            const resultDiv = document.getElementById("clearResult");
+            try {
+                localStorage.removeItem("access_token");
+                localStorage.removeItem("user");
+                localStorage.removeItem("user_id");
+                accessToken = null;
+                userId = null;
+                
+                document.getElementById("btnGetUser").disabled = true;
+                document.getElementById("btnCreatePlan").disabled = true;
+                
+                resultDiv.innerHTML = `
+                    <div class="success">
+                        <strong>✅ Đã xóa localStorage!</strong>
+                        <p>Các key đã xóa: access_token, user, user_id</p>
+                    </div>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <strong>❌ Lỗi khi xóa localStorage</strong>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        async function testLogin() {
+            const resultDiv = document.getElementById("loginResult");
+            const email = document.getElementById("email").value;
+            const password = document.getElementById("password").value;
+            
+            resultDiv.innerHTML = '<div class="info">🔍 Đang test login...</div>';
+            
+            try {
+                console.log("🔐 Testing login...");
+                const url = "http://localhost:5000/api/users/login?useCookies=false&useSessionCookies=false";
+                console.log("URL:", url);
+                
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                console.log("📡 Response:", response.status);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log("✅ Login success:", data);
+                    
+                    accessToken = data.accessToken;
+                    
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <strong>✅ LOGIN API HOẠT ĐỘNG!</strong>
+                            <p><strong>Status:</strong> ${response.status} OK</p>
+                            <p><strong>Token Type:</strong> ${data.tokenType}</p>
+                            <p><strong>Expires In:</strong> ${data.expiresIn} seconds</p>
+                            <p><strong>Token:</strong> <code>${accessToken.substring(0, 50)}...</code></p>
+                            <hr>
+                            <p>✅ Bước 2 PASS - Tiếp tục test Bước 3</p>
+                        </div>
+                    `;
+                    
+                    document.getElementById("btnGetUser").disabled = false;
+                } else {
+                    const errorText = await response.text();
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            <strong>❌ LOGIN THẤT BẠI!</strong>
+                            <p><strong>Status:</strong> ${response.status}</p>
+                            <pre>${errorText}</pre>
+                            <hr>
+                            <p><strong>Nguyên nhân có thể:</strong></p>
+                            <ul>
+                                <li>Email/password sai</li>
+                                <li>User không tồn tại trong database</li>
+                                <li>Backend chưa seed data</li>
+                            </ul>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error("❌ Error:", error);
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <strong>❌ KHÔNG KẾT NỐI ĐƯỢC BACKEND!</strong>
+                        <p><strong>Error:</strong> ${error.message}</p>
+                        <hr>
+                        <p><strong>Nguyên nhân:</strong></p>
+                        <ul>
+                            <li>Backend không chạy</li>
+                            <li>Backend không chạy ở port 5000</li>
+                            <li>CORS bị block</li>
+                        </ul>
+                        <p><strong>Giải pháp:</strong></p>
+                        <ol>
+                            <li>Kiểm tra backend: <a href="http://localhost:5000/api" target="_blank">http://localhost:5000/api</a></li>
+                            <li>Restart backend nếu cần</li>
+                            <li>Kiểm tra CORS trong DependencyInjection.cs</li>
+                        </ol>
+                    </div>
+                `;
+            }
+        }
+        
+        async function testGetUserInfo() {
+            const resultDiv = document.getElementById("userResult");
+            
+            if (!accessToken) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <strong>❌ Chưa có token!</strong>
+                        <p>Vui lòng test Bước 2 trước</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            resultDiv.innerHTML = '<div class="info">🔍 Đang test get user info...</div>';
+            
+            try {
+                console.log("👤 Testing /api/users/me...");
+                const url = "http://localhost:5000/api/users/me";
+                console.log("URL:", url);
+                console.log("Token:", accessToken.substring(0, 50) + "...");
+                
+                const response = await fetch(url, {
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`
+                    }
+                });
+                
+                console.log("📡 Response:", response.status);
+                
+                if (response.ok) {
+                    const userData = await response.json();
+                    console.log("✅ User info:", userData);
+                    
+                    userId = userData.id;
+                    
+                    // Save to localStorage
+                    localStorage.setItem("access_token", accessToken);
+                    localStorage.setItem("user_id", userId);
+                    localStorage.setItem("user", JSON.stringify(userData));
+                    
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <strong>✅ GET USER INFO HOẠT ĐỘNG!</strong>
+                            <p><strong>Status:</strong> ${response.status} OK</p>
+                            <p><strong>User ID:</strong> ${userData.id}</p>
+                            <p><strong>Email:</strong> ${userData.email}</p>
+                            <p><strong>Name:</strong> ${userData.name}</p>
+                            <p><strong>Role:</strong> <span class="badge badge-success">${userData.role}</span></p>
+                            <hr>
+                            <p>✅ Bước 3 PASS - Tiếp tục test Bước 4</p>
+                            <p>✅ Dữ liệu đã được lưu vào localStorage</p>
+                        </div>
+                    `;
+                    
+                    document.getElementById("btnCreatePlan").disabled = false;
+                } else {
+                    const errorText = await response.text();
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            <strong>❌ GET USER INFO THẤT BẠI!</strong>
+                            <p><strong>Status:</strong> ${response.status}</p>
+                            <pre>${errorText}</pre>
+                            <hr>
+                            <p><strong>Nguyên nhân có thể:</strong></p>
+                            <ul>
+                                <li>${response.status === 401 ? 'Token không hợp lệ hoặc hết hạn' : ''}</li>
+                                <li>${response.status === 403 ? 'Token không có quyền truy cập' : ''}</li>
+                                <li>Endpoint /api/users/me không hoạt động</li>
+                            </ul>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error("❌ Error:", error);
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <strong>❌ KHÔNG KẾT NỐI ĐƯỢC!</strong>
+                        <p><strong>Error:</strong> ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        async function testCreatePlan() {
+            const resultDiv = document.getElementById("planResult");
+            
+            if (!accessToken || !userId) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <strong>❌ Chưa có token hoặc userId!</strong>
+                        <p>Vui lòng test Bước 2 và 3 trước</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            resultDiv.innerHTML = '<div class="info">🔍 Đang test create plan...</div>';
+            
+            try {
+                console.log("📝 Testing create plan...");
+                const url = "http://localhost:5000/api/planning";
+                console.log("URL:", url);
+                
+                const planData = {
+                    name: `Test Plan ${new Date().toISOString()}`,
+                    creatorId: userId,
+                    startDate: '2026-04-10',
+                    endDate: '2026-04-30'
+                };
+                
+                console.log("Plan data:", planData);
+                
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${accessToken}`
+                    },
+                    body: JSON.stringify(planData)
+                });
+                
+                console.log("📡 Response:", response.status);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log("✅ Plan created:", data);
+                    
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <strong>🎉 CREATE PLAN THÀNH CÔNG!</strong>
+                            <p><strong>Status:</strong> ${response.status} OK</p>
+                            <p><strong>Plan ID:</strong> ${data.id}</p>
+                            <p><strong>Plan Name:</strong> ${data.name}</p>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                            <hr>
+                            <h3>✅ TẤT CẢ CÁC TEST ĐỀU PASS!</h3>
+                            <p><strong>Backend hoạt động hoàn hảo!</strong></p>
+                            <p><strong>Bây giờ test frontend:</strong></p>
+                            <ol>
+                                <li>Mở <a href="http://localhost:3000/login" target="_blank">http://localhost:3000/login</a></li>
+                                <li>Login với manager@localhost / Manager1!</li>
+                                <li>Vào trang Plans</li>
+                                <li>Tạo plan mới</li>
+                                <li>Sẽ thành công!</li>
+                            </ol>
+                        </div>
+                    `;
+                } else {
+                    const errorText = await response.text();
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            <strong>❌ CREATE PLAN THẤT BẠI!</strong>
+                            <p><strong>Status:</strong> ${response.status}</p>
+                            <pre>${errorText}</pre>
+                            <hr>
+                            <p><strong>Nguyên nhân có thể:</strong></p>
+                            <ul>
+                                <li>${response.status === 401 ? 'Token không hợp lệ' : ''}</li>
+                                <li>${response.status === 403 ? 'Token không có role claims (cần fix ApplicationUserClaimsPrincipalFactory)' : ''}</li>
+                                <li>${response.status === 400 ? 'Dữ liệu không hợp lệ (kiểm tra validation)' : ''}</li>
+                                <li>${response.status === 500 ? 'Lỗi server (kiểm tra backend logs)' : ''}</li>
+                            </ul>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error("❌ Error:", error);
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <strong>❌ KHÔNG KẾT NỐI ĐƯỢC!</strong>
+                        <p><strong>Error:</strong> ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>

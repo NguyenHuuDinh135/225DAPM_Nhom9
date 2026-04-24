@@ -7,6 +7,8 @@ namespace backend.Web.Endpoints;
 
 public class Reports : EndpointGroupBase
 {
+    public override string? GroupName => "reports";
+
     public override void Map(RouteGroupBuilder app)
     {
         app.MapGet("dashboard-stats", GetDashboardStats).RequireAuthorization();

@@ -1,4 +1,4 @@
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080";
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000";
 
 export interface ApiError {
   status: number;
@@ -19,15 +19,29 @@ async function request<T>(
   headers.set("Content-Type", "application/json");
   if (token) headers.set("Authorization", `Bearer ${token}`);
 
-  const res = await fetch(`${BASE_URL}${path}`, { ...init, headers });
+  const url = `${BASE_URL}${path}`;
+  console.log(`🌐 API Request: ${init.method || 'GET'} ${url}`);
+  console.log(`🔑 Token: ${token ? 'Present' : 'Missing'}`);
 
-  if (!res.ok) {
-    const message = await res.text().catch(() => res.statusText);
-    throw { status: res.status, message } satisfies ApiError;
+  try {
+    const res = await fetch(url, { ...init, headers });
+
+    console.log(`📡 Response: ${res.status} ${res.statusText}`);
+
+    if (!res.ok) {
+      const message = await res.text().catch(() => res.statusText);
+      console.error(`❌ API Error: ${res.status} - ${message}`);
+      throw { status: res.status, message } satisfies ApiError;
+    }
+
+    if (res.status === 204) return undefined as T;
+    const data = await res.json();
+    console.log(`✅ API Success:`, data);
+    return data as T;
+  } catch (error) {
+    console.error(`❌ Fetch Error:`, error);
+    throw error;
   }
-
-  if (res.status === 204) return undefined as T;
-  return res.json() as Promise<T>;
 }
 
 export const apiClient = {

@@ -7,6 +7,8 @@ namespace backend.Web.Endpoints;
 
 public class Locations : EndpointGroupBase
 {
+    public override string? GroupName => "locations";
+
     public override void Map(RouteGroupBuilder groupBuilder)
     {
         groupBuilder.MapGet(GetLocations).RequireAuthorization();

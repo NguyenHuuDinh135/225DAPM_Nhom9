@@ -31,7 +31,15 @@ public class CreatePlanCommandHandler : IRequestHandler<CreatePlanCommand, int>
 
     public async Task<int> Handle(CreatePlanCommand request, CancellationToken cancellationToken)
     {
-        var plan = Plan.Create(request.Name!, request.CreatorId, request.StartDate, request.EndDate);
+        // Convert DateTime to UTC if not null
+        var startDate = request.StartDate.HasValue 
+            ? DateTime.SpecifyKind(request.StartDate.Value, DateTimeKind.Utc) 
+            : (DateTime?)null;
+        var endDate = request.EndDate.HasValue 
+            ? DateTime.SpecifyKind(request.EndDate.Value, DateTimeKind.Utc) 
+            : (DateTime?)null;
+
+        var plan = Plan.Create(request.Name!, request.CreatorId, startDate, endDate);
 
         _context.Plans.Add(plan);
         await _context.SaveChangesAsync(cancellationToken);

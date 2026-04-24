@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Login Direct</title>
+    <style>
+        body { font-family: Arial; padding: 20px; max-width: 800px; margin: 0 auto; }
+        input { padding: 10px; margin: 5px 0; width: 300px; font-size: 14px; }
+        button { padding: 10px 20px; margin: 10px 5px 10px 0; font-size: 16px; cursor: pointer; background: #4CAF50; color: white; border: none; border-radius: 5px; }
+        .success { background: #d4edda; padding: 15px; margin: 10px 0; border-radius: 5px; }
+        .error { background: #f8d7da; padding: 15px; margin: 10px 0; border-radius: 5px; }
+        pre { background: #f5f5f5; padding: 10px; overflow-x: auto; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <h1>🔐 Test Login Trực Tiếp Backend</h1>
+    <p>Bỏ qua Next.js API route, gọi trực tiếp backend</p>
+    
+    <div>
+        <label>Email:</label><br>
+        <input type="email" id="email" value="manager@localhost" />
+    </div>
+    
+    <div>
+        <label>Password:</label><br>
+        <input type="password" id="password" value="Manager1!" />
+    </div>
+    
+    <button onclick="loginDirect()">🚀 Login Trực Tiếp Backend</button>
+    <button onclick="testCreatePlan()">✅ Test Tạo Plan (sau khi login)</button>
+    
+    <div id="result"></div>
+
+    <script>
+        let accessToken = null;
+        let userId = null;
+        
+        async function loginDirect() {
+            const resultDiv = document.getElementById("result");
+            const email = document.getElementById("email").value;
+            const password = document.getElementById("password").value;
+            
+            resultDiv.innerHTML = '<p>🔍 Đang login...</p>';
+            
+            try {
+                console.log("🔐 Logging in directly to backend...");
+                console.log("URL:", "http://localhost:5000/api/users/login?useCookies=false");
+                
+                const response = await fetch('http://localhost:5000/api/users/login?useCookies=false', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                console.log("📡 Response:", response.status);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log("✅ Login success:", data);
+                    
+                    accessToken = data.accessToken;
+                    
+                    // Get user info
+                    const userResponse = await fetch('http://localhost:5000/api/users/me', {
+                        headers: {
+                            'Authorization': `Bearer ${accessToken}`
+                        }
+                    });
+                    
+                    if (userResponse.ok) {
+                        const userData = await userResponse.json();
+                        userId = userData.id;
+                        
+                        // Save to localStorage for testing
+                        localStorage.setItem("access_token", accessToken);
+                        localStorage.setItem("user_id", userId);
+                        localStorage.setItem("user", JSON.stringify(userData));
+                        
+                        // Decode token to check role claims
+                        let roleInfo = "Đang kiểm tra...";
+                        try {
+                            const parts = accessToken.split('.');
+                            if (parts.length === 3) {
+                                const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
+                                const role = payload["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] || payload.role;
+                                roleInfo = role ? `✅ Có role: ${role}` : `❌ KHÔNG có role claims!`;
+                            }
+                        } catch (e) {
+                            roleInfo = "⚠️ Không thể decode token (có thể là encrypted token)";
+                        }
+                        
+                        resultDiv.innerHTML = `
+                            <div class="success">
+                                <strong>✅ LOGIN THÀNH CÔNG!</strong>
+                                <p><strong>User:</strong> ${userData.email}</p>
+                                <p><strong>Role:</strong> ${userData.role}</p>
+                                <p><strong>User ID:</strong> ${userId}</p>
+                                <p><strong>Token:</strong> ${accessToken.substring(0, 50)}...</p>
+                                <p><strong>Role trong token:</strong> ${roleInfo}</p>
+                                <hr>
+                                <p>✅ Token đã được lưu vào localStorage</p>
+                                <p>✅ Bây giờ có thể test tạo plan!</p>
+                            </div>
+                        `;
+                    }
+                } else {
+                    const errorText = await response.text();
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            <strong>❌ Login thất bại!</strong>
+                            <p>Status: ${response.status}</p>
+                            <pre>${errorText}</pre>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error("❌ Error:", error);
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <strong>❌ Failed to fetch!</strong>
+                        <p>Error: ${error.message}</p>
+                        <p><strong>Nguyên nhân:</strong></p>
+                        <ul>
+                            <li>Backend không chạy</li>
+                            <li>CORS bị block</li>
+                        </ul>
+                        <p><strong>Giải pháp:</strong></p>
+                        <ol>
+                            <li>Kiểm tra backend có chạy: http://localhost:5000/api</li>
+                            <li>Restart backend nếu cần</li>
+                        </ol>
+                    </div>
+                `;
+            }
+        }
+        
+        async function testCreatePlan() {
+            const resultDiv = document.getElementById("result");
+            
+            if (!accessToken) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <strong>❌ Chưa login!</strong>
+                        <p>Vui lòng click "Login Trực Tiếp Backend" trước</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            resultDiv.innerHTML = '<p>🚀 Đang tạo plan...</p>';
+            
+            try {
+                console.log("📤 Creating plan...");
+                const response = await fetch('http://localhost:5000/api/planning', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${accessToken}`
+                    },
+                    body: JSON.stringify({
+                        name: 'Test Plan from Direct Login',
+                        creatorId: userId,
+                        startDate: '2026-04-10',
+                        endDate: '2026-04-30'
+                    })
+                });
+                
+                console.log("📡 Response:", response.status);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <strong>🎉 TẠO PLAN THÀNH CÔNG!</strong>
+                            <p>Status: ${response.status}</p>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                            <hr>
+                            <p><strong>✅ Backend hoạt động hoàn hảo!</strong></p>
+                            <p><strong>✅ Token có role claims!</strong></p>
+                            <p><strong>✅ CRUD operations sẽ hoạt động!</strong></p>
+                            <hr>
+                            <p><strong>Bây giờ:</strong></p>
+                            <ol>
+                                <li>Vào http://localhost:3000</li>
+                                <li>Logout</li>
+                                <li>Login lại với manager@localhost / Manager1!</li>
+                                <li>Test tạo plan → Sẽ thành công!</li>
+                            </ol>
+                        </div>
+                    `;
+                } else {
+                    const errorText = await response.text();
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            <strong>❌ Lỗi ${response.status}</strong>
+                            <pre>${errorText}</pre>
+                            ${response.status === 403 ? '<p><strong>❌ Token KHÔNG có role claims!</strong><br>ApplicationUserClaimsPrincipalFactory không hoạt động với Bearer token API.</p>' : ''}
+                            ${response.status === 401 ? '<p>Token không hợp lệ</p>' : ''}
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error("❌ Error:", error);
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <strong>❌ Failed to fetch!</strong>
+                        <p>Error: ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>
