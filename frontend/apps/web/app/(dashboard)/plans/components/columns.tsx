@@ -14,6 +14,7 @@ import {
   DropdownMenuTrigger,
 } from "@workspace/ui/components/dropdown-menu"
 import { apiClient } from "@/lib/api-client"
+import { useAuth } from "@/hooks/use-auth"
 import { type Plan } from "../data/schema"
 import { DataTableColumnHeader } from "../../tasks/components/data-table-column-header"
 
@@ -24,6 +25,7 @@ const statusVariant: Record<string, "default" | "secondary" | "destructive" | "o
 }
 
 function RowActions({ row, onRefresh }: { row: { original: Plan }; onRefresh: () => void }) {
+  const { user } = useAuth()
   const plan = row.original
 
   async function handleApprove() {
@@ -50,8 +52,12 @@ function RowActions({ row, onRefresh }: { row: { original: Plan }; onRefresh: ()
         {plan.status !== "Approved" && (
           <DropdownMenuItem onClick={handleApprove}>Duyệt kế hoạch</DropdownMenuItem>
         )}
-        <DropdownMenuSeparator />
-        <DropdownMenuItem variant="destructive" onClick={handleDelete}>Xóa</DropdownMenuItem>
+        {user?.role === "Manager" && (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem variant="destructive" onClick={handleDelete}>Xóa</DropdownMenuItem>
+          </>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   )

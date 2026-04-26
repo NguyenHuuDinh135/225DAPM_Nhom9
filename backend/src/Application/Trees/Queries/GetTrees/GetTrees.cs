@@ -21,7 +21,7 @@ public class GetTreesQueryHandler : IRequestHandler<GetTreesQuery, IEnumerable<T
                 Name = t.Name,
                 Condition = t.Condition,
                 TreeTypeId = t.TreeTypeId,
-                TreeTypeName = t.TreeType.Name,
+                TreeTypeName = t.TreeType != null ? t.TreeType.Name : "Không xác định",
                 LastMaintenanceDate = t.LastMaintenanceDate
             })
             .ToListAsync(cancellationToken);

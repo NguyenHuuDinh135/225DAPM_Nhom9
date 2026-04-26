@@ -9,7 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 
 export const metadata: Metadata = { title: "Chi tiết kế hoạch" }
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080"
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000"
 
 interface PlanWorkItem { id: number; workTypeName: string | null; startDate: string | null; endDate: string | null; status: string }
 interface PlanDetail {

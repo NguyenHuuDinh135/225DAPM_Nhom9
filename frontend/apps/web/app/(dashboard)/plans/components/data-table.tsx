@@ -30,11 +30,11 @@ import { makeColumns } from "./columns"
 import { type Plan } from "../data/schema"
 import { useAuth } from "@/hooks/use-auth"
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080"
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000"
 
 export function DataTable({ data: initialData }: { data: Plan[] }) {
   const { user } = useAuth()
-  const canCreate = user?.role === "Administrator" || user?.role === "Manager"
+  const canCreate = user?.role === "Manager"
   const [data, setData] = React.useState(initialData)
   const [rowSelection, setRowSelection] = React.useState({})
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})

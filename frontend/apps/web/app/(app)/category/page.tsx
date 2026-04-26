@@ -7,7 +7,7 @@ import { Input } from "@workspace/ui/components/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@workspace/ui/components/table"
 import { forbiddenSpecies, limitedSpecies, searchByKeyword } from "@/lib/trees"
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080"
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000"
 
 type TabType = "chung-loai" | "cam-trong" | "han-che"
 interface TreeType { id: number; name: string; group: string | null }

@@ -42,7 +42,7 @@ public class ApplicationDbContextInitialiser
     {
         try
         {
-            await _context.Database.EnsureDeletedAsync();
+            // await _context.Database.EnsureDeletedAsync();
             await _context.Database.EnsureCreatedAsync();
         }
         catch (Exception ex)
@@ -151,7 +151,11 @@ public class ApplicationDbContextInitialiser
         if (!_context.Trees.Any())
         {
             var treeTypes  = _context.TreeTypes.ToList();
+            if (!treeTypes.Any()) return; // Prevent 500 error if master data is missing
+
             var locations  = _context.Locations.ToList();
+            if (!locations.Any()) return;
+
             var conditions = new[] { "Bình thường", "Cần cắt tỉa", "Mới trồng", "Sâu bệnh", "Tốt" };
 
             for (int i = 0; i < 100; i++)
@@ -321,8 +325,16 @@ public class ApplicationDbContextInitialiser
             user = new ApplicationUser { UserName = email, Email = email, FullName = fullName };
             await _userManager.CreateAsync(user, password);
         }
+        else
+        {
+            // Reset password to ensure the user can log in with the expected credentials
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            await _userManager.ResetPasswordAsync(user, token, password);
+        }
+
         if (!await _userManager.IsInRoleAsync(user, role))
             await _userManager.AddToRoleAsync(user, role);
+
         return user;
     }
 }

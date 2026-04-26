@@ -7,6 +7,7 @@ using backend.Application.WorkItems.Commands.UpdateWorkItem;
 using backend.Application.WorkItems.Queries.GetWorkItemDetail;
 using backend.Application.WorkItems.Queries.GetWorkItems;
 using backend.Domain.Constants;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
@@ -14,16 +15,18 @@ namespace backend.Web.Endpoints;
 
 public class WorkItems : EndpointGroupBase
 {
+    public override string? GroupName => "work-items";
+
     public override void Map(RouteGroupBuilder groupBuilder)
     {
         groupBuilder.MapGet(GetWorkItems).RequireAuthorization();
         groupBuilder.MapGet(GetWorkItemDetail, "{id}").RequireAuthorization();
-        groupBuilder.MapPost(CreateWorkItem).RequireAuthorization(Roles.Manager, Roles.Admin, Roles.Administrator);
-        groupBuilder.MapPut(UpdateWorkItem, "{id}").RequireAuthorization(Roles.Manager, Roles.Admin, Roles.Administrator);
-        groupBuilder.MapDelete(DeleteWorkItem, "{id}").RequireAuthorization(Roles.Manager, Roles.Admin, Roles.Administrator);
-        groupBuilder.MapPost(ReportProgress, "{id}/report-progress").RequireAuthorization(Roles.Employee).DisableAntiforgery();
-        groupBuilder.MapPut(ApproveWork, "{id}/approve").RequireAuthorization(Roles.Manager, Roles.Admin, Roles.Administrator);
-        groupBuilder.MapPost(AssignUser, "{id}/assign-user").RequireAuthorization(Roles.Manager, Roles.Admin, Roles.Administrator);
+        groupBuilder.MapPost(CreateWorkItem).RequireAuthorization(new AuthorizeAttribute { Roles = $"{Roles.Manager},{Roles.Admin},{Roles.Administrator}" });
+        groupBuilder.MapPut(UpdateWorkItem, "{id}").RequireAuthorization(new AuthorizeAttribute { Roles = $"{Roles.Manager},{Roles.Admin},{Roles.Administrator}" });
+        groupBuilder.MapDelete(DeleteWorkItem, "{id}").RequireAuthorization(new AuthorizeAttribute { Roles = $"{Roles.Manager},{Roles.Admin},{Roles.Administrator}" });
+        groupBuilder.MapPost(ReportProgress, "{id}/report-progress").RequireAuthorization(new AuthorizeAttribute { Roles = Roles.Employee }).DisableAntiforgery();
+        groupBuilder.MapPut(ApproveWork, "{id}/approve").RequireAuthorization(new AuthorizeAttribute { Roles = $"{Roles.Manager},{Roles.Admin},{Roles.Administrator}" });
+        groupBuilder.MapPost(AssignUser, "{id}/assign-user").RequireAuthorization(new AuthorizeAttribute { Roles = $"{Roles.Manager},{Roles.Admin},{Roles.Administrator}" });
     }
 
     public async Task<Ok<WorkItemsVm>> GetWorkItems(ISender sender)

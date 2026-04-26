@@ -7,7 +7,7 @@ import { workItemSchema, type WorkItem } from "./data/schema"
 
 export const metadata: Metadata = { title: "Danh sách công việc" }
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080"
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000"
 
 async function getWorkItems(): Promise<WorkItem[]> {
   const cookieStore = await cookies()
@@ -24,7 +24,7 @@ async function getWorkItems(): Promise<WorkItem[]> {
 export default async function TaskPage() {
   const tasks = await getWorkItems()
   return (
-    <div className="hidden h-full flex-1 flex-col gap-8 p-8 md:flex">
+    <div className="flex h-full flex-1 flex-col gap-8 p-8">
       <div className="flex flex-col gap-1">
         <h2 className="text-2xl font-semibold tracking-tight">Danh sách công việc</h2>
         <p className="text-muted-foreground">Quản lý và theo dõi tiến độ công việc.</p>

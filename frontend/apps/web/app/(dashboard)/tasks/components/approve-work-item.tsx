@@ -6,7 +6,7 @@ import { Textarea } from "@workspace/ui/components/textarea"
 import { toast } from "@workspace/ui/components/sonner"
 import { useRouter } from "next/navigation"
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080"
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000"
 
 export function ApproveWorkItem({ workId }: { workId: number }) {
   const router = useRouter()

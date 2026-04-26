@@ -6,7 +6,7 @@ import { planSchema } from "./data/schema"
 
 export const metadata: Metadata = { title: "Quản lý Kế hoạch" }
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080"
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000"
 
 async function getPlans() {
   const cookieStore = await cookies()
@@ -22,7 +22,7 @@ async function getPlans() {
 export default async function PlansPage() {
   const plans = await getPlans()
   return (
-    <div className="hidden h-full flex-1 flex-col gap-8 p-8 md:flex">
+    <div className="flex h-full flex-1 flex-col gap-8 p-8">
       <div className="flex flex-col gap-1">
         <h2 className="text-2xl font-semibold tracking-tight">Quản lý Kế hoạch</h2>
         <p className="text-muted-foreground">Tạo và theo dõi kế hoạch công việc.</p>

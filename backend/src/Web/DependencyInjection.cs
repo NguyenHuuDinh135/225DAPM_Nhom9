@@ -1,4 +1,4 @@
-﻿using Azure.Identity;
+using Azure.Identity;
 using backend.Application.Common.Interfaces;
 using backend.Infrastructure.Data;
 using backend.Web.Hubs;
@@ -19,7 +19,7 @@ public static class DependencyInjection
         builder.Services.AddCors(options =>
         {
             options.AddDefaultPolicy(policy =>
-                policy.WithOrigins("http://localhost:3000")
+                policy.SetIsOriginAllowed(_ => true)
                       .AllowAnyHeader()
                       .AllowAnyMethod()
                       .AllowCredentials());

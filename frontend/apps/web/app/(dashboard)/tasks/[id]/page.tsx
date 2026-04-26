@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@workspace/ui/componen
 import { Skeleton } from "@workspace/ui/components/skeleton"
 import { ApproveWorkItem } from "../components/approve-work-item"
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080"
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000"
 
 interface WorkProgress { id: number; updaterId: string; note: string | null; updatedDate: string | null; images: string[] }
 interface WorkUser { userId: string; role: string | null; status: string | null }
