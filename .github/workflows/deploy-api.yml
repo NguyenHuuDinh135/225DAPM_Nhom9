@@ -1,0 +1,76 @@
+name: Deploy API
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "backend/**"
+
+env:
+  AWS_REGION: us-west-2
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+          dotnet-quality: 'preview'
+
+      - name: Restore dependencies
+        run: dotnet restore backend/src/Web/Web.csproj
+
+      - name: Build
+        run: dotnet build backend/src/Web/Web.csproj --no-restore -c Release
+
+      - name: Test
+        run: dotnet test backend/backend.slnx --no-build --verbosity normal -c Release
+
+  deploy:
+    needs: test
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to ECR
+        id: ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push
+        env:
+          ECR_URL: ${{ steps.ecr.outputs.registry }}/qlcayxanh-api
+          SHA: ${{ github.sha }}
+        run: |
+          docker build -t $ECR_URL:$SHA -t $ECR_URL:latest -f backend/Dockerfile backend/
+          docker push $ECR_URL:$SHA
+          docker push $ECR_URL:latest
+
+      - name: Deploy to ECS
+        env:
+          CLUSTER: qlcayxanh
+          SERVICE: qlcayxanh-api
+        run: |
+          aws ecs update-service \
+            --cluster $CLUSTER \
+            --service $SERVICE \
+            --force-new-deployment \
+            --region ${{ env.AWS_REGION }}
+          aws ecs wait services-stable \
+            --cluster $CLUSTER \
+            --services $SERVICE \
+            --region ${{ env.AWS_REGION }}
