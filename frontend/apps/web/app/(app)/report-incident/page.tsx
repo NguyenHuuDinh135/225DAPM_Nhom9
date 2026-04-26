@@ -1,6 +1,6 @@
 "use client"
 
-import { useRef, useState } from "react"
+import { Suspense, useRef, useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { ArrowLeftIcon } from "lucide-react"
@@ -8,6 +8,14 @@ import { ArrowLeftIcon } from "lucide-react"
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000"
 
 export default function ReportIncidentPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#f8fafc]" />}>
+      <ReportIncidentContent />
+    </Suspense>
+  )
+}
+
+function ReportIncidentContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const treeIdParam = searchParams.get("treeId") ?? ""
@@ -37,7 +45,7 @@ export default function ReportIncidentPage() {
       const res = await fetch(`${BASE_URL}/api/tree-incidents/report-incident`, {
         method: "POST",
         body: fd,
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
       })
       if (!res.ok) throw new Error()
       setSuccess(true)
