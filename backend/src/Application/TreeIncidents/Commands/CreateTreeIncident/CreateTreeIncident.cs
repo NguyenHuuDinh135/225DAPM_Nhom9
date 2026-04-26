@@ -18,19 +18,28 @@ public class CreateTreeIncidentCommandHandler : IRequestHandler<CreateTreeIncide
     private readonly IApplicationDbContext _context;
     private readonly IFileService _fileService;
     private readonly INotificationService _notificationService;
+    private readonly IUser _user;
 
-    public CreateTreeIncidentCommandHandler(IApplicationDbContext context, IFileService fileService, INotificationService notificationService)
+    public CreateTreeIncidentCommandHandler(
+        IApplicationDbContext context,
+        IFileService fileService,
+        INotificationService notificationService,
+        IUser user)
     {
         _context = context;
         _fileService = fileService;
         _notificationService = notificationService;
+        _user = user;
     }
 
     public async Task<int> Handle(CreateTreeIncidentCommand request, CancellationToken cancellationToken)
     {
+        var reporterId = _user.Id
+            ?? throw new UnauthorizedAccessException("Authenticated user is required to report an incident.");
+
         var entity = TreeIncident.Create(
             request.TreeId,
-            "anonymous",
+            reporterId,
             request.Content,
             request.ReporterName,
             request.ReporterPhone);

@@ -34,8 +34,13 @@ export default function ReportIncidentPage() {
       if (content) fd.append("content", content)
       const files = fileRef.current?.files
       if (files) for (const f of Array.from(files)) fd.append("images", f)
+      const token = localStorage.getItem("access_token")
 
-      const res = await fetch(`${BASE_URL}/api/tree-incidents/report-incident`, { method: "POST", body: fd })
+      const res = await fetch(`${BASE_URL}/api/tree-incidents/report-incident`, {
+        method: "POST",
+        body: fd,
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      })
       if (!res.ok) throw new Error(await res.text())
       const id = await res.json()
       toast.success(`Báo cáo sự cố #${id} thành công`)
