@@ -20,6 +20,26 @@ import { X, Minus, Plus, Locate, Maximize, Loader2 } from "lucide-react";
 
 import { cn } from "@workspace/ui/lib/utils";
 
+type GeoJsonProperties = Record<string, unknown> | null;
+
+type GeoJsonPoint = {
+  type: "Point";
+  coordinates: [number, number];
+};
+
+type GeoJsonFeature<P extends GeoJsonProperties = GeoJsonProperties> = {
+  type: "Feature";
+  geometry: GeoJsonPoint;
+  properties: P;
+};
+
+type GeoJsonFeatureCollection<
+  P extends GeoJsonProperties = GeoJsonProperties,
+> = {
+  type: "FeatureCollection";
+  features: GeoJsonFeature<P>[];
+};
+
 const defaultStyles = {
   dark: "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json",
   light: "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json",
@@ -1168,11 +1188,9 @@ function MapRoute({
   return null;
 }
 
-type MapClusterLayerProps<
-  P extends GeoJSON.GeoJsonProperties = GeoJSON.GeoJsonProperties,
-> = {
+type MapClusterLayerProps<P extends GeoJsonProperties = GeoJsonProperties> = {
   /** GeoJSON FeatureCollection data or URL to fetch GeoJSON from */
-  data: string | GeoJSON.FeatureCollection<GeoJSON.Point, P>;
+  data: string | GeoJsonFeatureCollection<P>;
   /** Maximum zoom level to cluster points on (default: 14) */
   clusterMaxZoom?: number;
   /** Radius of each cluster when clustering points in pixels (default: 50) */
@@ -1185,7 +1203,7 @@ type MapClusterLayerProps<
   pointColor?: string;
   /** Callback when an unclustered point is clicked */
   onPointClick?: (
-    feature: GeoJSON.Feature<GeoJSON.Point, P>,
+    feature: GeoJsonFeature<P>,
     coordinates: [number, number],
   ) => void;
   /** Callback when a cluster is clicked. If not provided, zooms into the cluster */
@@ -1196,9 +1214,7 @@ type MapClusterLayerProps<
   ) => void;
 };
 
-function MapClusterLayer<
-  P extends GeoJSON.GeoJsonProperties = GeoJSON.GeoJsonProperties,
->({
+function MapClusterLayer<P extends GeoJsonProperties = GeoJsonProperties>({
   data,
   clusterMaxZoom = 14,
   clusterRadius = 50,
@@ -1383,9 +1399,10 @@ function MapClusterLayer<
       if (!features.length) return;
 
       const feature = features[0];
+      if (!feature) return;
       const clusterId = feature.properties?.cluster_id as number;
       const pointCount = feature.properties?.point_count as number;
-      const coordinates = (feature.geometry as GeoJSON.Point).coordinates as [
+      const coordinates = (feature.geometry as GeoJsonPoint).coordinates as [
         number,
         number,
       ];
@@ -1412,8 +1429,9 @@ function MapClusterLayer<
       if (!onPointClick || !e.features?.length) return;
 
       const feature = e.features[0];
+      if (!feature) return;
       const coordinates = (
-        feature.geometry as GeoJSON.Point
+        feature.geometry as GeoJsonPoint
       ).coordinates.slice() as [number, number];
 
       // Handle world copies
@@ -1422,7 +1440,7 @@ function MapClusterLayer<
       }
 
       onPointClick(
-        feature as unknown as GeoJSON.Feature<GeoJSON.Point, P>,
+        feature as unknown as GeoJsonFeature<P>,
         coordinates,
       );
     };
