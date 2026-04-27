@@ -1,18 +1,17 @@
 "use client"
 
 import { useRef, useState } from "react"
-import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { ArrowLeftIcon } from "lucide-react"
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000"
+// Dùng relative URL khi ở client-side để tránh CORS và hardcoded host
+const BASE_URL = typeof window !== "undefined" ? "" : (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000")
 
 type ReportIncidentFormProps = {
   treeIdParam: string
 }
 
 export function ReportIncidentForm({ treeIdParam }: ReportIncidentFormProps) {
-  const router = useRouter()
   const [treeId, setTreeId] = useState(treeIdParam)
   const [reporterName, setReporterName] = useState("")
   const [reporterPhone, setReporterPhone] = useState("")
@@ -40,10 +39,14 @@ export function ReportIncidentForm({ treeIdParam }: ReportIncidentFormProps) {
         body: fd,
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       })
-      if (!res.ok) throw new Error()
+      if (!res.ok) {
+        const errText = await res.text().catch(() => `HTTP ${res.status}`)
+        throw new Error(errText)
+      }
       setSuccess(true)
-    } catch {
-      alert("Gửi báo cáo thất bại, vui lòng thử lại.")
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Gửi báo cáo thất bại, vui lòng thử lại."
+      alert(msg)
     } finally {
       setLoading(false)
     }

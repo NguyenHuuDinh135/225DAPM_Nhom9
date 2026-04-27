@@ -1,13 +1,14 @@
 import { ReportIncidentForm } from "./report-incident-form"
 
 type ReportIncidentPageProps = {
-  searchParams?: {
+  searchParams?: Promise<{
     treeId?: string
-  }
+  }>
 }
 
-export default function ReportIncidentPage({ searchParams }: ReportIncidentPageProps) {
-  const treeIdParam = searchParams?.treeId ?? ""
+export default async function ReportIncidentPage({ searchParams }: ReportIncidentPageProps) {
+  const params = await searchParams
+  const treeIdParam = params?.treeId ?? ""
 
   return <ReportIncidentForm treeIdParam={treeIdParam} />
 }
