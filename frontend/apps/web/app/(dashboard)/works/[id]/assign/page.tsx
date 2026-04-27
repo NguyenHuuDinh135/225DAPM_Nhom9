@@ -29,7 +29,7 @@ export default function AssignPage({ params }: { params: Promise<{ id: string }>
 
   function loadWork() {
     const token = localStorage.getItem("access_token")
-    const headers = token ? { Authorization: `Bearer ${token}` } : {}
+    const headers: HeadersInit = token ? { Authorization: `Bearer ${token}` } : {}
     Promise.all([
       fetch(`${BASE_URL}/api/work-items/${id}`, { headers }).then((r) => r.ok ? r.json() : Promise.reject()),
       fetch(`${BASE_URL}/api/employees`, { headers }).then((r) => r.ok ? r.json() : { employees: [] }),

@@ -44,7 +44,9 @@ export function TaskMap() {
 
   React.useEffect(() => {
     const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
-    const headers = token ? { Authorization: `Bearer ${token}` } : {};
+    const headers: HeadersInit = token
+      ? { Authorization: `Bearer ${token}` }
+      : {};
 
     fetch(`${BASE_URL}/api/work-items`, { headers })
       .then((r) => r.ok ? r.json() : { workItems: [] })

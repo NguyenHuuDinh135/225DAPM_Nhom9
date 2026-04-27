@@ -24,7 +24,7 @@ interface LocationHistory {
 
 async function fetchTree(id: string) {
   const token = (await cookies()).get("access_token")?.value
-  const headers = token ? { Authorization: `Bearer ${token}` } : {}
+  const headers: HeadersInit = token ? { Authorization: `Bearer ${token}` } : {}
   const [treeRes, histRes] = await Promise.all([
     fetch(`${BASE_URL}/api/trees/${id}`, { headers, cache: "no-store" }),
     fetch(`${BASE_URL}/api/trees/${id}/location-history`, { headers, cache: "no-store" }),
