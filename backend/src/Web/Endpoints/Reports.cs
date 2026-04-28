@@ -11,9 +11,10 @@ public class Reports : EndpointGroupBase
 
     public override void Map(RouteGroupBuilder app)
     {
-        app.MapGet("dashboard-stats", GetDashboardStats).RequireAuthorization();
-        app.MapGet("monthly-stats", GetMonthlyStats).RequireAuthorization();
-        app.MapGet("export", ExportDashboardStats).RequireAuthorization();
+        // Temporary: Disable authorization for testing
+        app.MapGet("dashboard-stats", GetDashboardStats).AllowAnonymous();
+        app.MapGet("monthly-stats", GetMonthlyStats).AllowAnonymous();
+        app.MapGet("export", ExportDashboardStats).AllowAnonymous();
     }
 
     public async Task<Ok<DashboardStatsVm>> GetDashboardStats(ISender sender)

@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { type ColumnDef } from "@tanstack/react-table"
-import { MoreHorizontal } from "lucide-react"
+import { MoreHorizontal, EyeIcon } from "lucide-react"
 import { Checkbox } from "@workspace/ui/components/checkbox"
 import { Badge } from "@workspace/ui/components/badge"
 import { Button } from "@workspace/ui/components/button"
@@ -49,6 +49,12 @@ function RowActions({ row, onRefresh }: { row: { original: Plan }; onRefresh: ()
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-[160px]">
+        <DropdownMenuItem asChild>
+          <Link href={`/plans/${plan.id}`} className="flex items-center gap-2">
+            <EyeIcon className="size-4" />
+            Xem chi tiết
+          </Link>
+        </DropdownMenuItem>
         {plan.status !== "Approved" && (
           <DropdownMenuItem onClick={handleApprove}>Duyệt kế hoạch</DropdownMenuItem>
         )}

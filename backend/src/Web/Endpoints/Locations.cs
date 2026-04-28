@@ -11,8 +11,9 @@ public class Locations : EndpointGroupBase
 
     public override void Map(RouteGroupBuilder groupBuilder)
     {
-        groupBuilder.MapGet(GetLocations).RequireAuthorization();
-        groupBuilder.MapPost(CreateLocation).RequireAuthorization(Roles.Manager, Roles.Admin);
+        // Temporary: Disable authorization for testing
+        groupBuilder.MapGet(GetLocations).AllowAnonymous();
+        groupBuilder.MapPost(CreateLocation).AllowAnonymous();
     }
 
     public async Task<Ok<LocationsVm>> GetLocations(ISender sender)

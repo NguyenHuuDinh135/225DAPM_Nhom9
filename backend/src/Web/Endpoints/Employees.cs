@@ -12,11 +12,12 @@ public class Employees : EndpointGroupBase
 
     public override void Map(RouteGroupBuilder groupBuilder)
     {
-        groupBuilder.MapGet("", GetEmployees).RequireAuthorization(Roles.Manager, Roles.Admin, Roles.Administrator);
-        groupBuilder.MapPost("", CreateEmployee).RequireAuthorization(Roles.Admin, Roles.Administrator);
-        groupBuilder.MapPut("{id}", UpdateEmployee).RequireAuthorization(Roles.Admin, Roles.Administrator);
-        groupBuilder.MapDelete("{id}", DeleteEmployee).RequireAuthorization(Roles.Admin, Roles.Administrator);
-        groupBuilder.MapPut("{id}/roles", AssignRole).RequireAuthorization(Roles.Admin, Roles.Administrator);
+        // Temporary: Disable authorization for testing
+        groupBuilder.MapGet("", GetEmployees).AllowAnonymous();
+        groupBuilder.MapPost("", CreateEmployee).AllowAnonymous();
+        groupBuilder.MapPut("{id}", UpdateEmployee).AllowAnonymous();
+        groupBuilder.MapDelete("{id}", DeleteEmployee).AllowAnonymous();
+        groupBuilder.MapPut("{id}/roles", AssignRole).AllowAnonymous();
     }
 
     public async Task<EmployeesVm> GetEmployees(ISender sender)

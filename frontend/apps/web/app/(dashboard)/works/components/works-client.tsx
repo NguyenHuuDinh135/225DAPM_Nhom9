@@ -10,7 +10,7 @@ import {
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@workspace/ui/components/dropdown-menu"
-import { UsersIcon, BarChart3Icon, MoreHorizontalIcon, Trash2Icon } from "lucide-react"
+import { UsersIcon, BarChart3Icon, MoreHorizontalIcon, Trash2Icon, EyeIcon } from "lucide-react"
 import { CreateWorkDialog } from "./create-work-dialog"
 import type { WorkItem, WorkStatus } from "../page"
 import { useAuth } from "@/hooks/use-auth"
@@ -89,6 +89,12 @@ export function WorksClient({ initialWorks }: { initialWorks: WorkItem[] }) {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
+                        <DropdownMenuItem asChild>
+                          <Link href={`/works/${work.id}`} className="flex items-center gap-2">
+                            <EyeIcon className="size-4" />
+                            Xem chi tiết
+                          </Link>
+                        </DropdownMenuItem>
                         {canManage && (
                           <DropdownMenuItem asChild>
                             <Link href={`/works/${work.id}/assign`} className="flex items-center gap-2">
@@ -104,11 +110,15 @@ export function WorksClient({ initialWorks }: { initialWorks: WorkItem[] }) {
                           </Link>
                         </DropdownMenuItem>
                         {canManage && (
-                          <DropdownMenuItem variant="destructive" onClick={() => handleDelete(work.id)} className="flex items-center gap-2">
-                            <Trash2Icon className="size-4" />
-                            Xóa
-                          </DropdownMenuItem>
-                        )}                      </DropdownMenuContent>
+                          <>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem variant="destructive" onClick={() => handleDelete(work.id)} className="flex items-center gap-2">
+                              <Trash2Icon className="size-4" />
+                              Xóa
+                            </DropdownMenuItem>
+                          </>
+                        )}
+                      </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>
                 </TableRow>

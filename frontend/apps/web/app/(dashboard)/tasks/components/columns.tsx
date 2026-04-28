@@ -39,11 +39,17 @@ export const columns: ColumnDef<WorkItem>[] = [
   {
     accessorKey: "workTypeName",
     header: ({ column }) => <DataTableColumnHeader column={column} title="Loại công việc" />,
-    cell: ({ row }) => (
-      <span className="max-w-[300px] truncate font-medium">
-        {row.getValue("workTypeName") ?? "—"}
-      </span>
-    ),
+    cell: ({ row }) => {
+      const workId = row.getValue("id") as number
+      return (
+        <a 
+          href={`/works/${workId}`}
+          className="max-w-[300px] truncate font-medium hover:underline text-primary"
+        >
+          {row.getValue("workTypeName") ?? "—"}
+        </a>
+      )
+    },
   },
   {
     accessorKey: "planName",
