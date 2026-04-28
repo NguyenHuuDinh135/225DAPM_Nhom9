@@ -19,12 +19,8 @@ public static class DependencyInjection
         builder.Services.AddCors(options =>
         {
             options.AddDefaultPolicy(policy =>
-<<<<<<< HEAD
             {
                 policy.WithOrigins("http://localhost:3000", "http://localhost:3001", "https://localhost:3000")
-=======
-                policy.SetIsOriginAllowed(_ => true)
->>>>>>> bad814c0a4bc39e490ebbf32052bc69716786855
                       .AllowAnyHeader()
                       .AllowAnyMethod()
                       .AllowCredentials();
