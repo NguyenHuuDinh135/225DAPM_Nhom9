@@ -5,7 +5,7 @@ import { ChartAreaInteractive } from "@/app/(dashboard)/components/chart-area-in
 
 export const metadata: Metadata = { title: "Phân tích" }
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080"
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000"
 
 async function fetchStats(): Promise<DashboardStats> {
   const token = (await cookies()).get("access_token")?.value

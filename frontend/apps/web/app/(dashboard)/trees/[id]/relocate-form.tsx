@@ -10,7 +10,7 @@ import { toast } from "@workspace/ui/components/sonner"
 import { MoveIcon } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080"
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000"
 
 export function RelocateTreeForm({ treeId }: { treeId: number }) {
   const { user } = useAuth()

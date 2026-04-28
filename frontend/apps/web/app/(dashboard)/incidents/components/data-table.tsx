@@ -30,7 +30,7 @@ import { makeColumns } from "./columns"
 import { type Incident, STATUSES } from "../data/schema"
 import { useAuth } from "@/hooks/use-auth"
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080"
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000"
 
 const statusOptions = STATUSES.map((s) => ({
   value: s,

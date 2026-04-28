@@ -17,7 +17,7 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    if (app.Configuration.GetConnectionString("QLCayXanhDb") is not null)
+    if (app.Configuration.GetConnectionString("QLCayXanhDb") is not null || app.Configuration.GetConnectionString("backendDb") is not null)
     {
         await app.InitialiseDatabaseAsync();
         app.UseHangfireDashboard("/hangfire");
@@ -53,7 +53,7 @@ app.MapDefaultEndpoints();
 app.MapEndpoints();
 app.MapHub<IncidentHub>("/hubs/incidents");
 
-if (app.Configuration.GetConnectionString("QLCayXanhDb") is not null)
+if (app.Configuration.GetConnectionString("QLCayXanhDb") is not null || app.Configuration.GetConnectionString("backendDb") is not null)
 {
     RecurringJob.AddOrUpdate<IMaintenanceJobService>(
         "tree-maintenance",

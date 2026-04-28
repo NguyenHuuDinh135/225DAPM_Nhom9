@@ -21,7 +21,8 @@ public static class DependencyInjection
 {
     public static void AddInfrastructureServices(this IHostApplicationBuilder builder)
     {
-        var connectionString = builder.Configuration.GetConnectionString("QLCayXanhDb");
+        var connectionString = builder.Configuration.GetConnectionString("QLCayXanhDb") 
+                               ?? builder.Configuration.GetConnectionString("backendDb");
 
         builder.Services.AddScoped<ISaveChangesInterceptor, AuditableEntityInterceptor>();
         builder.Services.AddScoped<ISaveChangesInterceptor, DispatchDomainEventsInterceptor>();

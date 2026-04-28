@@ -6,7 +6,7 @@ import { SectionCards, SectionCardsSkeleton, type DashboardStats } from "@/app/(
 import { ExportStatsButton } from "@/app/(dashboard)/components/export-stats-button"
 import { ForbiddenToast } from "@/app/(dashboard)/components/forbidden-toast"
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080"
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000"
 
 async function fetchStats(): Promise<DashboardStats> {
   const cookieStore = await cookies()

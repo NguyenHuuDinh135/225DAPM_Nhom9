@@ -9,7 +9,7 @@ import { PlusIcon, XIcon } from "lucide-react"
 import { toast } from "@workspace/ui/components/sonner"
 import type { WorkItem } from "../page"
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080"
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000"
 
 interface Plan { id: number; name: string | null }
 interface WorkType { id: number; name: string | null }

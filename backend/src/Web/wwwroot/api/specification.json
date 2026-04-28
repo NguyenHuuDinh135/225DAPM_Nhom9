@@ -699,6 +699,7 @@
         ]
       }
     },
+<<<<<<< HEAD
     "/api/test/ping": {
       "get": {
         "tags": [
@@ -740,6 +741,11 @@
     "/api/tree-incidents": {
       "post": {
         "tags": [
+=======
+    "/api/tree-incidents": {
+      "post": {
+        "tags": [
+>>>>>>> bad814c0a4bc39e490ebbf32052bc69716786855
           "tree-incidents"
         ],
         "operationId": "PostApiTreeIncidents",
@@ -886,7 +892,20 @@
           "200": {
             "description": ""
           }
+<<<<<<< HEAD
         }
+=======
+        },
+        "security": [
+          {
+            "JWT": [
+              "Manager",
+              "Employee",
+              "Administrator"
+            ]
+          }
+        ]
+>>>>>>> bad814c0a4bc39e490ebbf32052bc69716786855
       }
     },
     "/api/tree-incidents/{id}/approve": {
@@ -923,7 +942,19 @@
           "200": {
             "description": ""
           }
+<<<<<<< HEAD
         }
+=======
+        },
+        "security": [
+          {
+            "JWT": [
+              "Manager",
+              "Administrator"
+            ]
+          }
+        ]
+>>>>>>> bad814c0a4bc39e490ebbf32052bc69716786855
       }
     },
     "/api/tree-incidents/{id}/feedback": {
@@ -960,7 +991,20 @@
           "200": {
             "description": ""
           }
+<<<<<<< HEAD
         }
+=======
+        },
+        "security": [
+          {
+            "JWT": [
+              "Manager",
+              "Employee",
+              "Administrator"
+            ]
+          }
+        ]
+>>>>>>> bad814c0a4bc39e490ebbf32052bc69716786855
       }
     },
     "/api/trees": {
@@ -1017,7 +1061,20 @@
           "400": {
             "description": ""
           }
+<<<<<<< HEAD
         }
+=======
+        },
+        "security": [
+          {
+            "JWT": [
+              "Manager",
+              "Admin",
+              "Administrator"
+            ]
+          }
+        ]
+>>>>>>> bad814c0a4bc39e490ebbf32052bc69716786855
       }
     },
     "/api/trees/map": {
@@ -1117,7 +1174,20 @@
               }
             }
           }
+<<<<<<< HEAD
         }
+=======
+        },
+        "security": [
+          {
+            "JWT": [
+              "Manager",
+              "Admin",
+              "Administrator"
+            ]
+          }
+        ]
+>>>>>>> bad814c0a4bc39e490ebbf32052bc69716786855
       },
       "delete": {
         "tags": [
@@ -1153,7 +1223,20 @@
               }
             }
           }
+<<<<<<< HEAD
         }
+=======
+        },
+        "security": [
+          {
+            "JWT": [
+              "Manager",
+              "Admin",
+              "Administrator"
+            ]
+          }
+        ]
+>>>>>>> bad814c0a4bc39e490ebbf32052bc69716786855
       }
     },
     "/api/trees/{id}/location-history": {
@@ -1230,7 +1313,20 @@
               }
             }
           }
+<<<<<<< HEAD
         }
+=======
+        },
+        "security": [
+          {
+            "JWT": [
+              "Manager",
+              "Admin",
+              "Administrator"
+            ]
+          }
+        ]
+>>>>>>> bad814c0a4bc39e490ebbf32052bc69716786855
       }
     },
     "/api/trees/{id}/relocate": {
@@ -1280,10 +1376,39 @@
               }
             }
           }
+<<<<<<< HEAD
         }
       }
     },
     "/api/users/register": {
+=======
+        },
+        "security": [
+          {
+            "JWT": [
+              "Manager",
+              "Admin",
+              "Administrator"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/Trees/seed": {
+      "post": {
+        "tags": [
+          "Trees"
+        ],
+        "operationId": "PostApiTreesSeed",
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/api/Users/register": {
+>>>>>>> bad814c0a4bc39e490ebbf32052bc69716786855
       "post": {
         "tags": [
           "users"
@@ -1776,7 +1901,20 @@
               }
             }
           }
+<<<<<<< HEAD
         }
+=======
+        },
+        "security": [
+          {
+            "JWT": [
+              "Manager",
+              "Admin",
+              "Administrator"
+            ]
+          }
+        ]
+>>>>>>> bad814c0a4bc39e490ebbf32052bc69716786855
       }
     },
     "/api/work-items/{id}": {
@@ -1856,7 +1994,20 @@
               }
             }
           }
+<<<<<<< HEAD
         }
+=======
+        },
+        "security": [
+          {
+            "JWT": [
+              "Manager",
+              "Admin",
+              "Administrator"
+            ]
+          }
+        ]
+>>>>>>> bad814c0a4bc39e490ebbf32052bc69716786855
       },
       "delete": {
         "tags": [
@@ -1892,7 +2043,20 @@
               }
             }
           }
+<<<<<<< HEAD
         }
+=======
+        },
+        "security": [
+          {
+            "JWT": [
+              "Manager",
+              "Admin",
+              "Administrator"
+            ]
+          }
+        ]
+>>>>>>> bad814c0a4bc39e490ebbf32052bc69716786855
       }
     },
     "/api/work-items/{id}/report-progress": {
@@ -1964,7 +2128,18 @@
               }
             }
           }
+<<<<<<< HEAD
         }
+=======
+        },
+        "security": [
+          {
+            "JWT": [
+              "Employee"
+            ]
+          }
+        ]
+>>>>>>> bad814c0a4bc39e490ebbf32052bc69716786855
       }
     },
     "/api/work-items/{id}/approve": {
@@ -2014,7 +2189,20 @@
               }
             }
           }
+<<<<<<< HEAD
         }
+=======
+        },
+        "security": [
+          {
+            "JWT": [
+              "Manager",
+              "Admin",
+              "Administrator"
+            ]
+          }
+        ]
+>>>>>>> bad814c0a4bc39e490ebbf32052bc69716786855
       }
     },
     "/api/work-items/{id}/assign-user": {
@@ -2064,7 +2252,20 @@
               }
             }
           }
+<<<<<<< HEAD
         }
+=======
+        },
+        "security": [
+          {
+            "JWT": [
+              "Manager",
+              "Admin",
+              "Administrator"
+            ]
+          }
+        ]
+>>>>>>> bad814c0a4bc39e490ebbf32052bc69716786855
       }
     }
   },

@@ -15,7 +15,7 @@ interface WorkUser { userId: string; role: string | null; status: string | null 
 interface WorkDetail { id: number; workTypeName: string | null; planName: string | null; users: WorkUser[] }
 interface Employee { id: string; fullName: string | null; email: string | null }
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080"
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000"
 
 export default function AssignPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)

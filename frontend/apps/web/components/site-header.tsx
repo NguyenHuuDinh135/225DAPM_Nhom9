@@ -1,5 +1,7 @@
-import Link from "next/link"
-import { Login01Icon } from "@hugeicons/core-free-icons"
+"use client"
+
+import NextLink from "next/link"
+import { Login01Icon, DashboardCircleIcon } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 
 import { siteConfig } from "@/lib/config"
@@ -11,47 +13,53 @@ import { ModeSwitcher } from "@/components/mode-switcher"
 import { SiteConfig } from "@/components/site-config"
 import { Separator } from "@workspace/ui/components/separator"
 import { Button } from "@workspace/ui/components/button"
-import { NavUser } from "@/components/nav-user"
+import { UserNav } from "@/components/user-nav"
+import { useAuth } from "@/hooks/use-auth"
 
 export function SiteHeader() {
-  const isLoggedIn = false
-
-  const mockUser = {
-    name: "Dinh",
-    email: "dinh@student.ute.udn.vn",
-    avatar: "https://github.com/shadcn.png",
-  }
+  const { user, isLoading } = useAuth()
+  const isLoggedIn = !!user
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-background">
-      <div className="container-wrapper px-6 group-has-data-[slot=designer]/layout:max-w-none 3xl:fixed:px-0">
-        <div className="flex h-(--header-height) items-center **:data-[slot=separator]:h-4! group-has-data-[slot=designer]/layout:fixed:max-w-none 3xl:fixed:container">
+    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="container-wrapper px-6">
+        <div className="flex h-14 items-center gap-4">
           <MobileNav items={siteConfig.navItems} className="flex lg:hidden" />
           <Button asChild variant="ghost" size="icon" className="hidden size-8 lg:flex">
-            <Link href="/">
+            <NextLink href="/">
               <Icons.logo className="size-5" />
               <span className="sr-only">{siteConfig.name}</span>
-            </Link>
+            </NextLink>
           </Button>
           <MainNav items={siteConfig.navItems} className="hidden lg:flex" />
           <div className="ml-auto flex items-center gap-2 md:flex-1 md:justify-end">
-            <Separator orientation="vertical" className="ml-2 hidden lg:block" />
-            <GitHubLink />
-            <Separator orientation="vertical" className="hidden group-has-data-[slot=designer]/layout:hidden 3xl:flex" />
-            <SiteConfig className="hidden 3xl:flex 3xl:group-has-data-[slot=designer]/layout:hidden" />
-            <Separator orientation="vertical" />
             <ModeSwitcher />
-            <div className="flex items-center gap-2 group-has-data-[slot=designer]/layout:hidden">
-              <Separator orientation="vertical" />
-              {isLoggedIn ? (
-                <NavUser user={mockUser} />
-              ) : (
-                <Button asChild size="sm" className="h-[31px] rounded-lg">
-                  <Link href="/login" className="flex items-center gap-1.5">
-                    <HugeiconsIcon icon={Login01Icon} className="size-4" />
-                    <span>Đăng nhập</span>
-                  </Link>
-                </Button>
+            <div className="flex items-center gap-2">
+              <Separator orientation="vertical" className="h-4" />
+              {!isLoading && (
+                isLoggedIn ? (
+                  <div className="flex items-center gap-4">
+                    <Button asChild variant="outline" size="sm" className="h-8 gap-1.5">
+                      <NextLink href="/dashboard">
+                        <HugeiconsIcon icon={DashboardCircleIcon} className="size-4" />
+                        <span className="hidden sm:inline">Quản trị</span>
+                      </NextLink>
+                    </Button>
+                    <UserNav user={{
+                      name: user.name || user.email,
+                      email: user.email,
+                      avatar: "",
+                      role: user.role
+                    }} />
+                  </div>
+                ) : (
+                  <Button asChild size="sm" className="h-8 rounded-lg px-4">
+                    <NextLink href="/login" className="flex items-center gap-1.5">
+                      <HugeiconsIcon icon={Login01Icon} className="size-4" />
+                      <span>Đăng nhập</span>
+                    </NextLink>
+                  </Button>
+                )
               )}
             </div>
           </div>

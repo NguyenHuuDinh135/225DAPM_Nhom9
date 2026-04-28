@@ -6,6 +6,7 @@ using backend.Application.TreeIncidents.Commands.UpdateTreeIncidentStatus;
 using backend.Application.TreeIncidents.Queries.GetTreeIncidentDetail;
 using backend.Application.TreeIncidents.Queries.GetTreeIncidents;
 using backend.Domain.Constants;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace backend.Web.Endpoints;
@@ -19,11 +20,19 @@ public class TreeIncidents : EndpointGroupBase
         // Temporary: Disable authorization for testing
         app.MapPost("", CreateIncident).AllowAnonymous();
         app.MapPost("report-incident", CreateTreeIncident).AllowAnonymous().DisableAntiforgery();
+<<<<<<< HEAD
         app.MapGet("", GetIncidents).AllowAnonymous();
         app.MapGet("{id}", GetTreeIncidentDetail).AllowAnonymous();
         app.MapPut("{id}/status", UpdateIncidentStatus).AllowAnonymous();
         app.MapPut("{id}/approve", ApproveIncident).AllowAnonymous();
         app.MapPost("{id}/feedback", SendFeedback).AllowAnonymous();
+=======
+        app.MapGet("", GetIncidents).RequireAuthorization();
+        app.MapGet("{id}", GetTreeIncidentDetail).RequireAuthorization();
+        app.MapPut("{id}/status", UpdateIncidentStatus).RequireAuthorization(new AuthorizeAttribute { Roles = $"{Roles.Manager},{Roles.Employee},{Roles.Administrator}" });
+        app.MapPut("{id}/approve", ApproveIncident).RequireAuthorization(new AuthorizeAttribute { Roles = $"{Roles.Manager},{Roles.Administrator}" });
+        app.MapPost("{id}/feedback", SendFeedback).RequireAuthorization(new AuthorizeAttribute { Roles = $"{Roles.Manager},{Roles.Employee},{Roles.Administrator}" });
+>>>>>>> bad814c0a4bc39e490ebbf32052bc69716786855
     }
 
     public async Task<int> CreateIncident(ISender sender, [FromBody] CreateIncidentCommand command)

@@ -8,7 +8,7 @@ import {
 } from "@workspace/ui/components/dialog"
 import { toast } from "@workspace/ui/components/sonner"
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080"
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000"
 
 export function ImportTreesDialog({ onSuccess }: { onSuccess: () => void }) {
   const [open, setOpen] = useState(false)

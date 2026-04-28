@@ -6,7 +6,7 @@ import { ChevronLeft, ChevronRight, X } from "lucide-react"
 import { Button } from "@workspace/ui/components/button"
 import { Map, MapControls, MapMarker, MapPopup, MarkerContent, type MapRef } from "@workspace/ui/components/ui/map"
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080"
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000"
 
 interface TreeMapDto { id: number; name: string | null; condition: string | null; treeTypeName: string | null; latitude: number | null; longitude: number | null }
 

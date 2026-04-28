@@ -11,7 +11,7 @@ import { toast } from "@workspace/ui/components/sonner"
 interface ProgressEntry { id: number; updaterId: string; percentage: number | null; note: string | null; updatedDate: string | null; images: string[] }
 interface WorkDetail { id: number; workTypeName: string | null; planName: string | null; progresses: ProgressEntry[] }
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080"
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000"
 
 export default function ProgressPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)

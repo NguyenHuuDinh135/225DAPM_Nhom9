@@ -7,6 +7,7 @@ using backend.Application.WorkItems.Commands.UpdateWorkItem;
 using backend.Application.WorkItems.Queries.GetWorkItemDetail;
 using backend.Application.WorkItems.Queries.GetWorkItems;
 using backend.Domain.Constants;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
@@ -18,6 +19,7 @@ public class WorkItems : EndpointGroupBase
 
     public override void Map(RouteGroupBuilder groupBuilder)
     {
+<<<<<<< HEAD
         // Temporary: Disable authorization for testing
         groupBuilder.MapGet(GetWorkItems).AllowAnonymous();
         groupBuilder.MapGet(GetWorkItemDetail, "{id}").AllowAnonymous();
@@ -27,6 +29,16 @@ public class WorkItems : EndpointGroupBase
         groupBuilder.MapPost(ReportProgress, "{id}/report-progress").AllowAnonymous().DisableAntiforgery();
         groupBuilder.MapPut(ApproveWork, "{id}/approve").AllowAnonymous();
         groupBuilder.MapPost(AssignUser, "{id}/assign-user").AllowAnonymous();
+=======
+        groupBuilder.MapGet(GetWorkItems).RequireAuthorization();
+        groupBuilder.MapGet(GetWorkItemDetail, "{id}").RequireAuthorization();
+        groupBuilder.MapPost(CreateWorkItem).RequireAuthorization(new AuthorizeAttribute { Roles = $"{Roles.Manager},{Roles.Admin},{Roles.Administrator}" });
+        groupBuilder.MapPut(UpdateWorkItem, "{id}").RequireAuthorization(new AuthorizeAttribute { Roles = $"{Roles.Manager},{Roles.Admin},{Roles.Administrator}" });
+        groupBuilder.MapDelete(DeleteWorkItem, "{id}").RequireAuthorization(new AuthorizeAttribute { Roles = $"{Roles.Manager},{Roles.Admin},{Roles.Administrator}" });
+        groupBuilder.MapPost(ReportProgress, "{id}/report-progress").RequireAuthorization(new AuthorizeAttribute { Roles = Roles.Employee }).DisableAntiforgery();
+        groupBuilder.MapPut(ApproveWork, "{id}/approve").RequireAuthorization(new AuthorizeAttribute { Roles = $"{Roles.Manager},{Roles.Admin},{Roles.Administrator}" });
+        groupBuilder.MapPost(AssignUser, "{id}/assign-user").RequireAuthorization(new AuthorizeAttribute { Roles = $"{Roles.Manager},{Roles.Admin},{Roles.Administrator}" });
+>>>>>>> bad814c0a4bc39e490ebbf32052bc69716786855
     }
 
     public async Task<Ok<WorkItemsVm>> GetWorkItems(ISender sender)

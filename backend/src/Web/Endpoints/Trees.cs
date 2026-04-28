@@ -8,6 +8,8 @@ using backend.Application.Trees.Queries.GetTreeLocationHistory;
 using backend.Application.Trees.Queries.GetTreeMap;
 using backend.Application.Trees.Queries.GetTrees;
 using backend.Domain.Constants;
+using backend.Infrastructure.Data;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace backend.Web.Endpoints;
@@ -22,12 +24,22 @@ public class Trees : EndpointGroupBase
         groupBuilder.MapGet("", GetAllTrees).AllowAnonymous();
         groupBuilder.MapGet("map", GetTreeMap).AllowAnonymous();
         groupBuilder.MapGet("{id}", GetTreeDetail).AllowAnonymous();
+<<<<<<< HEAD
         groupBuilder.MapGet("{id}/location-history", GetLocationHistory).AllowAnonymous();
         groupBuilder.MapPost("", CreateTree).AllowAnonymous();
         groupBuilder.MapPost("import", ImportTrees).AllowAnonymous().DisableAntiforgery();
         groupBuilder.MapPut("{id}", UpdateTree).AllowAnonymous();
         groupBuilder.MapPut("{id}/relocate", RelocateTree).AllowAnonymous();
         groupBuilder.MapDelete("{id}", DeleteTree).AllowAnonymous();
+=======
+        groupBuilder.MapGet("{id}/location-history", GetLocationHistory).RequireAuthorization();
+        groupBuilder.MapPost("", CreateTree).RequireAuthorization(new AuthorizeAttribute { Roles = $"{Roles.Manager},{Roles.Admin},{Roles.Administrator}" });
+        groupBuilder.MapPost("import", ImportTrees).RequireAuthorization(new AuthorizeAttribute { Roles = $"{Roles.Manager},{Roles.Admin},{Roles.Administrator}" }).DisableAntiforgery();
+        groupBuilder.MapPut("{id}", UpdateTree).RequireAuthorization(new AuthorizeAttribute { Roles = $"{Roles.Manager},{Roles.Admin},{Roles.Administrator}" });
+        groupBuilder.MapPut("{id}/relocate", RelocateTree).RequireAuthorization(new AuthorizeAttribute { Roles = $"{Roles.Manager},{Roles.Admin},{Roles.Administrator}" });
+        groupBuilder.MapDelete("{id}", DeleteTree).RequireAuthorization(new AuthorizeAttribute { Roles = $"{Roles.Manager},{Roles.Admin},{Roles.Administrator}" });
+        groupBuilder.MapPost("seed", SeedTrees).AllowAnonymous();
+>>>>>>> bad814c0a4bc39e490ebbf32052bc69716786855
     }
 
     public async Task<IEnumerable<TreeDto>> GetAllTrees(ISender sender)
@@ -71,5 +83,11 @@ public class Trees : EndpointGroupBase
     {
         var result = await sender.Send(new DeleteTreeCommand(id));
         return result.Succeeded ? TypedResults.NoContent() : TypedResults.BadRequest(result.Errors);
+    }
+
+    public async Task<IResult> SeedTrees(ApplicationDbContextInitialiser initialiser)
+    {
+        await initialiser.TrySeedAsync();
+        return TypedResults.NoContent();
     }
 }

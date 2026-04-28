@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation"
 import {
   LayoutDashboardIcon, TreePineIcon, MapIcon, ClipboardListIcon, CheckSquareIcon,
   TriangleAlertIcon, ArrowLeftRightIcon, UsersIcon, BarChart3Icon, FileTextIcon,
-  SettingsIcon, ShieldIcon, ChevronRightIcon,
+  SettingsIcon, ShieldIcon, ChevronRightIcon, MessageSquare,
 } from "lucide-react"
 import {
   Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu,
@@ -24,7 +24,7 @@ interface NavItem {
   url: string
   icon: React.ReactNode
   roles?: Role[]
-  items?: { title: string; url: string }[]
+  items?: { title: string; url: string; roles?: Role[] }[]
 }
 
 const NAV_MAIN: NavItem[] = [
@@ -33,7 +33,6 @@ const NAV_MAIN: NavItem[] = [
     title: "Cây xanh", url: "/trees", icon: <TreePineIcon className="size-4" />,
     items: [
       { title: "Tất cả cây", url: "/trees" },
-      { title: "Thêm cây", url: "/trees/new" },
     ],
   },
   { title: "Bản đồ", url: "/map", icon: <MapIcon className="size-4" /> },
@@ -42,7 +41,6 @@ const NAV_MAIN: NavItem[] = [
     roles: ["Manager", "Administrator"],
     items: [
       { title: "Tất cả kế hoạch", url: "/plans" },
-      { title: "Tạo kế hoạch", url: "/plans/new" },
     ],
   },
   {
@@ -50,7 +48,7 @@ const NAV_MAIN: NavItem[] = [
     roles: ["Employee", "Manager"],
     items: [
       { title: "Công việc của tôi", url: "/tasks" },
-      { title: "Phân công", url: "/tasks/assign" },
+      { title: "Phân công", url: "/tasks/assign", roles: ["Manager"] },
     ],
   },
   {
@@ -58,8 +56,15 @@ const NAV_MAIN: NavItem[] = [
     roles: ["Employee", "Manager", "Administrator"],
     items: [
       { title: "Tất cả công tác", url: "/works" },
-      { title: "Phân công", url: "/works/1/assign" },
+      { title: "Phân công", url: "/works/1/assign", roles: ["Manager"] },
       { title: "Tiến độ", url: "/works/1/progress" },
+    ],
+  },
+  {
+    title: "Phản hồi", url: "/feedback-inbox", icon: <MessageSquare className="size-4" />,
+    roles: ["Manager", "Administrator"],
+    items: [
+      { title: "Hòm thư góp ý", url: "/feedback-inbox" },
     ],
   },
   {
@@ -67,11 +72,11 @@ const NAV_MAIN: NavItem[] = [
     roles: ["Employee", "Manager", "Administrator"],
     items: [
       { title: "Tất cả sự cố", url: "/incidents" },
-      { title: "Báo cáo sự cố", url: "/incidents/report" },
+      { title: "Báo cáo sự cố", url: "/incidents/report", roles: ["Manager"] },
     ],
   },
-  { title: "Thay thế", url: "/replacements", icon: <ArrowLeftRightIcon className="size-4" />, roles: ["Manager", "Administrator"] },
-  { title: "Nhân viên", url: "/staff", icon: <UsersIcon className="size-4" />, roles: ["Manager", "Administrator"] },
+  { title: "Thay thế", url: "/replacements", icon: <ArrowLeftRightIcon className="size-4" />, roles: ["Manager"] },
+  { title: "Nhân viên", url: "/staff", icon: <UsersIcon className="size-4" />, roles: ["Manager"] },
 ]
 
 const NAV_REPORTING: NavItem[] = [
@@ -120,13 +125,15 @@ function NavGroup({ label, items, role, pathname }: { label: string; items: NavI
                 </CollapsibleTrigger>
                 <CollapsibleContent>
                   <SidebarMenuSub>
-                    {item.items.map((sub) => (
-                      <SidebarMenuSubItem key={sub.title}>
-                        <SidebarMenuSubButton asChild isActive={pathname === sub.url}>
-                          <Link href={sub.url}>{sub.title}</Link>
-                        </SidebarMenuSubButton>
-                      </SidebarMenuSubItem>
-                    ))}
+                    {item.items
+                      .filter((sub) => !sub.roles || sub.roles.includes(role))
+                      .map((sub) => (
+                        <SidebarMenuSubItem key={sub.title}>
+                          <SidebarMenuSubButton asChild isActive={pathname === sub.url}>
+                            <Link href={sub.url}>{sub.title}</Link>
+                          </SidebarMenuSubButton>
+                        </SidebarMenuSubItem>
+                      ))}
                   </SidebarMenuSub>
                 </CollapsibleContent>
               </SidebarMenuItem>

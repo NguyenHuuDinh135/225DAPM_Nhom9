@@ -22,18 +22,30 @@ namespace backend.Application.Trees.Commands
 
         public async Task<int> Handle(CreateTreeCommand request, CancellationToken cancellationToken)
         {
-            var tree = new Tree
+            try 
             {
-                Name = request.Name,
-                TreeTypeId = request.TreeTypeId,
-                Condition = request.Condition,
-                RecordedDate = DateTime.UtcNow
-            };
+                var tree = new Tree
+                {
+                    Name = request.Name,
+                    TreeTypeId = request.TreeTypeId,
+                    Condition = request.Condition,
+                    RecordedDate = DateTime.UtcNow
+                };
 
-            _context.Trees.Add(tree);
-            await _context.SaveChangesAsync(cancellationToken);
+                _context.Trees.Add(tree);
+                await _context.SaveChangesAsync(cancellationToken);
 
-            return tree.Id;
+                return tree.Id;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ERROR] CreateTreeCommandHandler: {ex.Message}");
+                if (ex.InnerException != null)
+                {
+                    Console.WriteLine($"[INNER ERROR] {ex.InnerException.Message}");
+                }
+                throw;
+            }
         }
     }
 }

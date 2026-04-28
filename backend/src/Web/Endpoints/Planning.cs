@@ -15,12 +15,21 @@ public class Planning : EndpointGroupBase
 
     public override void Map(RouteGroupBuilder groupBuilder)
     {
+<<<<<<< HEAD
         groupBuilder.MapGet(GetPlans).AllowAnonymous(); // Tạm thời để test
         groupBuilder.MapGet(GetPlanDetail, "{id}").AllowAnonymous();
         groupBuilder.MapPost(CreatePlan).AllowAnonymous(); // Tạm thời để test
         groupBuilder.MapPut(UpdatePlan, "{id}").AllowAnonymous();
         groupBuilder.MapDelete(DeletePlan, "{id}").AllowAnonymous();
         groupBuilder.MapPut(ApprovePlan, "{id}/approve").AllowAnonymous();
+=======
+        groupBuilder.MapGet(GetPlans).RequireAuthorization();
+        groupBuilder.MapGet(GetPlanDetail, "{id}").RequireAuthorization();
+        groupBuilder.MapPost(CreatePlan).RequireAuthorization(Roles.Manager);
+        groupBuilder.MapPut(UpdatePlan, "{id}").RequireAuthorization(Roles.Manager);
+        groupBuilder.MapDelete(DeletePlan, "{id}").RequireAuthorization(Roles.Manager);
+        groupBuilder.MapPut(ApprovePlan, "{id}/approve").RequireAuthorization(Roles.Manager, Roles.Admin, Roles.Administrator);
+>>>>>>> bad814c0a4bc39e490ebbf32052bc69716786855
     }
 
     public async Task<Ok<List<PlanDto>>> GetPlans(ISender sender)

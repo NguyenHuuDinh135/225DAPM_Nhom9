@@ -47,8 +47,12 @@ function ThemeHotkey() {
         return
       }
 
+<<<<<<< HEAD
       // Fix: Check if event.key exists before calling toLowerCase
       if (!event.key || event.key.toLowerCase() !== "d") {
+=======
+      if (event.key?.toLowerCase() !== "d") {
+>>>>>>> bad814c0a4bc39e490ebbf32052bc69716786855
         return
       }
 

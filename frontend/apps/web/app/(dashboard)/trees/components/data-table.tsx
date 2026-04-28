@@ -14,16 +14,10 @@ import {
   type SortingState,
   type VisibilityState,
 } from "@tanstack/react-table"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@workspace/ui/components/table"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@workspace/ui/components/table"
 import { Button } from "@workspace/ui/components/button"
 import { Input } from "@workspace/ui/components/input"
+import { toast } from "@workspace/ui/components/sonner"
 import { Plus } from "lucide-react"
 import { DataTablePagination } from "../../tasks/components/data-table-pagination"
 import { DataTableViewOptions } from "../../tasks/components/data-table-view-options"
@@ -32,7 +26,7 @@ import { ImportTreesDialog } from "./import-trees-dialog"
 import { makeColumns } from "./columns"
 import { type Tree } from "../data/schema"
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080"
+const BASE_URL = typeof window !== "undefined" ? "" : (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000")
 
 interface DataTableProps {
   data: Tree[]
@@ -46,18 +40,48 @@ export function DataTable({ data: initialData }: DataTableProps) {
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [dialogOpen, setDialogOpen] = React.useState(false)
   const [editTree, setEditTree] = React.useState<Tree | undefined>()
+  const [loading, setLoading] = React.useState(false)
 
   async function refresh() {
     const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null
     const res = await fetch(`${BASE_URL}/api/trees`, {
       headers: token ? { Authorization: `Bearer ${token}` } : {},
     })
-    if (res.ok) setData(await res.json() as Tree[])
+    if (res.ok) {
+      setData(await res.json() as Tree[])
+    } else if (res.status === 401) {
+      toast.error("Phiên làm việc hết hạn. Vui lòng đăng nhập lại.")
+    } else {
+      toast.error(`Không thể tải dữ liệu (Lỗi ${res.status})`)
+    }
   }
 
   function handleEdit(tree: Tree) {
     setEditTree(tree)
     setDialogOpen(true)
+  }
+
+  async function handleSeed() {
+    setLoading(true)
+    try {
+      const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null
+      const url = `${BASE_URL}/api/trees/seed`
+      console.log(`Fetching: ${url}`, { token: token ? "present" : "missing" })
+      const res = await fetch(url, {
+        method: "POST",
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      })
+      if (res.ok) {
+        toast.success("Đã nạp dữ liệu mẫu thành công")
+        await refresh()
+      } else {
+        toast.error(`Nạp dữ liệu thất bại (Lỗi ${res.status})`)
+      }
+    } catch (err) {
+      toast.error(`Đã xảy ra lỗi: ${err instanceof Error ? err.message : String(err)}`)
+    } finally {
+      setLoading(false)
+    }
   }
 
   const columns = React.useMemo(() => makeColumns(handleEdit, refresh), [])
@@ -94,6 +118,9 @@ export function DataTable({ data: initialData }: DataTableProps) {
         <div className="flex items-center gap-2">
           <DataTableViewOptions table={table} />
           <ImportTreesDialog onSuccess={refresh} />
+          <Button size="sm" variant="outline" onClick={handleSeed} disabled={loading}>
+            {loading ? "Đang nạp..." : "Nạp dữ liệu mẫu"}
+          </Button>
           <Button size="sm" onClick={() => { setEditTree(undefined); setDialogOpen(true) }}>
             <Plus className="mr-1 size-4" /> Thêm cây
           </Button>
