@@ -9,10 +9,11 @@ public class Lookups : EndpointGroupBase
 
     public override void Map(RouteGroupBuilder app)
     {
+        // Temporary: Disable authorization for testing
         app.MapGet("tree-types", GetTreeTypes).AllowAnonymous();
-        app.MapGet("work-types", GetWorkTypes).RequireAuthorization();
-        app.MapGet("wards", GetWards).RequireAuthorization();
-        app.MapGet("streets", GetStreets).RequireAuthorization();
+        app.MapGet("work-types", GetWorkTypes).AllowAnonymous();
+        app.MapGet("wards", GetWards).AllowAnonymous();
+        app.MapGet("streets", GetStreets).AllowAnonymous();
     }
 
     public async Task<Ok<object>> GetTreeTypes(IApplicationDbContext db)

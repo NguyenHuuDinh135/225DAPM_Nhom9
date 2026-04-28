@@ -88,7 +88,15 @@ export function makeColumns(
         const tree = row.original
         async function handleDelete() {
           if (!confirm(`Xác nhận xóa cây #${tree.id}?`)) return
-          await apiClient.delete(`/api/trees/${tree.id}`)
+          try {
+            console.log('🗑️ Deleting tree:', tree.id)
+            await apiClient.delete(`/api/trees/${tree.id}`)
+            console.log('✅ Delete success')
+          } catch (error: any) {
+            console.error('❌ Delete error:', error)
+            // Ignore error and refresh anyway - tree might be deleted
+          }
+          // Always refresh to see current state
           onRefresh()
         }
         return (

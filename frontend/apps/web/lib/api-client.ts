@@ -31,7 +31,8 @@ async function request<T>(
     if (!res.ok) {
       const message = await res.text().catch(() => res.statusText);
       console.error(`❌ API Error: ${res.status} - ${message}`);
-      throw { status: res.status, message } satisfies ApiError;
+      const apiError = { status: res.status, message } satisfies ApiError;
+      throw apiError;
     }
 
     if (res.status === 204) return undefined as T;

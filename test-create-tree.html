@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Create Tree</title>
+    <style>
+        body { font-family: Arial; padding: 20px; max-width: 800px; margin: 0 auto; }
+        input, select { padding: 10px; margin: 5px 0; width: 100%; max-width: 400px; font-size: 14px; }
+        button { padding: 10px 20px; margin: 10px 5px 10px 0; font-size: 16px; cursor: pointer; background: #4CAF50; color: white; border: none; border-radius: 5px; }
+        .success { background: #d4edda; padding: 15px; margin: 10px 0; border-radius: 5px; }
+        .error { background: #f8d7da; padding: 15px; margin: 10px 0; border-radius: 5px; }
+        .info { background: #d1ecf1; padding: 15px; margin: 10px 0; border-radius: 5px; }
+        pre { background: #f5f5f5; padding: 10px; overflow-x: auto; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <h1>🌳 Test Create Tree</h1>
+    
+    <div class="info">
+        <strong>📋 Checklist:</strong>
+        <ul>
+            <li>✅ Backend chạy tại http://localhost:5000</li>
+            <li>✅ Đã login và có token trong localStorage</li>
+        </ul>
+    </div>
+
+    <h2>Bước 1: Kiểm tra Token</h2>
+    <button onclick="checkToken()">🔍 Kiểm tra Token</button>
+    <div id="tokenResult"></div>
+
+    <h2>Bước 2: Lấy danh sách loại cây</h2>
+    <button onclick="getTreeTypes()">📋 Get Tree Types</button>
+    <div id="treeTypesResult"></div>
+
+    <h2>Bước 3: Tạo cây mới</h2>
+    <div>
+        <label>Tên cây:</label><br>
+        <input type="text" id="treeName" value="Cây test" />
+    </div>
+    <div>
+        <label>Loại cây ID:</label><br>
+        <select id="treeTypeId">
+            <option value="">-- Chọn loại cây --</option>
+        </select>
+    </div>
+    <div>
+        <label>Tình trạng:</label><br>
+        <input type="text" id="condition" value="Bình thường" />
+    </div>
+    <button onclick="createTree()">🌳 Tạo Cây</button>
+    <div id="createResult"></div>
+
+    <script>
+        let token = null;
+        
+        function checkToken() {
+            const resultDiv = document.getElementById("tokenResult");
+            token = localStorage.getItem("access_token");
+            
+            if (!token) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <strong>❌ Không có token!</strong>
+                        <p>Vui lòng login trước: <a href="http://localhost:3000/login" target="_blank">http://localhost:3000/login</a></p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Decode token to check role
+            try {
+                const parts = token.split('.');
+                if (parts.length === 3) {
+                    const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
+                    const role = payload["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] || payload.role;
+                    
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <strong>✅ Có token!</strong>
+                            <p><strong>Token:</strong> ${token.substring(0, 50)}...</p>
+                            <p><strong>Role:</strong> ${role || '❌ KHÔNG CÓ ROLE!'}</p>
+                            ${!role ? '<p class="error">⚠️ Token không có role claims! Cần fix ApplicationUserClaimsPrincipalFactory</p>' : ''}
+                        </div>
+                    `;
+                }
+            } catch (e) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <strong>⚠️ Không thể decode token</strong>
+                        <p>Token có thể là encrypted token</p>
+                        <p><strong>Token:</strong> ${token.substring(0, 50)}...</p>
+                    </div>
+                `;
+            }
+        }
+        
+        async function getTreeTypes() {
+            const resultDiv = document.getElementById("treeTypesResult");
+            
+            if (!token) {
+                token = localStorage.getItem("access_token");
+            }
+            
+            if (!token) {
+                resultDiv.innerHTML = `<div class="error">❌ Chưa có token! Vui lòng kiểm tra token trước.</div>`;
+                return;
+            }
+            
+            resultDiv.innerHTML = '<div class="info">🔍 Đang lấy danh sách loại cây...</div>';
+            
+            try {
+                const response = await fetch('http://localhost:5000/api/lookups/tree-types', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    // Populate select
+                    const select = document.getElementById("treeTypeId");
+                    select.innerHTML = '<option value="">-- Chọn loại cây --</option>';
+                    data.forEach(t => {
+                        const option = document.createElement("option");
+                        option.value = t.id;
+                        option.textContent = `${t.name} (ID: ${t.id})`;
+                        select.appendChild(option);
+                    });
+                    
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <strong>✅ Lấy danh sách loại cây thành công!</strong>
+                            <p>Số lượng: ${data.length}</p>
+                            <pre>${JSON.stringify(data.slice(0, 5), null, 2)}</pre>
+                        </div>
+                    `;
+                } else {
+                    const errorText = await response.text();
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            <strong>❌ Lỗi ${response.status}</strong>
+                            <pre>${errorText}</pre>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <strong>❌ Failed to fetch!</strong>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        async function createTree() {
+            const resultDiv = document.getElementById("createResult");
+            
+            if (!token) {
+                token = localStorage.getItem("access_token");
+            }
+            
+            if (!token) {
+                resultDiv.innerHTML = `<div class="error">❌ Chưa có token! Vui lòng kiểm tra token trước.</div>`;
+                return;
+            }
+            
+            const name = document.getElementById("treeName").value;
+            const treeTypeId = parseInt(document.getElementById("treeTypeId").value);
+            const condition = document.getElementById("condition").value;
+            
+            if (!name) {
+                resultDiv.innerHTML = `<div class="error">❌ Vui lòng nhập tên cây!</div>`;
+                return;
+            }
+            
+            if (!treeTypeId) {
+                resultDiv.innerHTML = `<div class="error">❌ Vui lòng chọn loại cây!</div>`;
+                return;
+            }
+            
+            resultDiv.innerHTML = '<div class="info">🔍 Đang tạo cây...</div>';
+            
+            const payload = {
+                name: name,
+                treeTypeId: treeTypeId,
+                condition: condition || null
+            };
+            
+            console.log("📤 Payload:", payload);
+            
+            try {
+                const response = await fetch('http://localhost:5000/api/trees', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(payload)
+                });
+                
+                console.log("📡 Response:", response.status);
+                
+                if (response.ok) {
+                    const location = response.headers.get('Location');
+                    const treeId = await response.json();
+                    
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <strong>🎉 TẠO CÂY THÀNH CÔNG!</strong>
+                            <p><strong>Tree ID:</strong> ${treeId}</p>
+                            <p><strong>Location:</strong> ${location}</p>
+                            <hr>
+                            <p>✅ Backend hoạt động tốt!</p>
+                            <p>✅ Token có role claims!</p>
+                            <p>✅ Bây giờ test trên frontend sẽ thành công!</p>
+                        </div>
+                    `;
+                } else {
+                    const errorText = await response.text();
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            <strong>❌ Lỗi ${response.status}</strong>
+                            <pre>${errorText}</pre>
+                            <hr>
+                            <p><strong>Nguyên nhân có thể:</strong></p>
+                            <ul>
+                                <li>${response.status === 401 ? 'Token không hợp lệ' : ''}</li>
+                                <li>${response.status === 403 ? 'Token không có role claims (Manager/Admin)' : ''}</li>
+                                <li>${response.status === 400 ? 'Dữ liệu không hợp lệ (kiểm tra validation)' : ''}</li>
+                                <li>${response.status === 500 ? 'Lỗi server (kiểm tra backend logs)' : ''}</li>
+                            </ul>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error("❌ Error:", error);
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <strong>❌ Failed to fetch!</strong>
+                        <p>${error.message}</p>
+                        <p><strong>Nguyên nhân:</strong></p>
+                        <ul>
+                            <li>Backend không chạy</li>
+                            <li>CORS bị block</li>
+                        </ul>
+                    </div>
+                `;
+            }
+        }
+        
+        // Auto check token on load
+        window.onload = () => {
+            checkToken();
+        };
+    </script>
+</body>
+</html>

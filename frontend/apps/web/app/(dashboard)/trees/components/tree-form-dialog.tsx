@@ -63,7 +63,9 @@ export function TreeFormDialog({ open, onOpenChange, tree, onSuccess }: TreeForm
       }
       onSuccess()
       onOpenChange(false)
-    } catch {
+    } catch (error: any) {
+      alert(`Lỗi: ${error.message || 'Unknown error'}`)
+      console.error('Submit error:', error)
     } finally {
       setLoading(false)
     }
