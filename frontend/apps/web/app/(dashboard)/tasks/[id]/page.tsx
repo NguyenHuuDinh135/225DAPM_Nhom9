@@ -15,7 +15,7 @@ interface WorkProgress { id: number; updaterId: string; note: string | null; upd
 interface WorkUser { userId: string; role: string | null; status: string | null }
 interface WorkDetail {
   id: number; workTypeName: string | null; planName: string | null; creatorId: string
-  startDate: string | null; endDate: string | null; status: number; rejectionFeedback: string | null
+  startDate: string | null; endDate: string | null; status: number | string; rejectionFeedback: string | null
   progresses: WorkProgress[]; users: WorkUser[]
 }
 
@@ -39,6 +39,22 @@ const STATUS_MAP: Record<number, { label: string; className: string }> = {
   4: { label: "Đã hủy", className: "bg-red-100 text-red-700" },
 }
 
+// Fallback cho trường hợp backend trả về string thay vì số
+const STATUS_STRING_MAP: Record<string, { label: string; className: string }> = {
+  New: { label: "Mới", className: "bg-blue-100 text-blue-700" },
+  InProgress: { label: "Đang thực hiện", className: "bg-yellow-100 text-yellow-700" },
+  WaitingForApproval: { label: "Chờ duyệt", className: "bg-purple-100 text-purple-700" },
+  Completed: { label: "Hoàn thành", className: "bg-green-100 text-green-700" },
+  Cancelled: { label: "Đã hủy", className: "bg-red-100 text-red-700" },
+}
+
+function getStatusInfo(status: number | string): { label: string; className: string } {
+  if (typeof status === "number") {
+    return STATUS_MAP[status] ?? { label: String(status), className: "bg-muted text-muted-foreground" }
+  }
+  return STATUS_STRING_MAP[status] ?? { label: status, className: "bg-muted text-muted-foreground" }
+}
+
 function Row({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div className="flex justify-between gap-4 py-2 text-sm">
@@ -51,7 +67,7 @@ function Row({ label, value }: { label: string; value: React.ReactNode }) {
 async function WorkDetailContent({ id }: { id: string }) {
   const work = await fetchWork(id)
   if (!work) notFound()
-  const statusInfo = STATUS_MAP[work.status] ?? { label: String(work.status), className: "bg-muted text-muted-foreground" }
+  const statusInfo = getStatusInfo(work.status)
 
   return (
     <div className="flex flex-col gap-4">
@@ -73,7 +89,7 @@ async function WorkDetailContent({ id }: { id: string }) {
         </CardContent>
       </Card>
 
-      {work.status === 2 && <ApproveWorkItem workId={work.id} />}
+      {(work.status === 2 || work.status === "WaitingForApproval") && <ApproveWorkItem workId={work.id} />}
 
       <div className="grid gap-4 md:grid-cols-2">
         <Card>
