@@ -86,6 +86,36 @@ jobs:
         env:
           ASPNETCORE_ENVIRONMENT: Development
 
+      - name: Wait for Backend to be ready
+        run: |
+          echo "Waiting for backend to start..."
+          for i in $(seq 1 30); do
+            if curl -s http://localhost:5000/api > /dev/null 2>&1; then
+              echo "Backend is ready!"
+              break
+            fi
+            echo "Attempt $i: Backend not ready yet, waiting 5s..."
+            sleep 5
+          done
+
+      - name: Start Frontend Dev Server
+        working-directory: frontend/apps/web
+        run: bun run dev &
+        env:
+          NEXT_PUBLIC_API_URL: http://localhost:5000
+
+      - name: Wait for Frontend to be ready
+        run: |
+          echo "Waiting for frontend to start..."
+          for i in $(seq 1 24); do
+            if curl -s http://localhost:3000 > /dev/null 2>&1; then
+              echo "Frontend is ready!"
+              break
+            fi
+            echo "Attempt $i: Frontend not ready yet, waiting 5s..."
+            sleep 5
+          done
+
       - name: Run Playwright tests
         working-directory: frontend/apps/web
         run: bunx playwright test tests/e2e/director.spec.ts

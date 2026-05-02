@@ -4,7 +4,8 @@
     "baseUrl": ".",
     "paths": {
       "@workspace/ui/*": ["./src/*"]
-    }
+    },
+    "types": ["@types/geojson"]
   },
   "include": ["."],
   "exclude": ["node_modules", "dist"]
