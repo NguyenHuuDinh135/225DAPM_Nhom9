@@ -8,13 +8,24 @@ namespace backend.Web.Endpoints;
 
 public class Employees : EndpointGroupBase
 {
+    public override string? GroupName => "employees";
+
     public override void Map(RouteGroupBuilder groupBuilder)
     {
+<<<<<<< HEAD
         groupBuilder.MapGet("", GetEmployees).RequireAuthorization(new Microsoft.AspNetCore.Authorization.AuthorizeAttribute { Roles = $"{Roles.GiamDoc},{Roles.DoiTruong}" });
         groupBuilder.MapPost("", CreateEmployee).RequireAuthorization(new Microsoft.AspNetCore.Authorization.AuthorizeAttribute { Roles = $"{Roles.GiamDoc},{Roles.DoiTruong}" });
         groupBuilder.MapPut("{id}", UpdateEmployee).RequireAuthorization(new Microsoft.AspNetCore.Authorization.AuthorizeAttribute { Roles = $"{Roles.GiamDoc},{Roles.DoiTruong}" });
         groupBuilder.MapDelete("{id}", DeleteEmployee).RequireAuthorization(new Microsoft.AspNetCore.Authorization.AuthorizeAttribute { Roles = $"{Roles.GiamDoc},{Roles.DoiTruong}" });
         groupBuilder.MapPut("{id}/roles", AssignRole).RequireAuthorization(new Microsoft.AspNetCore.Authorization.AuthorizeAttribute { Roles = $"{Roles.GiamDoc},{Roles.DoiTruong}" });
+=======
+        // Temporary: Disable authorization for testing
+        groupBuilder.MapGet("", GetEmployees).AllowAnonymous();
+        groupBuilder.MapPost("", CreateEmployee).AllowAnonymous();
+        groupBuilder.MapPut("{id}", UpdateEmployee).AllowAnonymous();
+        groupBuilder.MapDelete("{id}", DeleteEmployee).AllowAnonymous();
+        groupBuilder.MapPut("{id}/roles", AssignRole).AllowAnonymous();
+>>>>>>> main
     }
 
     public async Task<EmployeesVm> GetEmployees(ISender sender, ILogger<Employees> logger)

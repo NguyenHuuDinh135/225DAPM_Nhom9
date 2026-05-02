@@ -7,10 +7,18 @@ namespace backend.Web.Endpoints;
 
 public class Locations : EndpointGroupBase
 {
+    public override string? GroupName => "locations";
+
     public override void Map(RouteGroupBuilder groupBuilder)
     {
+<<<<<<< HEAD
         groupBuilder.MapGet(GetLocations).RequireAuthorization();
         groupBuilder.MapPost(CreateLocation).RequireAuthorization(new Microsoft.AspNetCore.Authorization.AuthorizeAttribute { Roles = $"{Roles.GiamDoc},{Roles.DoiTruong}" });
+=======
+        // Temporary: Disable authorization for testing
+        groupBuilder.MapGet(GetLocations).AllowAnonymous();
+        groupBuilder.MapPost(CreateLocation).AllowAnonymous();
+>>>>>>> main
     }
 
     public async Task<Ok<LocationsVm>> GetLocations(ISender sender)

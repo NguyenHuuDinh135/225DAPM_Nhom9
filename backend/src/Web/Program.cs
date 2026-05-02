@@ -33,6 +33,12 @@ if (!app.Environment.IsDevelopment())
     app.UseHttpsRedirection();
 app.UseStaticFiles();
 
+app.UseAuthentication();
+app.UseAuthorization();
+
+// Add role claims to authenticated users
+app.UseMiddleware<backend.Web.Infrastructure.RoleClaimsMiddleware>();
+
 app.UseSwaggerUi(settings =>
 {
     settings.Path = "/api";

@@ -17,13 +17,23 @@ public class TreeIncidents : EndpointGroupBase
 
     public override void Map(RouteGroupBuilder app)
     {
+        // Temporary: Disable authorization for testing
         app.MapPost("", CreateIncident).AllowAnonymous();
+<<<<<<< HEAD
         app.MapPost("report-incident", ReportIncident).AllowAnonymous().DisableAntiforgery();
         app.MapGet("", GetIncidents).AllowAnonymous(); // Mở công khai cho bản đồ
         app.MapGet("{id}", GetTreeIncidentDetail).AllowAnonymous(); // Mở công khai để xem chi tiết sự cố
         app.MapPut("{id}/status", UpdateIncidentStatus).RequireAuthorization(new AuthorizeAttribute { Roles = $"{Roles.GiamDoc},{Roles.DoiTruong},{Roles.NhanVien}" });
         app.MapPut("{id}/approve", ApproveIncident).RequireAuthorization(new AuthorizeAttribute { Roles = $"{Roles.GiamDoc},{Roles.DoiTruong}" });
         app.MapPost("{id}/feedback", SendFeedback).RequireAuthorization(new AuthorizeAttribute { Roles = $"{Roles.GiamDoc},{Roles.DoiTruong},{Roles.NhanVien}" });
+=======
+        app.MapPost("report-incident", CreateTreeIncident).AllowAnonymous().DisableAntiforgery();
+        app.MapGet("", GetIncidents).AllowAnonymous();
+        app.MapGet("{id}", GetTreeIncidentDetail).AllowAnonymous();
+        app.MapPut("{id}/status", UpdateIncidentStatus).AllowAnonymous();
+        app.MapPut("{id}/approve", ApproveIncident).AllowAnonymous();
+        app.MapPost("{id}/feedback", SendFeedback).AllowAnonymous();
+>>>>>>> main
     }
 
     public async Task<IResult> CreateIncident(ISender sender, [FromBody] CreateIncidentCommand command)

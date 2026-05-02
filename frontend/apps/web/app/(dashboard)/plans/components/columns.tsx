@@ -3,7 +3,7 @@
 import { useState } from "react"
 import Link from "next/link"
 import { type ColumnDef } from "@tanstack/react-table"
-import { MoreHorizontal } from "lucide-react"
+import { MoreHorizontal, EyeIcon } from "lucide-react"
 import { Checkbox } from "@workspace/ui/components/checkbox"
 import { Badge } from "@workspace/ui/components/badge"
 import { Button } from "@workspace/ui/components/button"
@@ -67,6 +67,7 @@ function RowActions({ row, onRefresh }: { row: { original: Plan }; onRefresh: ()
   }
 
   return (
+<<<<<<< HEAD
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
@@ -111,6 +112,33 @@ function RowActions({ row, onRefresh }: { row: { original: Plan }; onRefresh: ()
         </AlertDialogContent>
       </AlertDialog>
     </>
+=======
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="icon" className="size-8 data-[state=open]:bg-muted">
+          <MoreHorizontal />
+          <span className="sr-only">Mở menu</span>
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-[160px]">
+        <DropdownMenuItem asChild>
+          <Link href={`/plans/${plan.id}`} className="flex items-center gap-2">
+            <EyeIcon className="size-4" />
+            Xem chi tiết
+          </Link>
+        </DropdownMenuItem>
+        {plan.status !== "Approved" && (
+          <DropdownMenuItem onClick={handleApprove}>Duyệt kế hoạch</DropdownMenuItem>
+        )}
+        {user?.role === "Manager" && (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem variant="destructive" onClick={handleDelete}>Xóa</DropdownMenuItem>
+          </>
+        )}
+      </DropdownMenuContent>
+    </DropdownMenu>
+>>>>>>> main
   )
 }
 

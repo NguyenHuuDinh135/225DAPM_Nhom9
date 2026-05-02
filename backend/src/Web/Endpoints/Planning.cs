@@ -20,6 +20,7 @@ public class Planning : EndpointGroupBase
 
     public override void Map(RouteGroupBuilder groupBuilder)
     {
+<<<<<<< HEAD
         groupBuilder.MapGet(GetPlans).RequireAuthorization();
         groupBuilder.MapGet(GetPlanDetail, "{id}").RequireAuthorization();
         groupBuilder.MapPost(CreatePlan).RequireAuthorization(new Microsoft.AspNetCore.Authorization.AuthorizeAttribute { Roles = Roles.DoiTruong });
@@ -56,6 +57,15 @@ public class Planning : EndpointGroupBase
         var suggestionMessage = await aiService.SuggestMaintenancePlanAsync(overdueNames);
         
         return TypedResults.Ok(new AISuggestionDto(suggestionMessage, overdueIds, overdueNames));
+=======
+        // Temporary: Disable authorization for testing
+        groupBuilder.MapGet(GetPlans).AllowAnonymous();
+        groupBuilder.MapGet(GetPlanDetail, "{id}").AllowAnonymous();
+        groupBuilder.MapPost(CreatePlan).AllowAnonymous();
+        groupBuilder.MapPut(UpdatePlan, "{id}").AllowAnonymous();
+        groupBuilder.MapDelete(DeletePlan, "{id}").AllowAnonymous();
+        groupBuilder.MapPut(ApprovePlan, "{id}/approve").AllowAnonymous();
+>>>>>>> main
     }
 
     public async Task<Ok<List<PlanDto>>> GetPlans(ISender sender)

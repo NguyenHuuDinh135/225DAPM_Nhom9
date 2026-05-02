@@ -6,10 +6,10 @@
     "version": "1.0.0"
   },
   "paths": {
-    "/api/Employees": {
+    "/api/employees": {
       "get": {
         "tags": [
-          "Employees"
+          "employees"
         ],
         "operationId": "GetApiEmployees",
         "responses": {
@@ -23,6 +23,7 @@
               }
             }
           }
+<<<<<<< HEAD
         },
         "security": [
           {
@@ -32,10 +33,13 @@
             ]
           }
         ]
+=======
+        }
+>>>>>>> main
       },
       "post": {
         "tags": [
-          "Employees"
+          "employees"
         ],
         "operationId": "PostApiEmployees",
         "requestBody": {
@@ -67,6 +71,7 @@
               }
             }
           }
+<<<<<<< HEAD
         },
         "security": [
           {
@@ -76,12 +81,15 @@
             ]
           }
         ]
+=======
+        }
+>>>>>>> main
       }
     },
-    "/api/Employees/{id}": {
+    "/api/employees/{id}": {
       "put": {
         "tags": [
-          "Employees"
+          "employees"
         ],
         "operationId": "PutApiEmployees",
         "parameters": [
@@ -124,6 +132,7 @@
               }
             }
           }
+<<<<<<< HEAD
         },
         "security": [
           {
@@ -133,10 +142,13 @@
             ]
           }
         ]
+=======
+        }
+>>>>>>> main
       },
       "delete": {
         "tags": [
-          "Employees"
+          "employees"
         ],
         "operationId": "DeleteApiEmployees",
         "parameters": [
@@ -167,6 +179,7 @@
               }
             }
           }
+<<<<<<< HEAD
         },
         "security": [
           {
@@ -176,12 +189,15 @@
             ]
           }
         ]
+=======
+        }
+>>>>>>> main
       }
     },
-    "/api/Employees/{id}/roles": {
+    "/api/employees/{id}/roles": {
       "put": {
         "tags": [
-          "Employees"
+          "employees"
         ],
         "operationId": "PutApiEmployeesRoles",
         "parameters": [
@@ -224,6 +240,7 @@
               }
             }
           }
+<<<<<<< HEAD
         },
         "security": [
           {
@@ -233,12 +250,15 @@
             ]
           }
         ]
+=======
+        }
+>>>>>>> main
       }
     },
-    "/api/Locations": {
+    "/api/locations": {
       "get": {
         "tags": [
-          "Locations"
+          "locations"
         ],
         "operationId": "GetLocations",
         "responses": {
@@ -252,16 +272,11 @@
               }
             }
           }
-        },
-        "security": [
-          {
-            "JWT": []
-          }
-        ]
+        }
       },
       "post": {
         "tags": [
-          "Locations"
+          "locations"
         ],
         "operationId": "CreateLocation",
         "requestBody": {
@@ -288,6 +303,7 @@
               }
             }
           }
+<<<<<<< HEAD
         },
         "security": [
           {
@@ -297,12 +313,15 @@
             ]
           }
         ]
+=======
+        }
+>>>>>>> main
       }
     },
-    "/api/Lookups/tree-types": {
+    "/api/lookups/tree-types": {
       "get": {
         "tags": [
-          "Lookups"
+          "lookups"
         ],
         "operationId": "GetApiLookupsTreeTypes",
         "responses": {
@@ -322,10 +341,10 @@
         }
       }
     },
-    "/api/Lookups/work-types": {
+    "/api/lookups/work-types": {
       "get": {
         "tags": [
-          "Lookups"
+          "lookups"
         ],
         "operationId": "GetApiLookupsWorkTypes",
         "responses": {
@@ -345,10 +364,10 @@
         }
       }
     },
-    "/api/Lookups/wards": {
+    "/api/lookups/wards": {
       "get": {
         "tags": [
-          "Lookups"
+          "lookups"
         ],
         "operationId": "GetApiLookupsWards",
         "responses": {
@@ -365,18 +384,13 @@
               }
             }
           }
-        },
-        "security": [
-          {
-            "JWT": []
-          }
-        ]
+        }
       }
     },
-    "/api/Lookups/streets": {
+    "/api/lookups/streets": {
       "get": {
         "tags": [
-          "Lookups"
+          "lookups"
         ],
         "operationId": "GetApiLookupsStreets",
         "parameters": [
@@ -405,12 +419,7 @@
               }
             }
           }
-        },
-        "security": [
-          {
-            "JWT": []
-          }
-        ]
+        }
       }
     },
     "/api/maintenance/trigger": {
@@ -436,12 +445,7 @@
               }
             }
           }
-        },
-        "security": [
-          {
-            "JWT": []
-          }
-        ]
+        }
       }
     },
     "/api/planning": {
@@ -464,12 +468,7 @@
               }
             }
           }
-        },
-        "security": [
-          {
-            "JWT": []
-          }
-        ]
+        }
       },
       "post": {
         "tags": [
@@ -492,6 +491,7 @@
           "200": {
             "description": ""
           }
+<<<<<<< HEAD
         },
         "security": [
           {
@@ -500,6 +500,9 @@
             ]
           }
         ]
+=======
+        }
+>>>>>>> main
       }
     },
     "/api/planning/{id}": {
@@ -531,12 +534,7 @@
               }
             }
           }
-        },
-        "security": [
-          {
-            "JWT": []
-          }
-        ]
+        }
       },
       "put": {
         "tags": [
@@ -584,6 +582,7 @@
               }
             }
           }
+<<<<<<< HEAD
         },
         "security": [
           {
@@ -592,6 +591,9 @@
             ]
           }
         ]
+=======
+        }
+>>>>>>> main
       },
       "delete": {
         "tags": [
@@ -627,6 +629,7 @@
               }
             }
           }
+<<<<<<< HEAD
         },
         "security": [
           {
@@ -686,6 +689,15 @@
       "put": {
         "tags": [
           "planning"
+=======
+        }
+      }
+    },
+    "/api/planning/{id}/approve": {
+      "put": {
+        "tags": [
+          "planning"
+>>>>>>> main
         ],
         "operationId": "ApprovePlan",
         "parameters": [
@@ -729,6 +741,7 @@
               }
             }
           }
+<<<<<<< HEAD
         },
         "security": [
           {
@@ -884,6 +897,14 @@
     "/api/reports/dashboard-stats": {
       "get": {
         "tags": [
+=======
+        }
+      }
+    },
+    "/api/reports/dashboard-stats": {
+      "get": {
+        "tags": [
+>>>>>>> main
           "reports"
         ],
         "operationId": "GetApiReportsDashboardStats",
@@ -946,6 +967,7 @@
           "200": {
             "description": ""
           }
+<<<<<<< HEAD
         },
         "security": [
           {
@@ -953,8 +975,47 @@
               "GiamDoc",
               "DoiTruong"
             ]
+=======
+        }
+      }
+    },
+    "/api/test/ping": {
+      "get": {
+        "tags": [
+          "test"
+        ],
+        "operationId": "GetApiTestPing",
+        "responses": {
+          "200": {
+            "description": ""
+>>>>>>> main
           }
-        ]
+        }
+      }
+    },
+    "/api/test/echo": {
+      "post": {
+        "tags": [
+          "test"
+        ],
+        "operationId": "PostApiTestEcho",
+        "requestBody": {
+          "x-name": "request",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EchoRequest"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
       }
     },
     "/api/tree-incidents": {
@@ -1090,6 +1151,7 @@
           "200": {
             "description": ""
           }
+<<<<<<< HEAD
         },
         "security": [
           {
@@ -1100,6 +1162,9 @@
             ]
           }
         ]
+=======
+        }
+>>>>>>> main
       }
     },
     "/api/tree-incidents/{id}/approve": {
@@ -1136,6 +1201,7 @@
           "200": {
             "description": ""
           }
+<<<<<<< HEAD
         },
         "security": [
           {
@@ -1145,6 +1211,9 @@
             ]
           }
         ]
+=======
+        }
+>>>>>>> main
       }
     },
     "/api/tree-incidents/{id}/feedback": {
@@ -1181,6 +1250,7 @@
           "200": {
             "description": ""
           }
+<<<<<<< HEAD
         },
         "security": [
           {
@@ -1191,12 +1261,16 @@
             ]
           }
         ]
+=======
+        }
+>>>>>>> main
       }
     },
     "/api/trees": {
       "get": {
         "tags": [
           "trees"
+<<<<<<< HEAD
         ],
         "operationId": "GetApiTrees",
         "parameters": [
@@ -1231,6 +1305,8 @@
             },
             "x-position": 3
           }
+=======
+>>>>>>> main
         ],
         "responses": {
           "200": {
@@ -1277,6 +1353,7 @@
           "400": {
             "description": ""
           }
+<<<<<<< HEAD
         },
         "security": [
           {
@@ -1286,6 +1363,9 @@
             ]
           }
         ]
+=======
+        }
+>>>>>>> main
       }
     },
     "/api/trees/map": {
@@ -1385,6 +1465,7 @@
               }
             }
           }
+<<<<<<< HEAD
         },
         "security": [
           {
@@ -1394,6 +1475,9 @@
             ]
           }
         ]
+=======
+        }
+>>>>>>> main
       },
       "delete": {
         "tags": [
@@ -1429,6 +1513,7 @@
               }
             }
           }
+<<<<<<< HEAD
         },
         "security": [
           {
@@ -1438,6 +1523,9 @@
             ]
           }
         ]
+=======
+        }
+>>>>>>> main
       }
     },
     "/api/trees/{id}/location-history": {
@@ -1472,12 +1560,7 @@
               }
             }
           }
-        },
-        "security": [
-          {
-            "JWT": []
-          }
-        ]
+        }
       }
     },
     "/api/trees/import": {
@@ -1519,6 +1602,7 @@
               }
             }
           }
+<<<<<<< HEAD
         },
         "security": [
           {
@@ -1528,6 +1612,9 @@
             ]
           }
         ]
+=======
+        }
+>>>>>>> main
       }
     },
     "/api/trees/{id}/relocate": {
@@ -1577,6 +1664,7 @@
               }
             }
           }
+<<<<<<< HEAD
         },
         "security": [
           {
@@ -1586,6 +1674,9 @@
             ]
           }
         ]
+=======
+        }
+>>>>>>> main
       }
     },
     "/api/trees/seed": {
@@ -1601,10 +1692,52 @@
         }
       }
     },
+<<<<<<< HEAD
     "/api/users/login": {
       "post": {
         "tags": [
           "users"
+=======
+    "/api/users/register": {
+      "post": {
+        "tags": [
+          "users"
+        ],
+        "operationId": "PostApiUsersRegister",
+        "requestBody": {
+          "x-name": "registration",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterRequest"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/users/login": {
+      "post": {
+        "tags": [
+          "users"
+>>>>>>> main
         ],
         "operationId": "PostApiUsersLogin",
         "requestBody": {
@@ -1626,14 +1759,223 @@
         }
       }
     },
+<<<<<<< HEAD
     "/api/users/me": {
       "get": {
         "tags": [
           "users"
+=======
+    "/api/users/refresh": {
+      "post": {
+        "tags": [
+          "users"
         ],
-        "operationId": "GetApiUsersMe",
+        "operationId": "PostApiUsersRefresh",
+        "requestBody": {
+          "x-name": "refreshRequest",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefreshRequest"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
         "responses": {
           "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccessTokenResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/users/confirmEmail": {
+      "get": {
+        "tags": [
+          "users"
+        ],
+        "operationId": "GetApiUsersConfirmEmail",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "nullable": true
+            },
+            "x-position": 1
+          },
+          {
+            "name": "code",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "nullable": true
+            },
+            "x-position": 2
+          },
+          {
+            "name": "changedEmail",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "nullable": true
+            },
+            "x-position": 3
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/api/users/resendConfirmationEmail": {
+      "post": {
+        "tags": [
+          "users"
+        ],
+        "operationId": "PostApiUsersResendConfirmationEmail",
+        "requestBody": {
+          "x-name": "resendRequest",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResendConfirmationEmailRequest"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/api/users/forgotPassword": {
+      "post": {
+        "tags": [
+          "users"
+        ],
+        "operationId": "PostApiUsersForgotPassword",
+        "requestBody": {
+          "x-name": "resetRequest",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ForgotPasswordRequest"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/users/resetPassword": {
+      "post": {
+        "tags": [
+          "users"
+        ],
+        "operationId": "PostApiUsersResetPassword",
+        "requestBody": {
+          "x-name": "resetRequest",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResetPasswordRequest"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/users/manage/2fa": {
+      "post": {
+        "tags": [
+          "users"
+        ],
+        "operationId": "PostApiUsersManage2fa",
+        "requestBody": {
+          "x-name": "tfaRequest",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TwoFactorRequest"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TwoFactorResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
             "description": ""
           }
         },
@@ -1642,6 +1984,106 @@
             "JWT": []
           }
         ]
+      }
+    },
+    "/api/users/manage/info": {
+      "get": {
+        "tags": [
+          "users"
+        ],
+        "operationId": "GetApiUsersManageInfo",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InfoResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "users"
+        ],
+        "operationId": "PostApiUsersManageInfo",
+        "requestBody": {
+          "x-name": "infoRequest",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InfoRequest"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InfoResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      }
+    },
+    "/api/users/me": {
+      "get": {
+        "tags": [
+          "users"
+>>>>>>> main
+        ],
+        "operationId": "GetApiUsersMe",
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
       },
       "put": {
         "tags": [
@@ -1663,12 +2105,7 @@
           "200": {
             "description": ""
           }
-        },
-        "security": [
-          {
-            "JWT": []
-          }
-        ]
+        }
       }
     },
     "/api/work-items": {
@@ -1688,6 +2125,7 @@
               }
             }
           }
+<<<<<<< HEAD
         },
         "security": [
           {
@@ -1698,6 +2136,9 @@
             ]
           }
         ]
+=======
+        }
+>>>>>>> main
       },
       "post": {
         "tags": [
@@ -1733,6 +2174,7 @@
               }
             }
           }
+<<<<<<< HEAD
         },
         "security": [
           {
@@ -1742,6 +2184,9 @@
             ]
           }
         ]
+=======
+        }
+>>>>>>> main
       }
     },
     "/api/work-items/{id}": {
@@ -1773,6 +2218,7 @@
               }
             }
           }
+<<<<<<< HEAD
         },
         "security": [
           {
@@ -1783,6 +2229,9 @@
             ]
           }
         ]
+=======
+        }
+>>>>>>> main
       },
       "put": {
         "tags": [
@@ -1830,6 +2279,7 @@
               }
             }
           }
+<<<<<<< HEAD
         },
         "security": [
           {
@@ -1839,6 +2289,9 @@
             ]
           }
         ]
+=======
+        }
+>>>>>>> main
       },
       "delete": {
         "tags": [
@@ -1874,6 +2327,7 @@
               }
             }
           }
+<<<<<<< HEAD
         },
         "security": [
           {
@@ -1883,6 +2337,9 @@
             ]
           }
         ]
+=======
+        }
+>>>>>>> main
       }
     },
     "/api/work-items/{id}/report-progress": {
@@ -1955,6 +2412,7 @@
               }
             }
           }
+<<<<<<< HEAD
         },
         "security": [
           {
@@ -1963,6 +2421,9 @@
             ]
           }
         ]
+=======
+        }
+>>>>>>> main
       }
     },
     "/api/work-items/{id}/approve": {
@@ -2012,6 +2473,7 @@
               }
             }
           }
+<<<<<<< HEAD
         },
         "security": [
           {
@@ -2021,6 +2483,9 @@
             ]
           }
         ]
+=======
+        }
+>>>>>>> main
       }
     },
     "/api/work-items/{id}/assign-user": {
@@ -2070,6 +2535,7 @@
               }
             }
           }
+<<<<<<< HEAD
         },
         "security": [
           {
@@ -2079,6 +2545,9 @@
             ]
           }
         ]
+=======
+        }
+>>>>>>> main
       }
     }
   },
@@ -2125,15 +2594,15 @@
         }
       },
       "UserStatus": {
-        "type": "integer",
+        "type": "string",
         "description": "",
         "x-enumNames": [
           "Inactive",
           "Active"
         ],
         "enum": [
-          0,
-          1
+          "Inactive",
+          "Active"
         ]
       },
       "CreateEmployeeCommand": {
@@ -2673,6 +3142,15 @@
           "newIncidents": {
             "type": "integer",
             "format": "int32"
+          }
+        }
+      },
+      "EchoRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "message": {
+            "type": "string"
           }
         }
       },
@@ -3275,7 +3753,7 @@
         }
       },
       "WorkStatus": {
-        "type": "integer",
+        "type": "string",
         "description": "",
         "x-enumNames": [
           "New",
@@ -3285,11 +3763,11 @@
           "Cancelled"
         ],
         "enum": [
-          0,
-          1,
-          2,
-          3,
-          4
+          "New",
+          "InProgress",
+          "WaitingForApproval",
+          "Completed",
+          "Cancelled"
         ]
       },
       "WorkTreeLocationDto": {

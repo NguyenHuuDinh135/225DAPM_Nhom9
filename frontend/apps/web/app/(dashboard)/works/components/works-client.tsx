@@ -10,7 +10,7 @@ import {
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@workspace/ui/components/dropdown-menu"
-import { UsersIcon, BarChart3Icon, MoreHorizontalIcon, Trash2Icon } from "lucide-react"
+import { UsersIcon, BarChart3Icon, MoreHorizontalIcon, Trash2Icon, EyeIcon } from "lucide-react"
 import { CreateWorkDialog } from "./create-work-dialog"
 import { WorkSheet } from "./work-sheet"
 import type { WorkItem, WorkStatus } from "../page"
@@ -106,11 +106,20 @@ export function WorksClient({ initialWorks }: { initialWorks: WorkItem[] }) {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
+<<<<<<< HEAD
                         <DropdownMenuItem onClick={() => handleView(work)} className="flex items-center gap-2 font-semibold">
                           <ClipboardList className="size-4" />
                           Xem chi tiết
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
+=======
+                        <DropdownMenuItem asChild>
+                          <Link href={`/works/${work.id}`} className="flex items-center gap-2">
+                            <EyeIcon className="size-4" />
+                            Xem chi tiết
+                          </Link>
+                        </DropdownMenuItem>
+>>>>>>> main
                         {canManage && (
                           <DropdownMenuItem asChild>
                             <Link href={`/works/${work.id}/assign`} className="flex items-center gap-2">
@@ -125,6 +134,18 @@ export function WorksClient({ initialWorks }: { initialWorks: WorkItem[] }) {
                             Cập nhật tiến độ
                           </Link>
                         </DropdownMenuItem>
+<<<<<<< HEAD
+=======
+                        {canManage && (
+                          <>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem variant="destructive" onClick={() => handleDelete(work.id)} className="flex items-center gap-2">
+                              <Trash2Icon className="size-4" />
+                              Xóa
+                            </DropdownMenuItem>
+                          </>
+                        )}
+>>>>>>> main
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>

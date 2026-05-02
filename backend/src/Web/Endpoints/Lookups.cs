@@ -5,12 +5,20 @@ namespace backend.Web.Endpoints;
 
 public class Lookups : EndpointGroupBase
 {
+    public override string? GroupName => "lookups";
+
     public override void Map(RouteGroupBuilder app)
     {
+        // Temporary: Disable authorization for testing
         app.MapGet("tree-types", GetTreeTypes).AllowAnonymous();
         app.MapGet("work-types", GetWorkTypes).AllowAnonymous();
+<<<<<<< HEAD
         app.MapGet("wards", GetWards).RequireAuthorization();
         app.MapGet("streets", GetStreets).RequireAuthorization();
+=======
+        app.MapGet("wards", GetWards).AllowAnonymous();
+        app.MapGet("streets", GetStreets).AllowAnonymous();
+>>>>>>> main
     }
 
     public async Task<Ok<List<TreeTypeLookupDto>>> GetTreeTypes(ISender sender)

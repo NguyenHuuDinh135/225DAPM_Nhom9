@@ -24,6 +24,7 @@ public class Trees : EndpointGroupBase
 
     public override void Map(RouteGroupBuilder groupBuilder)
     {
+<<<<<<< HEAD
         groupBuilder.MapGet("", GetAllTrees).AllowAnonymous();
         groupBuilder.MapGet("map", GetTreeMap).AllowAnonymous();
         groupBuilder.MapGet("{id}", GetTreeDetail).AllowAnonymous();
@@ -33,6 +34,18 @@ public class Trees : EndpointGroupBase
         groupBuilder.MapPut("{id}", UpdateTree).RequireAuthorization(new AuthorizeAttribute { Roles = $"{Roles.GiamDoc},{Roles.DoiTruong}" });
         groupBuilder.MapPut("{id}/relocate", RelocateTree).RequireAuthorization(new AuthorizeAttribute { Roles = $"{Roles.GiamDoc},{Roles.DoiTruong}" });
         groupBuilder.MapDelete("{id}", DeleteTree).RequireAuthorization(new AuthorizeAttribute { Roles = $"{Roles.GiamDoc},{Roles.DoiTruong}" });
+=======
+        // Temporary: Disable all authorization for testing
+        groupBuilder.MapGet("", GetAllTrees).AllowAnonymous();
+        groupBuilder.MapGet("map", GetTreeMap).AllowAnonymous();
+        groupBuilder.MapGet("{id}", GetTreeDetail).AllowAnonymous();
+        groupBuilder.MapGet("{id}/location-history", GetLocationHistory).AllowAnonymous();
+        groupBuilder.MapPost("", CreateTree).AllowAnonymous();
+        groupBuilder.MapPost("import", ImportTrees).AllowAnonymous().DisableAntiforgery();
+        groupBuilder.MapPut("{id}", UpdateTree).AllowAnonymous();
+        groupBuilder.MapPut("{id}/relocate", RelocateTree).AllowAnonymous();
+        groupBuilder.MapDelete("{id}", DeleteTree).AllowAnonymous();
+>>>>>>> main
         groupBuilder.MapPost("seed", SeedTrees).AllowAnonymous();
     }
 

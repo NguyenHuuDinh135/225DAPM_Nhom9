@@ -1,5 +1,9 @@
+<<<<<<< HEAD
 // lib/api-client.ts
 const BASE_URL = typeof window !== "undefined" ? "" : (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000");
+=======
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000";
+>>>>>>> main
 
 export interface ApiError {
   status: number;
@@ -26,6 +30,7 @@ async function request<T>(
 ): Promise<T> {
   const token = getToken();
   const headers = new Headers(init.headers);
+<<<<<<< HEAD
   
   const isFormData = init.body instanceof FormData;
   if (!isFormData && !headers.has("Content-Type")) {
@@ -76,6 +81,35 @@ async function request<T>(
     console.error(`Fetch Exception ${path}:`, networkError);
     throw networkError satisfies ApiError;
   }
+=======
+  headers.set("Content-Type", "application/json");
+  if (token) headers.set("Authorization", `Bearer ${token}`);
+
+  const url = `${BASE_URL}${path}`;
+  console.log(`🌐 API Request: ${init.method || 'GET'} ${url}`);
+  console.log(`🔑 Token: ${token ? 'Present' : 'Missing'}`);
+
+  try {
+    const res = await fetch(url, { ...init, headers });
+
+    console.log(`📡 Response: ${res.status} ${res.statusText}`);
+
+    if (!res.ok) {
+      const message = await res.text().catch(() => res.statusText);
+      console.error(`❌ API Error: ${res.status} - ${message}`);
+      const apiError = { status: res.status, message } satisfies ApiError;
+      throw apiError;
+    }
+
+    if (res.status === 204) return undefined as T;
+    const data = await res.json();
+    console.log(`✅ API Success:`, data);
+    return data as T;
+  } catch (error) {
+    console.error(`❌ Fetch Error:`, error);
+    throw error;
+  }
+>>>>>>> main
 }
 
 export const apiClient = {

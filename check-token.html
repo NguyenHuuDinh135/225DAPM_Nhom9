@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kiểm tra JWT Token</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            border-bottom: 3px solid #4CAF50;
+            padding-bottom: 10px;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        .success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+        }
+        .info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        code {
+            background: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+        .token-payload {
+            background: #f8f9fa;
+            padding: 15px;
+            border-left: 4px solid #4CAF50;
+            margin: 10px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Kiểm tra JWT Token</h1>
+        <p>Tool này giúp bạn kiểm tra xem token hiện tại có chứa role claims không.</p>
+        
+        <button onclick="checkToken()">Kiểm tra Token</button>
+        <button onclick="clearCookies()">Xóa Cookies (Logout)</button>
+        
+        <div id="result"></div>
+    </div>
+
+    <script>
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+            return null;
+        }
+
+        function parseJwt(token) {
+            try {
+                const base64Url = token.split('.')[1];
+                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                }).join(''));
+                return JSON.parse(jsonPayload);
+            } catch (e) {
+                return null;
+            }
+        }
+
+        function checkToken() {
+            const resultDiv = document.getElementById('result');
+            const token = getCookie('access_token');
+            
+            if (!token) {
+                resultDiv.innerHTML = `
+                    <div class="result error">
+                        <h3>❌ Không tìm thấy token!</h3>
+                        <p>Bạn chưa đăng nhập hoặc token đã hết hạn.</p>
+                        <p><strong>Giải pháp:</strong> Vào <a href="http://localhost:3000" target="_blank">http://localhost:3000</a> và đăng nhập.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const payload = parseJwt(token);
+            
+            if (!payload) {
+                resultDiv.innerHTML = `
+                    <div class="result error">
+                        <h3>❌ Token không hợp lệ!</h3>
+                        <p>Không thể parse token. Token có thể bị hỏng.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Check for role claim
+            const hasRole = payload.role || payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'];
+            const roleValue = hasRole || 'Không có';
+            
+            let statusClass = 'success';
+            let statusIcon = '✅';
+            let statusMessage = 'Token hợp lệ và có role claims!';
+            let solution = '';
+
+            if (!hasRole) {
+                statusClass = 'error';
+                statusIcon = '❌';
+                statusMessage = 'Token KHÔNG có role claims!';
+                solution = `
+                    <div class="result warning" style="margin-top: 15px;">
+                        <h4>🔧 Giải pháp:</h4>
+                        <ol>
+                            <li>Click nút <strong>"Xóa Cookies (Logout)"</strong> ở trên</li>
+                            <li>Vào <a href="http://localhost:3000" target="_blank">http://localhost:3000</a></li>
+                            <li>Đăng nhập lại với:
+                                <ul>
+                                    <li>Email: <code>manager@localhost</code></li>
+                                    <li>Password: <code>Manager1!</code></li>
+                                </ul>
+                            </li>
+                            <li>Quay lại đây và click <strong>"Kiểm tra Token"</strong> lại</li>
+                        </ol>
+                    </div>
+                `;
+            }
+
+            resultDiv.innerHTML = `
+                <div class="result ${statusClass}">
+                    <h3>${statusIcon} ${statusMessage}</h3>
+                    <div class="token-payload">
+                        <strong>Token Payload:</strong><br>
+                        ${JSON.stringify(payload, null, 2)}
+                    </div>
+                    <p><strong>Email:</strong> ${payload.email || payload.sub || 'N/A'}</p>
+                    <p><strong>Role:</strong> <code>${roleValue}</code></p>
+                    <p><strong>Expires:</strong> ${payload.exp ? new Date(payload.exp * 1000).toLocaleString('vi-VN') : 'N/A'}</p>
+                </div>
+                ${solution}
+            `;
+        }
+
+        function clearCookies() {
+            // Clear all cookies for localhost
+            const cookies = document.cookie.split(";");
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i];
+                const eqPos = cookie.indexOf("=");
+                const name = eqPos > -1 ? cookie.substr(0, eqPos).trim() : cookie.trim();
+                document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
+            }
+            
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = `
+                <div class="result success">
+                    <h3>✅ Đã xóa cookies!</h3>
+                    <p>Bây giờ hãy:</p>
+                    <ol>
+                        <li>Vào <a href="http://localhost:3000" target="_blank">http://localhost:3000</a></li>
+                        <li>Đăng nhập lại với <code>manager@localhost</code> / <code>Manager1!</code></li>
+                        <li>Quay lại đây và click <strong>"Kiểm tra Token"</strong></li>
+                    </ol>
+                </div>
+            `;
+        }
+
+        // Auto check on load
+        window.onload = function() {
+            checkToken();
+        };
+    </script>
+</body>
+</html>

@@ -15,6 +15,7 @@ public class Users : EndpointGroupBase
 
     public override void Map(RouteGroupBuilder groupBuilder)
     {
+<<<<<<< HEAD
         groupBuilder.MapPost("/login", async (
             [FromBody] LoginRequest request,
             UserManager<ApplicationUser> userManager,
@@ -55,7 +56,12 @@ public class Users : EndpointGroupBase
                 expiresIn = 3600 * 24 * 7
             });
         });
+=======
+        // Map default Identity API endpoints
+        groupBuilder.MapIdentityApi<ApplicationUser>();
+>>>>>>> main
 
+        // Temporary: Disable authorization for testing
         groupBuilder.MapGet("/me", async (
             ClaimsPrincipal principal,
             UserManager<ApplicationUser> userManager) =>
@@ -73,7 +79,7 @@ public class Users : EndpointGroupBase
                 dateOfBirth = user.DateOfBirth,
                 role = roles.FirstOrDefault()
             });
-        }).RequireAuthorization();
+        }).AllowAnonymous();
 
         groupBuilder.MapPut("/me", async (
             ClaimsPrincipal principal,
@@ -96,7 +102,11 @@ public class Users : EndpointGroupBase
 
             var result = await userManager.UpdateAsync(user);
             return result.Succeeded ? Results.NoContent() : Results.BadRequest(result.Errors.Select(e => e.Description));
+<<<<<<< HEAD
         }).RequireAuthorization().DisableAntiforgery();
+=======
+        }).AllowAnonymous();
+>>>>>>> main
     }
 }
 

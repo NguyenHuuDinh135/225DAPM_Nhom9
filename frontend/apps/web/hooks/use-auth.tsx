@@ -54,6 +54,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   async function login(email: string, password: string) {
+<<<<<<< HEAD
     const res = await apiClient.post<LoginResponse>("/api/Users/login", {
       email,
       password,
@@ -84,16 +85,57 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     else if (roleFromToken === ROLES.DoiTruong) target = "/doitruong";
     
     router.push(target);
+=======
+    // Call backend directly instead of Next.js API route
+    const response = await fetch("http://localhost:5000/api/users/login?useCookies=false&useSessionCookies=false", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email, password }),
+    })
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ message: "Login failed" }))
+      throw new Error(error.message || "Login failed")
+    }
+
+    const res = await response.json() as LoginResponse
+    
+    // Store in localStorage for client-side access
+    localStorage.setItem("access_token", res.accessToken)
+    setToken(res.accessToken)
+    
+    // Store in cookies for server-side middleware
+    document.cookie = `access_token=${res.accessToken}; path=/; max-age=${res.expiresIn}; SameSite=Lax`
+
+    // Fetch user info
+    const userInfo = await apiClient.get<User>("/api/users/me")
+    localStorage.setItem("user_id", userInfo.id)
+    localStorage.setItem("user", JSON.stringify(userInfo))
+    setUser(userInfo)
+
+    // Force redirect using window.location for reliability
+    window.location.href = "/dashboard"
+>>>>>>> main
   }
 
-  function logout() {
-    localStorage.removeItem("access_token");
-    localStorage.removeItem("user");
-    localStorage.removeItem("user_id");
-    document.cookie = "access_token=; path=/; max-age=0";
-    setToken(null);
-    setUser(null);
-    router.push("/login");
+  async function logout() {
+    // Call API route to delete cookie
+    await fetch("/api/auth/logout", { method: "POST" })
+    
+    // Clear localStorage
+    localStorage.removeItem("access_token")
+    localStorage.removeItem("user")
+    localStorage.removeItem("user_id")
+    
+    // Clear cookie
+    document.cookie = "access_token=; path=/; max-age=0"
+    
+    setToken(null)
+    setUser(null)
+    router.push("/login")
+    router.refresh()
   }
 
   return (

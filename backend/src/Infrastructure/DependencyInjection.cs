@@ -43,6 +43,7 @@ public static class DependencyInjection
         builder.Services.AddScoped<IApplicationDbContext>(provider => provider.GetRequiredService<ApplicationDbContext>());
         builder.Services.AddScoped<ApplicationDbContextInitialiser>();
 
+<<<<<<< HEAD
         builder.Services.AddAuthentication(options =>
         {
             options.DefaultAuthenticateScheme = "Jwt";
@@ -60,20 +61,61 @@ public static class DependencyInjection
                 IssuerSigningKey = new Microsoft.IdentityModel.Tokens.SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(key))
             };
         });
+=======
+        builder.Services.AddAuthentication()
+            .AddBearerToken(IdentityConstants.BearerScheme, options =>
+            {
+                // Configure bearer token to include all claims
+                options.BearerTokenExpiration = TimeSpan.FromHours(2);
+            });
+>>>>>>> main
 
         builder.Services.AddAuthorizationBuilder();
 
         builder.Services
-            .AddIdentityCore<ApplicationUser>()
+            .AddIdentityCore<ApplicationUser>(options =>
+            {
+                // Ensure claims are included in the token
+                options.ClaimsIdentity.RoleClaimType = System.Security.Claims.ClaimTypes.Role;
+                options.ClaimsIdentity.UserIdClaimType = System.Security.Claims.ClaimTypes.NameIdentifier;
+                options.ClaimsIdentity.UserNameClaimType = System.Security.Claims.ClaimTypes.Name;
+            })
             .AddRoles<IdentityRole>()
             .AddEntityFrameworkStores<ApplicationDbContext>()
-            .AddApiEndpoints();
+            .AddApiEndpoints()
+            .AddClaimsPrincipalFactory<ApplicationUserClaimsPrincipalFactory>()
+            .AddSignInManager()
+            .AddDefaultTokenProviders();
+        
+        // Configure IdentityOptions to include role claims in bearer tokens
+        builder.Services.Configure<IdentityOptions>(options =>
+        {
+            options.ClaimsIdentity.RoleClaimType = System.Security.Claims.ClaimTypes.Role;
+        });
 
         builder.Services.AddSingleton(TimeProvider.System);
         builder.Services.AddTransient<IIdentityService, IdentityService>();
 
         builder.Services.AddAuthorization(options =>
+<<<<<<< HEAD
             options.AddPolicy(Policies.CanPurge, policy => policy.RequireRole(Roles.DoiTruong)));
+=======
+        {
+            options.AddPolicy(Policies.CanPurge, policy => policy.RequireRole(Roles.Administrator));
+            
+            // Add role-based policies
+            options.AddPolicy(Roles.Administrator, policy => policy.RequireRole(Roles.Administrator));
+            options.AddPolicy(Roles.Admin, policy => policy.RequireRole(Roles.Admin));
+            options.AddPolicy(Roles.Manager, policy => policy.RequireRole(Roles.Manager));
+            options.AddPolicy(Roles.Employee, policy => policy.RequireRole(Roles.Employee));
+            
+            // Combined policies for multiple roles
+            options.AddPolicy("ManagerOrAdmin", policy => 
+                policy.RequireRole(Roles.Manager, Roles.Admin, Roles.Administrator));
+            options.AddPolicy("AdminOnly", policy => 
+                policy.RequireRole(Roles.Admin, Roles.Administrator));
+        });
+>>>>>>> main
 
         // Redis — optional, only when connection string is available
         var redisConnectionString = builder.Configuration.GetConnectionString("cache");

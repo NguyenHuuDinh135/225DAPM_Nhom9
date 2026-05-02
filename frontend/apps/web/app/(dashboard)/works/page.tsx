@@ -23,12 +23,26 @@ export interface WorkItem {
 async function fetchWorks(): Promise<WorkItem[]> {
   const cookieStore = await cookies()
   const token = cookieStore.get("access_token")?.value
+  
+  console.log("🔍 Fetching works from:", `${BASE_URL}/api/work-items`)
+  console.log("🔑 Token exists:", !!token)
+  
   const res = await fetch(`${BASE_URL}/api/work-items`, {
     headers: token ? { Authorization: `Bearer ${token}` } : {},
     next: { revalidate: 0 },
   })
-  if (!res.ok) return []
+  
+  console.log("📡 Response status:", res.status)
+  
+  if (!res.ok) {
+    console.error("❌ Failed to fetch works:", res.status, res.statusText)
+    return []
+  }
+  
   const json = await res.json() as { workItems: WorkItem[] }
+  console.log("📦 Response data:", json)
+  console.log("📊 Works count:", json.workItems?.length ?? 0)
+  
   return json.workItems ?? []
 }
 

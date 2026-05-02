@@ -20,6 +20,7 @@ public class WorkItems : EndpointGroupBase
 
     public override void Map(RouteGroupBuilder groupBuilder)
     {
+<<<<<<< HEAD
         groupBuilder.MapGet(GetWorkItems).RequireAuthorization(new AuthorizeAttribute { Roles = $"{Roles.GiamDoc},{Roles.DoiTruong},{Roles.NhanVien}" });
         groupBuilder.MapGet(GetWorkItemDetail, "{id}").RequireAuthorization(new AuthorizeAttribute { Roles = $"{Roles.GiamDoc},{Roles.DoiTruong},{Roles.NhanVien}" });
         groupBuilder.MapPost(CreateWorkItem).RequireAuthorization(new AuthorizeAttribute { Roles = $"{Roles.GiamDoc},{Roles.DoiTruong}" });
@@ -28,6 +29,17 @@ public class WorkItems : EndpointGroupBase
         groupBuilder.MapPost(ReportProgress, "{id}/report-progress").RequireAuthorization(new AuthorizeAttribute { Roles = Roles.NhanVien }).DisableAntiforgery();
         groupBuilder.MapPut(ApproveWork, "{id}/approve").RequireAuthorization(new AuthorizeAttribute { Roles = $"{Roles.GiamDoc},{Roles.DoiTruong}" });
         groupBuilder.MapPost(AssignUser, "{id}/assign-user").RequireAuthorization(new AuthorizeAttribute { Roles = $"{Roles.GiamDoc},{Roles.DoiTruong}" });
+=======
+        // Temporary: Disable authorization for testing
+        groupBuilder.MapGet(GetWorkItems).AllowAnonymous();
+        groupBuilder.MapGet(GetWorkItemDetail, "{id}").AllowAnonymous();
+        groupBuilder.MapPost(CreateWorkItem).AllowAnonymous();
+        groupBuilder.MapPut(UpdateWorkItem, "{id}").AllowAnonymous();
+        groupBuilder.MapDelete(DeleteWorkItem, "{id}").AllowAnonymous();
+        groupBuilder.MapPost(ReportProgress, "{id}/report-progress").AllowAnonymous().DisableAntiforgery();
+        groupBuilder.MapPut(ApproveWork, "{id}/approve").AllowAnonymous();
+        groupBuilder.MapPost(AssignUser, "{id}/assign-user").AllowAnonymous();
+>>>>>>> main
     }
 
     public async Task<Ok<WorkItemsVm>> GetWorkItems(ISender sender)

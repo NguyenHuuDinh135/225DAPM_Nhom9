@@ -58,17 +58,74 @@ export function PlanFormDialog({ open, onOpenChange, onSuccess }: PlanFormDialog
     }
     setLoading(true)
     try {
+<<<<<<< HEAD
       await apiClient.post("/api/planning", {
+=======
+      const creatorId = typeof window !== "undefined" ? (localStorage.getItem("user_id") ?? "") : ""
+      
+      console.log("🔍 Creating plan with data:", {
+>>>>>>> main
         name: parsed.data.name,
         creatorId: user?.id ?? "",
         startDate: parsed.data.startDate || null,
         endDate: parsed.data.endDate || null,
       })
+<<<<<<< HEAD
       toast.success("Đã tạo kế hoạch mới")
+=======
+      
+      if (!creatorId) {
+        console.error("❌ CreatorId is empty!")
+        alert("Lỗi: Không tìm thấy user ID. Vui lòng logout và login lại.")
+        return
+      }
+      
+      // Get token from localStorage (set by use-auth.tsx)
+      const token = localStorage.getItem("access_token")
+      console.log("🔑 Token from localStorage:", token ? "exists" : "missing")
+      
+      if (!token) {
+        console.error("❌ No access token found!")
+        alert("Lỗi: Không tìm thấy token. Vui lòng logout và login lại.")
+        return
+      }
+      
+      // Call backend directly with Authorization header
+      const url = `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/planning`
+      console.log("🌐 Posting to:", url)
+      
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          name: parsed.data.name,
+          creatorId,
+          startDate: parsed.data.startDate || null,
+          endDate: parsed.data.endDate || null,
+        }),
+      })
+      
+      console.log("📡 Response status:", response.status)
+      
+      if (!response.ok) {
+        const errorData = await response.json()
+        console.error("❌ Error response:", errorData)
+        alert(`Lỗi: ${response.status} - ${errorData.error || response.statusText}`)
+        return
+      }
+      
+      const result = await response.json()
+      console.log("✅ Plan created successfully:", result)
+      
+>>>>>>> main
       onSuccess()
       onOpenChange(false)
-    } catch {
-      // errors handled by apiClient
+    } catch (error) {
+      console.error("❌ Failed to create plan:", error)
+      alert(`Lỗi: ${error}`)
     } finally {
       setLoading(false)
     }

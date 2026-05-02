@@ -7,15 +7,30 @@ import { toast } from "@workspace/ui/components/sonner"
 const BASE_URL = "http://localhost:5000"
 
 export function NotificationListener() {
+  // Temporarily disabled - SignalR connection issues
+  // TODO: Fix SignalR authentication
+  return null
+  
+  /* eslint-disable @typescript-eslint/no-unused-vars */
   useEffect(() => {
+    // Only connect if we have a token (user is logged in)
+    const token = localStorage.getItem("access_token")
+    if (!token) {
+      return
+    }
+
     const connection = new HubConnectionBuilder()
       .withUrl(`${BASE_URL}/hubs/incidents`, {
+<<<<<<< HEAD
         accessTokenFactory: () => {
           // Check local storage for token (standard key in this project is auth-storage or similar, 
           // but based on previous code it uses access_token)
           const token = localStorage.getItem("access_token") || localStorage.getItem("auth_token");
           return token || "";
         }
+=======
+        accessTokenFactory: () => token,
+>>>>>>> main
       })
       .withAutomaticReconnect()
       .configureLogging(LogLevel.Error)
@@ -25,6 +40,7 @@ export function NotificationListener() {
       toast.warning(message, { description: `Sự cố #${incidentId}` })
     })
 
+<<<<<<< HEAD
     connection.on("ReceiveNotification", (title: string, message: string, type: string) => {
       if (type === "success") toast.success(title, { description: message })
       else if (type === "warning") toast.warning(title, { description: message })
@@ -71,7 +87,15 @@ export function NotificationListener() {
       stopConnection()
     }
 
-  }, [])
+=======
+    connection.start().catch((err) => {
+      console.warn("SignalR connection failed:", err)
+    })
 
-  return null
+    return () => { 
+      connection.stop().catch(() => {/* ignore */})
+    }
+>>>>>>> main
+  }, [])
+  /* eslint-enable @typescript-eslint/no-unused-vars */
 }
