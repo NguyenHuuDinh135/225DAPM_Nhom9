@@ -15,7 +15,7 @@ import { cn } from "@workspace/ui/lib/utils"
 const navItems = [
   { label: "Trang chủ", icon: HomeIcon, href: "/nhanvien" },
   { label: "Công việc", icon: ClipboardListIcon, href: "/nhanvien/tasks" },
-  { label: "Bản đồ", icon: "/map", isPublic: true },
+  { label: "Bản đồ", icon: MapPinIcon, href: "/map" },
   { label: "Thông báo", icon: BellIcon, href: "/nhanvien/notifications" },
 ]
 

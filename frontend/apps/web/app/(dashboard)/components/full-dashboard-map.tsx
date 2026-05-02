@@ -111,17 +111,17 @@ export function FullDashboardMap() {
   const loadData = React.useCallback(async () => {
     setLoading(true);
     try {
-      const [treeRes, incidentRes, workRes, typeRes, employeeRes] = await Promise.all([
+      // Gọi các API mà mọi role đều có quyền truy cập
+      const [treeRes, incidentRes, workRes, typeRes] = await Promise.all([
         apiClient.get<any>("/api/trees/map"),
         apiClient.get<any>("/api/tree-incidents"),
         apiClient.get<any>("/api/work-items"),
         apiClient.get<any>("/api/lookups/tree-types"),
-        apiClient.get<any>("/api/employees")
       ]);
-      
+
       setTrees((treeRes?.trees || treeRes?.items || treeRes || []).filter((t: any) => t.latitude != null));
       setIncidents((incidentRes?.treeIncidents || incidentRes?.items || incidentRes || []).filter((i: any) => i.latitude != null));
-      
+
       const works = (workRes?.workItems || workRes?.items || workRes || []).map((w: any) => ({
         id: w.id,
         workType: w.workTypeName,
@@ -131,19 +131,29 @@ export function FullDashboardMap() {
         longitude: w.treeLocations?.[0]?.longitude
       })).filter((w: any) => w.latitude != null);
       setWorkItems(works);
-      
+
       setTreeTypes(typeRes || []);
-      const allEmployees = employeeRes?.employees || [];
-      setTeams(allEmployees.filter((e: any) => e.role === "DoiTruong").map((e: any) => ({
-          id: e.id,
-          name: e.fullName || e.userName
-      })));
+
+      // Chỉ gọi /api/employees khi là admin (DoiTruong hoặc GiamDoc)
+      // Tránh 403 làm crash toàn bộ loadData với nhân viên
+      if (isAdmin) {
+        try {
+          const employeeRes = await apiClient.get<any>("/api/employees");
+          const allEmployees = employeeRes?.employees || [];
+          setTeams(allEmployees.filter((e: any) => e.role === "DoiTruong").map((e: any) => ({
+            id: e.id,
+            name: e.fullName || e.userName
+          })));
+        } catch {
+          // Không ảnh hưởng đến việc hiển thị bản đồ
+        }
+      }
     } catch (err: any) {
       console.error("LoadData Error:", err);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [isAdmin]);
 
   const loadAiSuggestions = async () => {
     if (showAiLayer) { setShowAiLayer(false); return; }
@@ -307,7 +317,7 @@ export function FullDashboardMap() {
 
         <div className="flex gap-1.5 bg-card/95 backdrop-blur-xl p-2 rounded-2xl border border-border shadow-2xl pointer-events-auto self-start">
             <ModeButton label="Duyệt" active={activeMode === "view"} onClick={() => setActiveMode("view")} />
-            {isStaff && (
+            {isAdmin && (
                 <>
                     <ModeButton label="+ Cây" active={activeMode === "add-tree"} onClick={() => setActiveMode("add-tree")} icon={TreePine} color="text-primary" />
                     <ModeButton label="Di dời" active={activeMode === "relocate"} onClick={() => setActiveMode("relocate")} icon={Move} color="text-blue-600" />
@@ -411,15 +421,18 @@ export function FullDashboardMap() {
                             <Input 
                                 defaultValue={selectedTree.name || ""} 
                                 className="h-12 font-black text-base border-none bg-muted/30 focus-visible:ring-primary rounded-2xl shadow-inner px-5"
-                                onBlur={(e) => handleUpdateTree(selectedTree.id, { name: e.target.value })}
+                                onBlur={(e) => isAdmin && handleUpdateTree(selectedTree.id, { name: e.target.value })}
+                                readOnly={!isAdmin}
                             />
                         </div>
                     </div>
 
                     <div className="flex gap-3 pt-2">
-                        <Button variant="outline" className="flex-1 rounded-2xl h-14 font-black text-xs text-destructive border-destructive/20 hover:bg-destructive/5" onClick={() => {
-                            toast.warning("Hủy bỏ dữ liệu cây?", { action: { label: "XÓA", onClick: async () => { await apiClient.delete(`/api/trees/${selectedTree.id}`); loadData(); setSelectedTree(null); } } });
-                        }}><Trash2 className="size-5 mr-2" /> GỠ BỎ</Button>
+                        {isAdmin && (
+                            <Button variant="outline" className="flex-1 rounded-2xl h-14 font-black text-xs text-destructive border-destructive/20 hover:bg-destructive/5" onClick={() => {
+                                toast.warning("Hủy bỏ dữ liệu cây?", { action: { label: "XÓA", onClick: async () => { await apiClient.delete(`/api/trees/${selectedTree.id}`); loadData(); setSelectedTree(null); } } });
+                            }}><Trash2 className="size-5 mr-2" /> GỠ BỎ</Button>
+                        )}
                         <Button className="flex-[1.5] rounded-2xl h-14 font-black text-xs shadow-xl shadow-primary/20 bg-primary hover:bg-primary/90" onClick={() => setIsSidebarOpen(true)}><Activity className="size-5 mr-2" /> CHI TIẾT LỊCH SỬ</Button>
                     </div>
                 </div>
@@ -451,18 +464,22 @@ export function FullDashboardMap() {
                         </div>
                     </div>
 
-                    <div className="space-y-3">
-                        <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground px-2">Điều phối Đội trưởng xử lý</Label>
-                        <Select onValueChange={(val) => handleApproveIncident(selectedIncident.id, val)}>
-                            <SelectTrigger className="rounded-2xl h-14 font-black border-none bg-muted/30 shadow-inner px-5">
-                                <SelectValue placeholder="Chọn nhân sự phụ trách..." />
-                            </SelectTrigger>
-                            <SelectContent className="rounded-2xl border-none shadow-2xl">
-                                {teams.map((t: any) => <SelectItem key={t.id} value={t.id} className="font-black text-xs uppercase">{t.name}</SelectItem>)}
-                            </SelectContent>
-                        </Select>
-                    </div>
-                    <Button className="w-full bg-destructive hover:bg-destructive/90 rounded-2xl h-16 font-black shadow-2xl shadow-destructive/30 uppercase tracking-[0.2em] text-xs" onClick={() => handleApproveIncident(selectedIncident.id)}>DUYỆT XỬ LÝ TỨC THÌ</Button>
+                    {isAdmin && (
+                        <>
+                            <div className="space-y-3">
+                                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground px-2">Điều phối Đội trưởng xử lý</Label>
+                                <Select onValueChange={(val) => handleApproveIncident(selectedIncident.id, val)}>
+                                    <SelectTrigger className="rounded-2xl h-14 font-black border-none bg-muted/30 shadow-inner px-5">
+                                        <SelectValue placeholder="Chọn nhân sự phụ trách..." />
+                                    </SelectTrigger>
+                                    <SelectContent className="rounded-2xl border-none shadow-2xl">
+                                        {teams.map((t: any) => <SelectItem key={t.id} value={t.id} className="font-black text-xs uppercase">{t.name}</SelectItem>)}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <Button className="w-full bg-destructive hover:bg-destructive/90 rounded-2xl h-16 font-black shadow-2xl shadow-destructive/30 uppercase tracking-[0.2em] text-xs" onClick={() => handleApproveIncident(selectedIncident.id)}>DUYỆT XỬ LÝ TỨC THÌ</Button>
+                        </>
+                    )}
                 </div>
             </MapPopup>
           )}
@@ -493,7 +510,7 @@ export function FullDashboardMap() {
                         </div>
                     </div>
                     
-                    {selectedWorkItem.status !== "Completed" && (
+                    {isAdmin && selectedWorkItem.status !== "Completed" && (
                         <div className="space-y-4">
                             <div className="space-y-2">
                                 <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground px-2">Ghi chú phản hồi (nếu từ chối)</Label>
