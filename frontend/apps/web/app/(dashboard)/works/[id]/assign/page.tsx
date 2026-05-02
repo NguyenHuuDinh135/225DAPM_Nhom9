@@ -11,12 +11,11 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { ArrowLeftIcon, PlusIcon } from "lucide-react"
 import { toast } from "@workspace/ui/components/sonner"
 import { getRoleLabel } from "@/lib/roles"
+import { apiClient } from "@/lib/api-client"
 
 interface WorkUser { userId: string; role: string | null; status: string | null }
 interface WorkDetail { id: number; workTypeName: string | null; planName: string | null; users: WorkUser[] }
 interface Employee { id: string; fullName: string | null; email: string | null }
-
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000"
 
 export default function AssignPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
@@ -28,19 +27,19 @@ export default function AssignPage({ params }: { params: Promise<{ id: string }>
   const [role, setRole] = useState("")
   const [submitting, setSubmitting] = useState(false)
 
-  function loadWork() {
-    const token = localStorage.getItem("access_token")
-    const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {}
-    Promise.all([
-      fetch(`${BASE_URL}/api/work-items/${id}`, { headers }).then((r) => r.ok ? r.json() : Promise.reject()),
-      fetch(`${BASE_URL}/api/employees`, { headers }).then((r) => r.ok ? r.json() : { employees: [] }),
-    ])
-      .then(([workData, empData]: [WorkDetail, { employees: Employee[] }]) => {
-        setWork(workData)
-        setEmployees(empData.employees ?? [])
-      })
-      .catch(() => toast.error("Không thể tải dữ liệu"))
-      .finally(() => setLoading(false))
+  async function loadWork() {
+    try {
+      const [workData, empData] = await Promise.all([
+        apiClient.get<WorkDetail>(`/api/work-items/${id}`),
+        apiClient.get<{ employees: Employee[] }>("/api/employees").catch(() => ({ employees: [] })),
+      ])
+      setWork(workData)
+      setEmployees(empData.employees ?? [])
+    } catch {
+      toast.error("Không thể tải dữ liệu")
+    } finally {
+      setLoading(false)
+    }
   }
 
   useEffect(() => { loadWork() }, [id])
@@ -48,18 +47,17 @@ export default function AssignPage({ params }: { params: Promise<{ id: string }>
   async function handleAssign(e: React.FormEvent) {
     e.preventDefault()
     if (!selectedUserId) { toast.error("Vui lòng chọn nhân viên"); return }
-    const token = localStorage.getItem("access_token")
     setSubmitting(true)
     try {
-      const res = await fetch(`${BASE_URL}/api/work-items/${id}/assign-user`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
-        body: JSON.stringify({ workId: Number(id), userId: selectedUserId, role: role.trim() || null }),
+      await apiClient.post(`/api/work-items/${id}/assign-user`, {
+        workId: Number(id),
+        userId: selectedUserId,
+        role: role.trim() || null,
       })
-      if (!res.ok) throw new Error(await res.text())
       toast.success("Đã phân công nhân viên")
       setDialogOpen(false)
-      setSelectedUserId(""); setRole("")
+      setSelectedUserId("")
+      setRole("")
       loadWork()
     } catch (err) {
       toast.error((err as Error).message || "Phân công thất bại")

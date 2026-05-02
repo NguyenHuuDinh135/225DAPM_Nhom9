@@ -23,9 +23,14 @@ export function middleware(req: NextRequest) {
   if (token) {
     const role = decodeRole(token);
     
-    // Nếu có token nhưng không giải mã được role -> Có thể token lỗi hoặc không phải JWT chuẩn
-    // Trong trường hợp này, ta cho phép qua để Client tự xử lý hoặc về login nếu cần
-    if (!role) return NextResponse.next();
+    // Nếu có token nhưng không giải mã được role -> Token hỏng hoặc hết hạn
+    // Redirect về login để buộc đăng nhập lại, trừ khi đang ở trang public
+    if (!role) {
+      if (isSecure) {
+        return NextResponse.redirect(new URL("/login", req.url));
+      }
+      return NextResponse.next();
+    }
 
     let targetHub = "/nhanvien";
     if (role === ROLES.GiamDoc) targetHub = "/giamdoc";
