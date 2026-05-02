@@ -68,57 +68,24 @@ export default function IncidentsPage() {
     try {
       const data = await apiClient.get<any>("/api/tree-incidents")
       // Backend returns TreeIncidentsVm { treeIncidents: [...] }
-      let items = data?.treeIncidents || data?.incidents || data?.items || (Array.isArray(data) ? data : [])
-      
-      // FALLBACK: Nếu thực sự không có dữ liệu (kể cả sau khi map đúng trường), dùng mock data
-      if (items.length === 0) {
-        items = [
-          {
-            id: 101,
-            description: "Cây lim sẹt lớn tại ngã tư bị gãy cành sau trận mưa đêm qua, gây cản trở giao thông.",
-            severity: "High",
-            status: "Pending",
-            reportedDate: new Date().toISOString(),
-            treeId: 42,
-            treeName: "Lim Sẹt #042",
-            reporterName: "Nguyễn Văn An",
-            images: []
-          },
-          {
-            id: 102,
-            description: "Cây xà cừ có dấu hiệu bị sâu đục thân nặng, cần xử lý thuốc bảo vệ thực vật.",
-            severity: "Medium",
-            status: "InProgress",
-            reportedDate: new Date(Date.now() - 86400000).toISOString(),
-            treeId: 15,
-            treeName: "Xà Cừ #015",
-            reporterName: "Phạm Thị Bình",
-            images: []
-          },
-          {
-            id: 103,
-            description: "Rễ cây phượng vĩ làm nứt vỡ vỉa hè, gây nguy hiểm cho người đi bộ.",
-            severity: "Low",
-            status: "Resolved",
-            reportedDate: new Date(Date.now() - 172800000).toISOString(),
-            treeId: 89,
-            treeName: "Phượng Vĩ #089",
-            reporterName: "Lê Văn Cường",
-            images: []
-          }
-        ]
-        toast.info("Chế độ trình diễn", { description: "Đang hiển thị dữ liệu sự cố mẫu do cơ sở dữ liệu trống." })
-      }
+      const items: IncidentDto[] = data?.treeIncidents || data?.incidents || data?.items || (Array.isArray(data) ? data : [])
 
       setIncidents(items)
       setTotalCount(items.length)
-      
-      const employeeRes = await apiClient.get<any>("/api/employees")
-      const allEmployees = employeeRes?.employees || []
-      setTeams(allEmployees.filter((e: any) => e.role === "DoiTruong").map((e: any) => ({
-          id: e.id,
-          name: e.fullName || e.userName
-      })))
+
+      // Chỉ load danh sách đội trưởng khi là admin (tránh 403 với nhân viên)
+      if (isAdmin) {
+        try {
+          const employeeRes = await apiClient.get<any>("/api/employees")
+          const allEmployees = employeeRes?.employees || []
+          setTeams(allEmployees.filter((e: any) => e.role === "DoiTruong").map((e: any) => ({
+            id: e.id,
+            name: e.fullName || e.userName
+          })))
+        } catch {
+          // Không ảnh hưởng đến việc hiển thị danh sách sự cố
+        }
+      }
     } catch (err: any) {
       console.error("Load incidents error:", err)
       setIncidents([])
@@ -322,7 +289,13 @@ export default function IncidentsPage() {
       </Card>
 
       {/* Detail Sheet */}
-      <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+      <Sheet open={isSheetOpen} onOpenChange={(open) => {
+        setIsSheetOpen(open)
+        if (!open) {
+          setRejectReason("")
+          setSelectedTeamId("")
+        }
+      }}>
         <SheetContent className="sm:max-w-xl p-0 overflow-hidden border-none shadow-2xl rounded-l-[3rem]">
           {selectedIncident && (
             <div className="h-full flex flex-col">
