@@ -20,6 +20,14 @@ public class WorkItemDto
     public WorkStatus Status { get; init; }
     public string StatusName => Status.ToString();
     public IList<WorkTreeLocationDto> TreeLocations { get; init; } = new List<WorkTreeLocationDto>();
+    public IList<WorkUserDto> AssignedUsers { get; init; } = new List<WorkUserDto>();
+}
+
+public class WorkUserDto
+{
+    public string? UserId { get; set; }
+    public string? UserName { get; set; }
+    public string? Role { get; set; }
 }
 
 public class WorkTreeLocationDto

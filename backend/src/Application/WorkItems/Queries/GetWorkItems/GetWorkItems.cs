@@ -5,10 +5,12 @@ public record GetWorkItemsQuery : IRequest<WorkItemsVm>;
 public class GetWorkItemsQueryHandler : IRequestHandler<GetWorkItemsQuery, WorkItemsVm>
 {
     private readonly IApplicationDbContext _context;
+    private readonly IIdentityService _identityService;
 
-    public GetWorkItemsQueryHandler(IApplicationDbContext context)
+    public GetWorkItemsQueryHandler(IApplicationDbContext context, IIdentityService identityService)
     {
         _context = context;
+        _identityService = identityService;
     }
 
     public async Task<WorkItemsVm> Handle(GetWorkItemsQuery request, CancellationToken cancellationToken)
@@ -16,6 +18,7 @@ public class GetWorkItemsQueryHandler : IRequestHandler<GetWorkItemsQuery, WorkI
         var items = await _context.Works
             .Include(w => w.WorkType)
             .Include(w => w.Plan)
+            .Include(w => w.WorkUsers)
             .Include(w => w.WorkDetails)
                 .ThenInclude(wd => wd.Tree)
             .Select(w => new WorkItemDto
@@ -29,6 +32,10 @@ public class GetWorkItemsQueryHandler : IRequestHandler<GetWorkItemsQuery, WorkI
                 StartDate = w.StartDate,
                 EndDate = w.EndDate,
                 Status = w.Status,
+                AssignedUsers = w.WorkUsers.Select(wu => new WorkUserDto {
+                    UserId = wu.UserId,
+                    Role = wu.Role
+                }).ToList(),
                 TreeLocations = w.WorkDetails
                     .Where(wd => wd.Tree.Latitude != null && wd.Tree.Longitude != null)
                     .Select(wd => new WorkTreeLocationDto
@@ -40,6 +47,21 @@ public class GetWorkItemsQueryHandler : IRequestHandler<GetWorkItemsQuery, WorkI
                     }).ToList()
             })
             .ToListAsync(cancellationToken);
+
+        // Populate UserNames from IdentityService
+        var users = await _identityService.GetUsersAsync();
+        var userDict = users.ToDictionary(u => u.Id, u => u.UserName);
+
+        foreach (var item in items)
+        {
+            foreach (var user in item.AssignedUsers)
+            {
+                if (user.UserId != null && userDict.TryGetValue(user.UserId, out var userName))
+                {
+                    user.UserName = userName;
+                }
+            }
+        }
 
         return new WorkItemsVm { WorkItems = items };
     }

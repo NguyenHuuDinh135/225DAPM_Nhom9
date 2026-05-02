@@ -1,10 +1,14 @@
-﻿using backend.Domain.Constants;
+using backend.Domain.Constants;
+using backend.Domain.Enums;
 using backend.Infrastructure.Data;
 using backend.Infrastructure.Identity;
 using MediatR;
+using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Moq;
+using System.Net.Http.Json;
 
 namespace backend.Application.FunctionalTests;
 
@@ -61,7 +65,7 @@ public partial class Testing
 
     public static async Task<string> RunAsAdministratorAsync()
     {
-        return await RunAsUserAsync("administrator@local", "Administrator1234!", new[] { Roles.Administrator });
+        return await RunAsUserAsync("doitruong@local", "DoiTruong1234!", new[] { Roles.DoiTruong });
     }
 
     public static async Task<string> RunAsUserAsync(string userName, string password, string[] roles)
@@ -70,7 +74,7 @@ public partial class Testing
 
         var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
 
-        var user = new ApplicationUser { UserName = userName, Email = userName };
+        var user = new ApplicationUser { UserName = userName, Email = userName, Status = UserStatus.Active };
 
         var result = await userManager.CreateAsync(user, password);
 
@@ -111,6 +115,20 @@ public partial class Testing
         _userId = null;
     }
 
+    public static async Task AuthorizeClientAsync(HttpClient client, string email, string password)
+    {
+        var loginResponse = await client.PostAsJsonAsync("/api/users/login", new { email, password });
+        if (loginResponse.StatusCode != System.Net.HttpStatusCode.OK)
+        {
+            var error = await loginResponse.Content.ReadAsStringAsync();
+            throw new Exception($"Login failed for {email}. Status: {loginResponse.StatusCode}. Error: {error}");
+        }
+        var result = await loginResponse.Content.ReadFromJsonAsync<LoginResponse>();
+        client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", result!.AccessToken);
+    }
+
+    private record LoginResponse(string AccessToken, string TokenType, int ExpiresIn);
+
     public static async Task<TEntity?> FindAsync<TEntity>(params object[] keyValues)
         where TEntity : class
     {
@@ -140,6 +158,14 @@ public partial class Testing
         var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
         return await context.Set<TEntity>().CountAsync();
+    }
+
+    public static HttpClient CreateClient()
+    {
+        return _factory.CreateClient(new WebApplicationFactoryClientOptions
+        {
+            AllowAutoRedirect = false
+        });
     }
 
     [OneTimeTearDown]

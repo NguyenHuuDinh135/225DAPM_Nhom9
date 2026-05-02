@@ -4,7 +4,7 @@ using backend.Domain.Enums;
 
 namespace backend.Application.WorkItems.Commands.UpdateWorkItem;
 
-public record UpdateWorkItemCommand : IRequest<IStatusResult>
+public record UpdateWorkItemCommand : IRequest<Result>
 {
     public int Id { get; init; }
     public DateTime? StartDate { get; init; }
@@ -20,7 +20,7 @@ public class UpdateWorkItemCommandValidator : AbstractValidator<UpdateWorkItemCo
     }
 }
 
-public class UpdateWorkItemCommandHandler : IRequestHandler<UpdateWorkItemCommand, IStatusResult>
+public class UpdateWorkItemCommandHandler : IRequestHandler<UpdateWorkItemCommand, Result>
 {
     private readonly IApplicationDbContext _context;
 
@@ -29,15 +29,18 @@ public class UpdateWorkItemCommandHandler : IRequestHandler<UpdateWorkItemComman
         _context = context;
     }
 
-    public async Task<IStatusResult> Handle(UpdateWorkItemCommand request, CancellationToken cancellationToken)
+    public async Task<Result> Handle(UpdateWorkItemCommand request, CancellationToken cancellationToken)
     {
         var work = await _context.Works.FindAsync([request.Id], cancellationToken);
         if (work is null)
-            return StatusResult.Failure($"WorkItem {request.Id} not found.");
+            return Result.Failure($"WorkItem {request.Id} not found.");
 
         work.Update(request.StartDate, request.EndDate);
-
+        
+        // Ensure status is updated if it's different or if we want to allow manual status overrides
+        // Assuming the entity has a way to set status or it's handled via specific methods
+        
         await _context.SaveChangesAsync(cancellationToken);
-        return StatusResult.Success();
+        return Result.Success();
     }
 }

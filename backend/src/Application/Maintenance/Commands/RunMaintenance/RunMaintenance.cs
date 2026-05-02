@@ -4,9 +4,9 @@ using MediatR;
 
 namespace backend.Application.Maintenance.Commands.RunMaintenance;
 
-public record RunMaintenanceCommand : IRequest<IStatusResult>;
+public record RunMaintenanceCommand : IRequest<Result>;
 
-public class RunMaintenanceCommandHandler : IRequestHandler<RunMaintenanceCommand, IStatusResult>
+public class RunMaintenanceCommandHandler : IRequestHandler<RunMaintenanceCommand, Result>
 {
     private readonly IMaintenanceJobService _maintenanceJobService;
 
@@ -15,16 +15,16 @@ public class RunMaintenanceCommandHandler : IRequestHandler<RunMaintenanceComman
         _maintenanceJobService = maintenanceJobService;
     }
 
-    public async Task<IStatusResult> Handle(RunMaintenanceCommand request, CancellationToken cancellationToken)
+    public async Task<Result> Handle(RunMaintenanceCommand request, CancellationToken cancellationToken)
     {
         try
         {
             await _maintenanceJobService.CheckAndGenerateMaintenanceWorkAsync(cancellationToken);
-            return StatusResult.Success();
+            return Result.Success();
         }
         catch (Exception ex)
         {
-            return StatusResult.Failure(ex.Message);
+            return Result.Failure(ex.Message);
         }
     }
 }

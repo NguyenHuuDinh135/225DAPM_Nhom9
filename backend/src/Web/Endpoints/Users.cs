@@ -1,14 +1,60 @@
+using backend.Application.Common.Interfaces;
 using backend.Infrastructure.Identity;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Text;
 
 namespace backend.Web.Endpoints;
 
 public class Users : EndpointGroupBase
 {
+    public override string? GroupName => "users";
+
     public override void Map(RouteGroupBuilder groupBuilder)
     {
-        groupBuilder.MapIdentityApi<ApplicationUser>();
+        groupBuilder.MapPost("/login", async (
+            [FromBody] LoginRequest request,
+            UserManager<ApplicationUser> userManager,
+            IConfiguration configuration) =>
+        {
+            var user = await userManager.FindByEmailAsync(request.Email);
+            if (user == null || !await userManager.CheckPasswordAsync(user, request.Password))
+            {
+                return Results.Unauthorized();
+            }
+
+            var roles = await userManager.GetRolesAsync(user);
+            var claims = new List<Claim>
+            {
+                new(ClaimTypes.NameIdentifier, user.Id),
+                new(ClaimTypes.Email, user.Email!),
+                new(ClaimTypes.Name, user.FullName ?? user.UserName!)
+            };
+
+            foreach (var role in roles)
+            {
+                claims.Add(new Claim(ClaimTypes.Role, role));
+            }
+
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:Key"] ?? "YourSuperSecretKeyWithAtLeast32Characters!"));
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            var token = new JwtSecurityToken(
+                claims: claims,
+                expires: DateTime.UtcNow.AddDays(7),
+                signingCredentials: creds
+            );
+
+            return Results.Ok(new
+            {
+                accessToken = new JwtSecurityTokenHandler().WriteToken(token),
+                tokenType = "Bearer",
+                expiresIn = 3600 * 24 * 7
+            });
+        });
 
         groupBuilder.MapGet("/me", async (
             ClaimsPrincipal principal,
@@ -23,6 +69,7 @@ public class Users : EndpointGroupBase
                 email = user.Email,
                 name = user.FullName ?? user.UserName,
                 fullName = user.FullName,
+                avatarUrl = user.AvatarUrl,
                 dateOfBirth = user.DateOfBirth,
                 role = roles.FirstOrDefault()
             });
@@ -31,16 +78,32 @@ public class Users : EndpointGroupBase
         groupBuilder.MapPut("/me", async (
             ClaimsPrincipal principal,
             UserManager<ApplicationUser> userManager,
-            UpdateProfileRequest req) =>
+            IFileService fileService,
+            [FromForm] UpdateProfileRequest request) =>
         {
             var user = await userManager.GetUserAsync(principal);
             if (user == null) return Results.Unauthorized();
-            user.FullName = req.FullName;
-            user.DateOfBirth = req.DateOfBirth;
+            
+            user.FullName = request.FullName;
+            user.DateOfBirth = request.DateOfBirth.HasValue 
+                ? DateTime.SpecifyKind(request.DateOfBirth.Value, DateTimeKind.Utc) 
+                : null;
+
+            if (request.Avatar != null)
+            {
+                user.AvatarUrl = await fileService.UploadAsync(request.Avatar, "avatars");
+            }
+
             var result = await userManager.UpdateAsync(user);
             return result.Succeeded ? Results.NoContent() : Results.BadRequest(result.Errors.Select(e => e.Description));
-        }).RequireAuthorization();
+        }).RequireAuthorization().DisableAntiforgery();
     }
 }
 
-public record UpdateProfileRequest(string? FullName, DateTime? DateOfBirth);
+public record LoginRequest(string Email, string Password);
+public class UpdateProfileRequest
+{
+    public string? FullName { get; set; }
+    public DateTime? DateOfBirth { get; set; }
+    public IFormFile? Avatar { get; set; }
+}

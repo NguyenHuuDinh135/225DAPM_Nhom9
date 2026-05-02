@@ -7,6 +7,7 @@ import { Badge } from "@workspace/ui/components/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@workspace/ui/components/card"
 import { Skeleton } from "@workspace/ui/components/skeleton"
 import { ApproveWorkItem } from "../components/approve-work-item"
+import { getRoleLabel } from "@/lib/roles"
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000"
 
@@ -86,7 +87,7 @@ async function WorkDetailContent({ id }: { id: string }) {
                   <div key={u.userId} className="flex items-center justify-between py-2 text-sm">
                     <span className="font-mono text-xs text-muted-foreground">{u.userId}</span>
                     <div className="flex items-center gap-2">
-                      {u.role && <Badge variant="outline" className="text-xs">{u.role}</Badge>}
+                      {u.role && <Badge variant="outline" className="text-xs">{getRoleLabel(u.role)}</Badge>}
                       {u.status && <span className="text-xs text-green-600">{u.status}</span>}
                     </div>
                   </div>

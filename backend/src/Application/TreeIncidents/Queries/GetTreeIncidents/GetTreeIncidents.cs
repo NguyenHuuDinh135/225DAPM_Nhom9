@@ -37,7 +37,8 @@ public class GetTreeIncidentsQueryHandler : IRequestHandler<GetTreeIncidentsQuer
                 Description = i.Content,
                 Status = i.Status,
                 ReportedDate = i.ReportedDate ?? DateTime.UtcNow,
-                ReportedBy = i.ReporterName ?? i.ReporterId
+                ReportedBy = i.ReporterName ?? i.ReporterId,
+                Severity = i.Severity
             })
             .ToListAsync(cancellationToken);
 

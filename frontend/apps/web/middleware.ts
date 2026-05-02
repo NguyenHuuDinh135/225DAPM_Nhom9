@@ -1,64 +1,50 @@
 import { NextRequest, NextResponse } from "next/server";
+import { ROLES } from "@/lib/roles";
+import { decodeRole } from "@/lib/auth-utils";
 
-const PROTECTED = ["/dashboard", "/tasks", "/works", "/incidents", "/trees", "/plans", "/staff", "/settings", "/analytics", "/reports", "/replacements"];
+// Các trang TUYỆT ĐỐI bảo mật (Cần Role tương ứng)
+const SECURE_ROUTES = ["/giamdoc", "/doitruong", "/nhanvien", "/staff", "/settings", "/analytics", "/reports", "/map", "/incidents", "/planning"];
 
-// Routes only accessible by Administrator or Manager (not Employee)
-const MANAGER_ONLY = ["/staff", "/plans", "/analytics", "/reports", "/replacements", "/settings/admin"];
-
-// Routes only accessible by Administrator
-const ADMIN_ONLY = ["/settings/admin", "/analytics"];
-
-function decodeRole(token: string): string | null {
-  try {
-    const parts = token.split(".");
-    if (parts.length !== 3) return null;
-    // atob may fail on non-standard base64 padding — use manual padding
-    const base64 = parts[1]!.replace(/-/g, "+").replace(/_/g, "/");
-    const padded = base64 + "=".repeat((4 - base64.length % 4) % 4);
-    const payload = JSON.parse(atob(padded)) as Record<string, unknown>;
-    const role =
-      payload["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] ??
-      payload["role"] ??
-      null;
-    return typeof role === "string" ? role : null;
-  } catch {
-    return null;
-  }
-}
+// Các trang CÔNG CỘNG (Người dân xem được)
+const PUBLIC_ROUTES = ["/", "/login", "/trees", "/tree-detail", "/report-incident", "/category"];
 
 export function middleware(req: NextRequest) {
   const token = req.cookies.get("access_token")?.value;
   const { pathname } = req.nextUrl;
 
-  const isProtected = PROTECTED.some((p) => pathname.startsWith(p));
+  const isSecure = SECURE_ROUTES.some((p) => pathname.startsWith(p));
+  const isPublic = PUBLIC_ROUTES.some((p) => pathname === p || (p !== "/" && pathname.startsWith(p)));
 
-  if (isProtected && !token) {
-    const url = req.nextUrl.clone();
-    url.pathname = "/login";
-    return NextResponse.redirect(url);
+  // 1. Nếu vào trang bảo mật mà không có token -> Về Login
+  if (isSecure && !token) {
+    return NextResponse.redirect(new URL("/login", req.url));
   }
 
-  if (pathname === "/login" && token) {
-    const url = req.nextUrl.clone();
-    url.pathname = "/dashboard";
-    return NextResponse.redirect(url);
-  }
-
-  if (token && isProtected) {
+  if (token) {
     const role = decodeRole(token);
+    
+    // Nếu có token nhưng không giải mã được role -> Có thể token lỗi hoặc không phải JWT chuẩn
+    // Trong trường hợp này, ta cho phép qua để Client tự xử lý hoặc về login nếu cần
+    if (!role) return NextResponse.next();
 
-    if (ADMIN_ONLY.some((p) => pathname.startsWith(p)) && role !== "Administrator") {
-      const url = req.nextUrl.clone();
-      url.pathname = "/dashboard";
-      url.searchParams.set("forbidden", "1");
-      return NextResponse.redirect(url);
+    let targetHub = "/nhanvien";
+    if (role === ROLES.GiamDoc) targetHub = "/giamdoc";
+    else if (role === ROLES.DoiTruong) targetHub = "/doitruong";
+
+    // 2. Nếu đã đăng nhập mà cố vào trang Login hoặc /dashboard -> Về Hub của mình
+    if (pathname === "/login" || pathname === "/dashboard") {
+      return NextResponse.redirect(new URL(targetHub, req.url));
     }
 
-    if (MANAGER_ONLY.some((p) => pathname.startsWith(p)) && role === "Employee") {
-      const url = req.nextUrl.clone();
-      url.pathname = "/dashboard";
-      url.searchParams.set("forbidden", "1");
-      return NextResponse.redirect(url);
+    // 3. Bảo vệ các Hub chuyên biệt (RBAC)
+    if (pathname.startsWith("/giamdoc") && role !== ROLES.GiamDoc) {
+      return NextResponse.redirect(new URL(targetHub, req.url));
+    }
+    if (pathname.startsWith("/doitruong") && role !== ROLES.DoiTruong) {
+      return NextResponse.redirect(new URL(targetHub, req.url));
+    }
+    if (pathname.startsWith("/nhanvien") && role !== ROLES.NhanVien) {
+      return NextResponse.redirect(new URL(targetHub, req.url));
     }
   }
 
@@ -67,8 +53,8 @@ export function middleware(req: NextRequest) {
 
 export const config = {
   matcher: [
-    "/dashboard/:path*", "/tasks/:path*", "/works/:path*", "/incidents/:path*",
-    "/trees/:path*", "/plans/:path*", "/staff/:path*", "/settings/:path*",
-    "/analytics/:path*", "/reports/:path*", "/replacements/:path*", "/login",
+    "/", "/login", "/giamdoc/:path*", "/doitruong/:path*", "/nhanvien/:path*", 
+    "/trees/:path*", "/map/:path*", "/staff/:path*", "/settings/:path*",
+    "/analytics/:path*", "/reports/:path*", "/tree-detail/:path*",
   ],
 };

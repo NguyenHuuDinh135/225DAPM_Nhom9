@@ -56,3 +56,46 @@ jobs:
       - name: Build Web
         working-directory: frontend
         run: bun run build --filter=web
+
+  playwright-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+          dotnet-quality: 'preview'
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install Frontend Dependencies
+        working-directory: frontend
+        run: bun install --frozen-lockfile
+
+      - name: Install Playwright Browsers
+        working-directory: frontend/apps/web
+        run: bunx playwright install --with-deps chromium
+
+      - name: Start Backend
+        run: dotnet run --project backend/src/AppHost --launch-profile http &
+        env:
+          ASPNETCORE_ENVIRONMENT: Development
+
+      - name: Run Playwright tests
+        working-directory: frontend/apps/web
+        run: bunx playwright test tests/e2e/director.spec.ts
+        env:
+          CI: true
+          NEXT_PUBLIC_API_URL: http://localhost:5000
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report
+          path: frontend/apps/web/playwright-report/
+          retention-days: 30

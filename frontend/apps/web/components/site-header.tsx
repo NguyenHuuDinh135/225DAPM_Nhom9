@@ -21,9 +21,9 @@ export function SiteHeader() {
   const isLoggedIn = !!user
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className="sticky top-4 z-50 mx-auto w-[calc(100%-2rem)] max-w-7xl glass rounded-2xl">
       <div className="container-wrapper px-6">
-        <div className="flex h-14 items-center gap-4">
+        <div className="flex h-16 items-center gap-4">
           <MobileNav items={siteConfig.navItems} className="flex lg:hidden" />
           <Button asChild variant="ghost" size="icon" className="hidden size-8 lg:flex">
             <NextLink href="/">
@@ -40,7 +40,7 @@ export function SiteHeader() {
                 isLoggedIn ? (
                   <div className="flex items-center gap-4">
                     <Button asChild variant="outline" size="sm" className="h-8 gap-1.5">
-                      <NextLink href="/dashboard">
+                      <NextLink href={user.role === "GiamDoc" ? "/giamdoc" : user.role === "DoiTruong" ? "/doitruong" : "/nhanvien"}>
                         <HugeiconsIcon icon={DashboardCircleIcon} className="size-4" />
                         <span className="hidden sm:inline">Quản trị</span>
                       </NextLink>

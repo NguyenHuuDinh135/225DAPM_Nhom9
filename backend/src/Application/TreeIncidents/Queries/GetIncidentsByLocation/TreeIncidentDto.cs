@@ -9,4 +9,5 @@ public class TreeIncidentDto
     public string? Status { get; set; }
     public DateTime ReportedDate { get; set; }
     public string? ReportedBy { get; set; }
+    public string? Severity { get; set; }
 }

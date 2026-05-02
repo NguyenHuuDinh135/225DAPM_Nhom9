@@ -16,10 +16,11 @@ public class Tree : BaseAuditableEntity
 
     public decimal? Height { get;  set; }
     public decimal? TrunkDiameter { get;  set; }
+    public string? MainImageUrl { get; set; }
     public DateTime? RecordedDate { get;  set; }
     public DateTime? LastMaintenanceDate { get; private set; }
-    public double? Latitude { get; private set; }
-    public double? Longitude { get; private set; }
+    public double? Latitude { get; set; }
+    public double? Longitude { get; set; }
     public int RelocationCount { get; private set; }
 
     private const int MaxRelocations = 3;

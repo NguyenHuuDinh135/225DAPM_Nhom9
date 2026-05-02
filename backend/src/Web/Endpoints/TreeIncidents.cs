@@ -1,6 +1,6 @@
 using backend.Application.TreeIncidents.Commands.ApproveIncident;
 using backend.Application.TreeIncidents.Commands.CreateIncident;
-using backend.Application.TreeIncidents.Commands.CreateTreeIncident;
+using backend.Application.TreeIncidents.Commands.ReportIncident;
 using backend.Application.TreeIncidents.Commands.SendIncidentFeedback;
 using backend.Application.TreeIncidents.Commands.UpdateTreeIncidentStatus;
 using backend.Application.TreeIncidents.Queries.GetTreeIncidentDetail;
@@ -18,19 +18,25 @@ public class TreeIncidents : EndpointGroupBase
     public override void Map(RouteGroupBuilder app)
     {
         app.MapPost("", CreateIncident).AllowAnonymous();
-        app.MapPost("report-incident", CreateTreeIncident).AllowAnonymous().DisableAntiforgery();
-        app.MapGet("", GetIncidents).RequireAuthorization();
-        app.MapGet("{id}", GetTreeIncidentDetail).RequireAuthorization();
-        app.MapPut("{id}/status", UpdateIncidentStatus).RequireAuthorization(new AuthorizeAttribute { Roles = $"{Roles.Manager},{Roles.Employee},{Roles.Administrator}" });
-        app.MapPut("{id}/approve", ApproveIncident).RequireAuthorization(new AuthorizeAttribute { Roles = $"{Roles.Manager},{Roles.Administrator}" });
-        app.MapPost("{id}/feedback", SendFeedback).RequireAuthorization(new AuthorizeAttribute { Roles = $"{Roles.Manager},{Roles.Employee},{Roles.Administrator}" });
+        app.MapPost("report-incident", ReportIncident).AllowAnonymous().DisableAntiforgery();
+        app.MapGet("", GetIncidents).AllowAnonymous(); // Mở công khai cho bản đồ
+        app.MapGet("{id}", GetTreeIncidentDetail).AllowAnonymous(); // Mở công khai để xem chi tiết sự cố
+        app.MapPut("{id}/status", UpdateIncidentStatus).RequireAuthorization(new AuthorizeAttribute { Roles = $"{Roles.GiamDoc},{Roles.DoiTruong},{Roles.NhanVien}" });
+        app.MapPut("{id}/approve", ApproveIncident).RequireAuthorization(new AuthorizeAttribute { Roles = $"{Roles.GiamDoc},{Roles.DoiTruong}" });
+        app.MapPost("{id}/feedback", SendFeedback).RequireAuthorization(new AuthorizeAttribute { Roles = $"{Roles.GiamDoc},{Roles.DoiTruong},{Roles.NhanVien}" });
     }
 
-    public async Task<int> CreateIncident(ISender sender, [FromBody] CreateIncidentCommand command)
-        => await sender.Send(command);
+    public async Task<IResult> CreateIncident(ISender sender, [FromBody] CreateIncidentCommand command)
+    {
+        var result = await sender.Send(command);
+        return result.Succeeded ? Results.Ok(result.Value) : Results.BadRequest(result.Errors);
+    }
 
-    public async Task<int> CreateTreeIncident(ISender sender, [FromForm] CreateTreeIncidentCommand command)
-        => await sender.Send(command);
+    public async Task<IResult> ReportIncident(ISender sender, [FromForm] ReportIncidentCommand command)
+    {
+        var result = await sender.Send(command);
+        return result.Succeeded ? Results.Ok(result.Value) : Results.BadRequest(result.Errors);
+    }
 
     public async Task<IResult> SendFeedback(ISender sender, int id, [FromBody] SendIncidentFeedbackCommand command)
     {

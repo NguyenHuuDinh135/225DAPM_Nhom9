@@ -1,18 +1,27 @@
+using Microsoft.Extensions.Configuration;
+
 var builder = DistributedApplication.CreateBuilder(args);
 
+var usePersistentPostgresVolume = builder.Configuration.GetValue<bool>("Aspire:Postgres:UsePersistentVolume");
+
 var postgres = builder.AddPostgres("postgres")
-    .WithDataVolume()
     .WithLifetime(ContainerLifetime.Session)
-    .WithPgAdmin()
-    .AddDatabase("QLCayXanhDb");
+    .WithPgAdmin();
+
+if (usePersistentPostgresVolume)
+{
+    postgres = postgres.WithDataVolume();
+}
+
+var postgresDb = postgres.AddDatabase("QLCayXanhDb");
 
 var redis = builder.AddRedis("cache");
 
 builder.AddProject<Projects.Web>("api")
     .WithEndpoint("http", e => e.Port = 5000)
-    .WithReference(postgres)
+    .WithReference(postgresDb)
     .WithReference(redis)
-    .WaitFor(postgres)
+    .WaitFor(postgresDb)
     .WaitFor(redis);
 
 builder.Build().Run();

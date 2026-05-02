@@ -7,6 +7,7 @@ import { Label } from "@workspace/ui/components/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@workspace/ui/components/select"
 import { Card, CardContent, CardHeader, CardTitle } from "@workspace/ui/components/card"
 import { toast } from "@workspace/ui/components/sonner"
+import { ROLES } from "@/lib/roles"
 import { apiClient } from "@/lib/api-client"
 
 interface Employee { id: string; fullName: string | null; email: string | null; role: string | null }
@@ -29,7 +30,7 @@ export default function AssignTaskPage() {
 
   useEffect(() => {
     apiClient.get<{ employees: Employee[] }>("/api/employees")
-      .then((r) => setEmployees(r.employees.filter((e) => e.role === "Employee")))
+      .then((r) => setEmployees(r.employees.filter((e) => e.role === ROLES.NhanVien)))
       .catch(() => {})
     apiClient.get<Plan[]>("/api/planning")
       .then(setPlans)

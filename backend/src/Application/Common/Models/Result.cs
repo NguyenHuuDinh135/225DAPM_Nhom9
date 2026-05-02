@@ -21,4 +21,35 @@ public class Result
     {
         return new Result(false, errors);
     }
+
+    public static Result Failure(params string[] errors)
+    {
+        return new Result(false, errors);
+    }
+}
+
+public class Result<T> : Result
+{
+    internal Result(bool succeeded, IEnumerable<string> errors, T? value = default)
+        : base(succeeded, errors)
+    {
+        Value = value;
+    }
+
+    public T? Value { get; init; }
+
+    public static Result<T> Success(T value)
+    {
+        return new Result<T>(true, Array.Empty<string>(), value);
+    }
+
+    public new static Result<T> Failure(IEnumerable<string> errors)
+    {
+        return new Result<T>(false, errors);
+    }
+
+    public new static Result<T> Failure(params string[] errors)
+    {
+        return new Result<T>(false, errors);
+    }
 }

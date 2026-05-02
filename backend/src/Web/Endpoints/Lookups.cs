@@ -1,4 +1,4 @@
-using backend.Application.Common.Interfaces;
+using backend.Application.Lookups.Queries.GetLookups;
 using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace backend.Web.Endpoints;
@@ -8,40 +8,32 @@ public class Lookups : EndpointGroupBase
     public override void Map(RouteGroupBuilder app)
     {
         app.MapGet("tree-types", GetTreeTypes).AllowAnonymous();
-        app.MapGet("work-types", GetWorkTypes).RequireAuthorization();
+        app.MapGet("work-types", GetWorkTypes).AllowAnonymous();
         app.MapGet("wards", GetWards).RequireAuthorization();
         app.MapGet("streets", GetStreets).RequireAuthorization();
     }
 
-    public async Task<Ok<object>> GetTreeTypes(IApplicationDbContext db)
+    public async Task<Ok<List<TreeTypeLookupDto>>> GetTreeTypes(ISender sender)
     {
-        var result = await db.TreeTypes.AsNoTracking()
-            .Select(t => new { t.Id, t.Name, t.Group })
-            .ToListAsync();
-        return TypedResults.Ok<object>(result);
+        var result = await sender.Send(new GetTreeTypesLookupQuery());
+        return TypedResults.Ok(result);
     }
 
-    public async Task<Ok<object>> GetWorkTypes(IApplicationDbContext db)
+    public async Task<Ok<List<WorkTypeLookupDto>>> GetWorkTypes(ISender sender)
     {
-        var result = await db.WorkTypes.AsNoTracking()
-            .Select(t => new { t.Id, t.Name })
-            .ToListAsync();
-        return TypedResults.Ok<object>(result);
+        var result = await sender.Send(new GetWorkTypesLookupQuery());
+        return TypedResults.Ok(result);
     }
 
-    public async Task<Ok<object>> GetWards(IApplicationDbContext db)
+    public async Task<Ok<List<WardLookupDto>>> GetWards(ISender sender)
     {
-        var result = await db.Wards.AsNoTracking()
-            .Select(w => new { w.Id, w.Name })
-            .ToListAsync();
-        return TypedResults.Ok<object>(result);
+        var result = await sender.Send(new GetWardsLookupQuery());
+        return TypedResults.Ok(result);
     }
 
-    public async Task<Ok<object>> GetStreets(IApplicationDbContext db, int? wardId)
+    public async Task<Ok<List<StreetLookupDto>>> GetStreets(ISender sender, int? wardId)
     {
-        var q = db.Streets.AsNoTracking();
-        if (wardId.HasValue) q = q.Where(s => s.WardId == wardId.Value);
-        var result = await q.Select(s => new { s.Id, s.Name, s.WardId }).ToListAsync();
-        return TypedResults.Ok<object>(result);
+        var result = await sender.Send(new GetStreetsLookupQuery(wardId));
+        return TypedResults.Ok(result);
     }
 }

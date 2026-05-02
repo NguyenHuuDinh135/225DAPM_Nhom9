@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import Link from "next/link"
 import { type ColumnDef } from "@tanstack/react-table"
 import { MoreHorizontal } from "lucide-react"
@@ -13,53 +14,103 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@workspace/ui/components/dropdown-menu"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@workspace/ui/components/alert-dialog"
+import { toast } from "@workspace/ui/components/sonner"
 import { apiClient } from "@/lib/api-client"
 import { useAuth } from "@/hooks/use-auth"
+import { ROLES } from "@/lib/roles"
 import { type Plan } from "../data/schema"
 import { DataTableColumnHeader } from "../../tasks/components/data-table-column-header"
 
 const statusVariant: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
   Draft: "outline",
+  PendingApproval: "secondary",
+  NeedsRevision: "secondary",
   Approved: "default",
   Rejected: "destructive",
+  Completed: "default",
+  Cancelled: "outline",
 }
 
 function RowActions({ row, onRefresh }: { row: { original: Plan }; onRefresh: () => void }) {
   const { user } = useAuth()
   const plan = row.original
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
 
-  async function handleApprove() {
-    const approverId = typeof window !== "undefined" ? (localStorage.getItem("user_id") ?? "") : ""
-    await apiClient.put(`/api/planning/${plan.id}/approve`, { approverId })
-    onRefresh()
+  async function confirmDelete() {
+    setIsDeleting(true)
+    try {
+      await apiClient.delete(`/api/planning/${plan.id}`)
+      toast.success("Đã xóa kế hoạch")
+      onRefresh()
+    } catch (err: any) {
+      toast.error(err.message || "Không thể xóa")
+    } finally {
+      setIsDeleting(false)
+      setShowDeleteDialog(false)
+    }
   }
 
-  async function handleDelete() {
-    if (!confirm(`Xác nhận xóa kế hoạch "${plan.name}"?`)) return
-    await apiClient.delete(`/api/planning/${plan.id}`)
-    onRefresh()
+  function handleDelete(e: React.MouseEvent) {
+    e.preventDefault()
+    setShowDeleteDialog(true)
   }
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="size-8 data-[state=open]:bg-muted">
-          <MoreHorizontal />
-          <span className="sr-only">Mở menu</span>
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-[160px]">
-        {plan.status !== "Approved" && (
-          <DropdownMenuItem onClick={handleApprove}>Duyệt kế hoạch</DropdownMenuItem>
-        )}
-        {user?.role === "Manager" && (
-          <>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem variant="destructive" onClick={handleDelete}>Xóa</DropdownMenuItem>
-          </>
-        )}
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" size="icon" className="size-8 data-[state=open]:bg-muted">
+            <MoreHorizontal className="size-4" />
+            <span className="sr-only">Mở menu</span>
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-[160px]">
+          <DropdownMenuItem asChild>
+            <Link href={`/plans/${plan.id}`}>Xem chi tiết</Link>
+          </DropdownMenuItem>
+          {user?.role === ROLES.DoiTruong && (plan.status === "Draft" || plan.status === "NeedsRevision") && (
+            <DropdownMenuItem onClick={handleDelete} className="text-destructive">
+              Xóa kế hoạch
+            </DropdownMenuItem>
+          )}
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Xác nhận xóa</AlertDialogTitle>
+            <AlertDialogDescription>
+              Xác nhận xóa kế hoạch "{plan.name}"? Hành động này không thể hoàn tác.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Hủy</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={isDeleting}
+              onClick={(e) => {
+                e.preventDefault()
+                confirmDelete()
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isDeleting ? "Đang xóa..." : "Xóa"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   )
 }
 
@@ -116,7 +167,8 @@ export function makeColumns(onRefresh: () => void): ColumnDef<Plan>[] {
       header: ({ column }) => <DataTableColumnHeader column={column} title="Trạng thái" />,
       cell: ({ row }) => {
         const s = (row.getValue("status") as string | null) ?? "Draft"
-        return <Badge variant={statusVariant[s] ?? "outline"}>{s}</Badge>
+        const sn = row.original.statusName ?? s
+        return <Badge variant={statusVariant[s] ?? "outline"}>{sn}</Badge>
       },
       filterFn: (row, id, value) => value.includes(row.getValue(id)),
     },

@@ -31,7 +31,7 @@ export default function AdminPage() {
             <ShieldCheck className="size-5 text-muted-foreground" />
             <span className="font-medium">Phân quyền</span>
           </div>
-          <p className="text-sm text-muted-foreground">Gán vai trò Administrator, Manager hoặc Employee cho từng tài khoản.</p>
+          <p className="text-sm text-muted-foreground">Gán vai trò Giám Đốc, Đội Trưởng hoặc Nhân Viên cho từng tài khoản.</p>
           <Button asChild size="sm" variant="outline" className="w-fit">
             <Link href="/staff">Phân quyền nhân viên</Link>
           </Button>

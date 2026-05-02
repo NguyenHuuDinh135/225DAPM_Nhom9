@@ -10,7 +10,6 @@ export const siteConfig = {
   navItems: [
     { href: "/", label: "Trang chủ" },
     { href: "/category", label: "Danh mục" },
-    { href: "/map", label: "Bản đồ cây xanh" },
     { href: "/statistics", label: "Thống kê" },
     { href: "/feedback", label: "Ý kiến phản ánh" },
   ],

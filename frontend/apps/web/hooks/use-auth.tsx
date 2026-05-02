@@ -3,12 +3,15 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { apiClient } from "@/lib/api-client";
+import { decodeRole } from "@/lib/auth-utils";
+import { ROLES } from "@/lib/roles";
 
 export interface User {
   id: string;
   email: string;
   name?: string;
   role?: string;
+  avatarUrl?: string;
 }
 
 interface AuthState {
@@ -37,26 +40,50 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const stored = localStorage.getItem("access_token");
     const storedUser = localStorage.getItem("user");
-    if (stored) setToken(stored);
-    if (storedUser) setUser(JSON.parse(storedUser) as User);
+    if (stored) {
+      setToken(stored);
+      // Re-validate role from token every time
+      const roleFromToken = decodeRole(stored);
+      if (storedUser) {
+        const parsedUser = JSON.parse(storedUser) as User;
+        if (roleFromToken) parsedUser.role = roleFromToken;
+        setUser(parsedUser);
+      }
+    }
     setIsLoading(false);
   }, []);
 
   async function login(email: string, password: string) {
-    const res = await apiClient.post<LoginResponse>("/api/Users/login?useCookies=false&useSessionCookies=false", {
+    const res = await apiClient.post<LoginResponse>("/api/Users/login", {
       email,
       password,
     });
+    
     localStorage.setItem("access_token", res.accessToken);
-    document.cookie = `access_token=${res.accessToken}; path=/; SameSite=Lax`;
+    // Set cookie with 7 days expiration for middleware consistency
+    const expires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toUTCString();
+    document.cookie = `access_token=${res.accessToken}; path=/; expires=${expires}; SameSite=Lax`;
     setToken(res.accessToken);
 
     const userInfo = await apiClient.get<User>("/api/Users/me");
+    
+    // Always override role with decoded role from token for consistency
+    // Fallback to userInfo.role (from /me) if decoding fails
+    const roleFromToken = decodeRole(res.accessToken) || userInfo.role;
+    if (roleFromToken) {
+      userInfo.role = roleFromToken;
+    }
+
     localStorage.setItem("user_id", userInfo.id);
     localStorage.setItem("user", JSON.stringify(userInfo));
     setUser(userInfo);
 
-    router.push("/dashboard");
+    // Initial redirect based on role
+    let target = "/nhanvien";
+    if (roleFromToken === ROLES.GiamDoc) target = "/giamdoc";
+    else if (roleFromToken === ROLES.DoiTruong) target = "/doitruong";
+    
+    router.push(target);
   }
 
   function logout() {

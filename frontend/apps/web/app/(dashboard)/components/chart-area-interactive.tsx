@@ -11,8 +11,15 @@ import {
 } from "@workspace/ui/components/chart"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@workspace/ui/components/select"
 import { ToggleGroup, ToggleGroupItem } from "@workspace/ui/components/toggle-group"
+import { apiClient } from "@/lib/api-client"
 
-interface MonthlyStatDto { month: string; completedWorks: number; newIncidents: number }
+interface MonthlyStatDto { 
+  month: string; 
+  completedWorks?: number; 
+  CompletedWorks?: number;
+  newIncidents?: number; 
+  NewIncidents?: number;
+}
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000"
 
@@ -36,13 +43,24 @@ export function ChartAreaInteractive() {
   }, [isMobile])
 
   React.useEffect(() => {
-    const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null
-    fetch(`${BASE_URL}/api/reports/monthly-stats`, {
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
-    })
-      .then((r) => r.ok ? r.json() : [])
-      .then((d: MonthlyStatDto[]) => setData(d))
-      .catch(() => {})
+    const loadData = async () => {
+      try {
+        const res = await apiClient.get<any[]>("/api/reports/monthly-stats")
+        if (!res || !Array.isArray(res)) {
+          console.warn("Monthly stats: invalid data format", res);
+          return;
+        }
+        const mapped = res.map(item => ({
+          month: item.month ?? item.Month,
+          completedWorks: item.completedWorks ?? item.CompletedWorks ?? 0,
+          newIncidents: item.newIncidents ?? item.NewIncidents ?? 0,
+        }));
+        setData(mapped);
+      } catch (err: any) {
+        console.error("Monthly stats fetch error:", err.message || err);
+      }
+    };
+    loadData();
   }, [])
 
   const months = timeRange === "3m" ? 3 : timeRange === "6m" ? 6 : 12

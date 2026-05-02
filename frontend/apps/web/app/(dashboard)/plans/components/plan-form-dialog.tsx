@@ -5,14 +5,18 @@ import { Button } from "@workspace/ui/components/button"
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@workspace/ui/components/dialog"
 import { Input } from "@workspace/ui/components/input"
 import { Label } from "@workspace/ui/components/label"
+import { Calendar, Plus, Loader2, ClipboardList } from "lucide-react"
 import { apiClient } from "@/lib/api-client"
 import { planFormSchema, type PlanFormValues } from "../data/schema"
+import { useAuth } from "@/hooks/use-auth"
+import { toast } from "@workspace/ui/components/sonner"
 
 interface PlanFormDialogProps {
   open: boolean
@@ -23,6 +27,7 @@ interface PlanFormDialogProps {
 const EMPTY: PlanFormValues = { name: "", startDate: "", endDate: "" }
 
 export function PlanFormDialog({ open, onOpenChange, onSuccess }: PlanFormDialogProps) {
+  const { user } = useAuth()
   const [values, setValues] = React.useState<PlanFormValues>(EMPTY)
   const [errors, setErrors] = React.useState<Partial<Record<keyof PlanFormValues, string>>>({})
   const [loading, setLoading] = React.useState(false)
@@ -53,13 +58,13 @@ export function PlanFormDialog({ open, onOpenChange, onSuccess }: PlanFormDialog
     }
     setLoading(true)
     try {
-      const creatorId = typeof window !== "undefined" ? (localStorage.getItem("user_id") ?? "") : ""
       await apiClient.post("/api/planning", {
         name: parsed.data.name,
-        creatorId,
+        creatorId: user?.id ?? "",
         startDate: parsed.data.startDate || null,
         endDate: parsed.data.endDate || null,
       })
+      toast.success("Đã tạo kế hoạch mới")
       onSuccess()
       onOpenChange(false)
     } catch {
@@ -71,37 +76,73 @@ export function PlanFormDialog({ open, onOpenChange, onSuccess }: PlanFormDialog
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[420px]">
-        <DialogHeader>
-          <DialogTitle>Tạo kế hoạch mới</DialogTitle>
-        </DialogHeader>
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4 py-2">
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="name">Tiêu đề</Label>
-            <Input id="name" value={values.name} onChange={(e) => set("name", e.target.value)} />
-            {errors.name && <p className="text-xs text-destructive">{errors.name}</p>}
+      <DialogContent className="sm:max-w-[480px] rounded-[2rem] p-0 overflow-hidden border-none shadow-2xl">
+        <div className="bg-primary p-8 text-primary-foreground relative">
+            <ClipboardList className="absolute top-6 right-6 size-16 opacity-10 rotate-12" />
+            <DialogHeader>
+                <DialogTitle className="text-2xl font-black">Lập Kế Hoạch</DialogTitle>
+                <DialogDescription className="text-primary-foreground/80 font-medium">
+                    Thiết lập mục tiêu và thời gian bảo trì định kỳ cho đội ngũ.
+                </DialogDescription>
+            </DialogHeader>
+        </div>
+
+        <form onSubmit={handleSubmit} className="p-8 flex flex-col gap-6 bg-card/50 backdrop-blur-xl">
+          <div className="space-y-2">
+            <Label htmlFor="name" className="text-xs font-black uppercase tracking-wider text-muted-foreground ml-1">Tiêu đề kế hoạch</Label>
+            <div className="relative">
+                <Input 
+                    id="name" 
+                    placeholder="VD: Kế hoạch bảo trì Quận 1 - Tháng 5"
+                    className="h-12 rounded-2xl border-border/40 focus:ring-primary/20 focus:border-primary transition-all font-bold px-4"
+                    value={values.name} 
+                    onChange={(e) => set("name", e.target.value)} 
+                />
+            </div>
+            {errors.name && <p className="text-[10px] font-bold text-destructive uppercase tracking-tight mt-1 ml-1">{errors.name}</p>}
           </div>
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="startDate">Ngày bắt đầu</Label>
-            <Input
-              id="startDate"
-              type="date"
-              value={values.startDate ?? ""}
-              onChange={(e) => set("startDate", e.target.value)}
-            />
+
+          <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="startDate" className="text-xs font-black uppercase tracking-wider text-muted-foreground ml-1">Ngày bắt đầu</Label>
+                <div className="relative">
+                    <Calendar className="absolute left-4 top-3.5 size-4 text-muted-foreground pointer-events-none" />
+                    <Input
+                      id="startDate"
+                      type="date"
+                      className="h-12 rounded-2xl border-border/40 focus:ring-primary/20 focus:border-primary transition-all font-bold pl-11"
+                      value={values.startDate ?? ""}
+                      onChange={(e) => set("startDate", e.target.value)}
+                    />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="endDate" className="text-xs font-black uppercase tracking-wider text-muted-foreground ml-1">Ngày kết thúc</Label>
+                <div className="relative">
+                    <Calendar className="absolute left-4 top-3.5 size-4 text-muted-foreground pointer-events-none" />
+                    <Input
+                      id="endDate"
+                      type="date"
+                      className="h-12 rounded-2xl border-border/40 focus:ring-primary/20 focus:border-primary transition-all font-bold pl-11"
+                      value={values.endDate ?? ""}
+                      onChange={(e) => set("endDate", e.target.value)}
+                    />
+                </div>
+              </div>
           </div>
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="endDate">Ngày kết thúc</Label>
-            <Input
-              id="endDate"
-              type="date"
-              value={values.endDate ?? ""}
-              onChange={(e) => set("endDate", e.target.value)}
-            />
-          </div>
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Hủy</Button>
-            <Button type="submit" disabled={loading}>{loading ? "Đang lưu..." : "Tạo"}</Button>
+
+          <DialogFooter className="mt-4 gap-2">
+            <Button type="button" variant="ghost" onClick={() => onOpenChange(false)} className="h-12 rounded-2xl font-bold flex-1">
+                Hủy
+            </Button>
+            <Button 
+                type="submit" 
+                disabled={loading}
+                className="h-12 rounded-2xl font-black flex-1 shadow-lg shadow-primary/20"
+            >
+                {loading ? <Loader2 className="mr-2 size-4 animate-spin" /> : <Plus className="mr-2 size-4" />}
+                Tạo kế hoạch
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>

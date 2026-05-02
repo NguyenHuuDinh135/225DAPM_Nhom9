@@ -12,7 +12,7 @@ public class TreeIncidentConfiguration : IEntityTypeConfiguration<TreeIncident>
         builder.HasOne<ApplicationUser>()
             .WithMany(u => u.ReportedIncidents)
             .HasForeignKey(t => t.ReporterId)
-            .IsRequired()
+            .IsRequired(false)
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasOne<ApplicationUser>()

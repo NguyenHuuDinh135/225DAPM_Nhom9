@@ -6,6 +6,8 @@ import { ArrowLeftIcon } from "lucide-react"
 import { Badge } from "@workspace/ui/components/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@workspace/ui/components/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@workspace/ui/components/table"
+import { WorkflowBanner } from "../components/workflow-banner"
+import { Role } from "@/lib/roles"
 
 export const metadata: Metadata = { title: "Chi tiết kế hoạch" }
 
@@ -13,23 +15,34 @@ const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000"
 
 interface PlanWorkItem { id: number; workTypeName: string | null; startDate: string | null; endDate: string | null; status: string }
 interface PlanDetail {
-  id: number; name: string | null; status: string | null
+  id: number; name: string | null; status: string | null; statusName: string | null
+  rejectionReason: string | null;
   startDate: string | null; endDate: string | null
   creatorId: string; approverId: string | null
   works: PlanWorkItem[]
 }
 
 const STATUS_LABEL: Record<string, string> = {
-  Draft: "Nháp", Approved: "Đã duyệt",
   New: "Mới", InProgress: "Đang thực hiện", WaitingForApproval: "Chờ duyệt",
   Completed: "Hoàn thành", Cancelled: "Đã hủy",
 }
 
 async function fetchPlan(id: string): Promise<PlanDetail | null> {
   const token = (await cookies()).get("access_token")?.value
+  const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {}
   const res = await fetch(`${BASE_URL}/api/planning/${id}`, {
-    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    headers,
     cache: "no-store",
+  })
+  if (!res.ok) return null
+  return res.json()
+}
+
+async function getMe(): Promise<{ role: Role } | null> {
+  const token = (await cookies()).get("access_token")?.value
+  const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {}
+  const res = await fetch(`${BASE_URL}/api/users/me`, {
+    headers,
   })
   if (!res.ok) return null
   return res.json()
@@ -37,8 +50,10 @@ async function fetchPlan(id: string): Promise<PlanDetail | null> {
 
 export default async function PlanDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  const plan = await fetchPlan(id)
+  const [plan, me] = await Promise.all([fetchPlan(id), getMe()])
+  
   if (!plan) notFound()
+  const userRole = me?.role || "NhanVien"
 
   return (
     <div className="flex flex-1 flex-col gap-6 p-4 md:p-6">
@@ -54,10 +69,15 @@ export default async function PlanDetailPage({ params }: { params: Promise<{ id:
             {plan.endDate ? new Date(plan.endDate).toLocaleDateString("vi-VN") : "—"}
           </p>
         </div>
-        <Badge variant={plan.status === "Approved" ? "default" : "outline"} className="ml-auto">
-          {STATUS_LABEL[plan.status ?? ""] ?? plan.status}
-        </Badge>
       </div>
+
+      <WorkflowBanner 
+        planId={plan.id}
+        status={plan.status ?? "Draft"}
+        statusName={plan.statusName ?? "Nháp"}
+        rejectionReason={plan.rejectionReason}
+        userRole={userRole as Role}
+      />
 
       <Card>
         <CardHeader><CardTitle className="text-base">Danh sách công tác ({plan.works.length})</CardTitle></CardHeader>

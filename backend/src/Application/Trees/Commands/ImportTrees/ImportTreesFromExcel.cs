@@ -4,9 +4,9 @@ using backend.Domain.Entities;
 
 namespace backend.Application.Trees.Commands.ImportTrees;
 
-public record ImportTreesFromExcelCommand(Stream FileStream) : IRequest<IStatusResult>;
+public record ImportTreesFromExcelCommand(Stream FileStream) : IRequest<Result>;
 
-public class ImportTreesFromExcelCommandHandler : IRequestHandler<ImportTreesFromExcelCommand, IStatusResult>
+public class ImportTreesFromExcelCommandHandler : IRequestHandler<ImportTreesFromExcelCommand, Result>
 {
     private readonly IApplicationDbContext _context;
     private readonly IExcelService _excel;
@@ -17,11 +17,11 @@ public class ImportTreesFromExcelCommandHandler : IRequestHandler<ImportTreesFro
         _excel = excel;
     }
 
-    public async Task<IStatusResult> Handle(ImportTreesFromExcelCommand request, CancellationToken cancellationToken)
+    public async Task<Result> Handle(ImportTreesFromExcelCommand request, CancellationToken cancellationToken)
     {
         var rows = _excel.ParseTreeImport(request.FileStream);
         if (rows.Count == 0)
-            return StatusResult.Failure("File không có dữ liệu hợp lệ.");
+            return Result.Failure("File không có dữ liệu hợp lệ.");
 
         var trees = rows.Select(r => new Tree
         {
@@ -35,6 +35,6 @@ public class ImportTreesFromExcelCommandHandler : IRequestHandler<ImportTreesFro
 
         _context.Trees.AddRange(trees);
         await _context.SaveChangesAsync(cancellationToken);
-        return StatusResult.Success();
+        return Result.Success();
     }
 }

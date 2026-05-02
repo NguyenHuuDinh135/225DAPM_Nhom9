@@ -1,5 +1,6 @@
 using backend.Application.Common.Interfaces;
 using backend.Domain.Enums;
+using Microsoft.EntityFrameworkCore;
 
 namespace backend.Application.Reports.Queries.GetDashboardStatistics;
 
@@ -45,7 +46,7 @@ public class GetDashboardStatisticsQueryHandler : IRequestHandler<GetDashboardSt
             .Select(w => new WorkItemBriefDto
             {
                 Id = w.Id,
-                WorkTypeName = w.WorkType.Name,
+                WorkTypeName = w.WorkType != null ? w.WorkType.Name : "Công việc khác",
                 EndDate = w.EndDate,
                 Status = w.Status.ToString()
             })

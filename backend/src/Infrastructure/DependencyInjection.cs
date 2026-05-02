@@ -1,5 +1,6 @@
 using backend.Application.Common.Interfaces;
 using backend.Domain.Constants;
+using backend.Infrastructure.AI;
 using backend.Infrastructure.Data;
 using backend.Infrastructure.Data.Interceptors;
 using backend.Infrastructure.Files;
@@ -42,8 +43,23 @@ public static class DependencyInjection
         builder.Services.AddScoped<IApplicationDbContext>(provider => provider.GetRequiredService<ApplicationDbContext>());
         builder.Services.AddScoped<ApplicationDbContextInitialiser>();
 
-        builder.Services.AddAuthentication()
-            .AddBearerToken(IdentityConstants.BearerScheme);
+        builder.Services.AddAuthentication(options =>
+        {
+            options.DefaultAuthenticateScheme = "Jwt";
+            options.DefaultChallengeScheme = "Jwt";
+        })
+        .AddJwtBearer("Jwt", options =>
+        {
+            var key = builder.Configuration["Jwt:Key"] ?? "YourSuperSecretKeyWithAtLeast32Characters!";
+            options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+            {
+                ValidateIssuer = false,
+                ValidateAudience = false,
+                ValidateLifetime = true,
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new Microsoft.IdentityModel.Tokens.SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(key))
+            };
+        });
 
         builder.Services.AddAuthorizationBuilder();
 
@@ -57,7 +73,7 @@ public static class DependencyInjection
         builder.Services.AddTransient<IIdentityService, IdentityService>();
 
         builder.Services.AddAuthorization(options =>
-            options.AddPolicy(Policies.CanPurge, policy => policy.RequireRole(Roles.Administrator)));
+            options.AddPolicy(Policies.CanPurge, policy => policy.RequireRole(Roles.DoiTruong)));
 
         // Redis — optional, only when connection string is available
         var redisConnectionString = builder.Configuration.GetConnectionString("cache");
@@ -76,7 +92,9 @@ public static class DependencyInjection
 
         builder.Services.AddTransient<IExcelService, ExcelService>();
         builder.Services.AddScoped<IMaintenanceJobService, MaintenanceJobService>();
+        builder.Services.AddScoped<IAutoAssignmentService, AutoAssignmentService>();
         builder.Services.AddScoped<IFileService, FileService>();
+        builder.Services.AddTransient<IAIService, AIService>();
 
         // Hangfire — only configure when connection string is available
         if (!string.IsNullOrEmpty(connectionString))

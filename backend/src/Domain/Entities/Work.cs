@@ -42,6 +42,8 @@ public class Work : BaseAuditableEntity
 
     public void SubmitForApproval() => Status = WorkStatus.WaitingForApproval;
 
+    public void Start() => Status = WorkStatus.InProgress;
+
     public void Complete()
     {
         Status = WorkStatus.Completed;

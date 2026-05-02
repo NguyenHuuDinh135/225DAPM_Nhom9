@@ -10,7 +10,7 @@ public class Locations : EndpointGroupBase
     public override void Map(RouteGroupBuilder groupBuilder)
     {
         groupBuilder.MapGet(GetLocations).RequireAuthorization();
-        groupBuilder.MapPost(CreateLocation).RequireAuthorization(Roles.Manager, Roles.Admin);
+        groupBuilder.MapPost(CreateLocation).RequireAuthorization(new Microsoft.AspNetCore.Authorization.AuthorizeAttribute { Roles = $"{Roles.GiamDoc},{Roles.DoiTruong}" });
     }
 
     public async Task<Ok<LocationsVm>> GetLocations(ISender sender)

@@ -1,5 +1,7 @@
+import { Suspense } from "react"
 import { cookies } from "next/headers"
 import { WorksClient } from "./components/works-client"
+import { Skeleton } from "@workspace/ui/components/skeleton"
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000"
 
@@ -30,7 +32,36 @@ async function fetchWorks(): Promise<WorkItem[]> {
   return json.workItems ?? []
 }
 
-export default async function WorksPage() {
+function WorksTableSkeleton() {
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <Skeleton className="h-8 w-[280px]" />
+        <Skeleton className="h-8 w-24" />
+      </div>
+      <div className="rounded-md border p-4 space-y-4">
+        {Array.from({ length: 5 }).map((_, i) => (
+          <div key={i} className="flex flex-col gap-2">
+            <Skeleton className="h-5 w-full" />
+            <Skeleton className="h-3 w-1/2" />
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+async function WorksContent() {
   const works = await fetchWorks()
   return <WorksClient initialWorks={works} />
+}
+
+export default function WorksPage() {
+  return (
+    <div className="flex flex-1 flex-col gap-4 p-4 md:p-6 max-w-7xl mx-auto w-full">
+      <Suspense fallback={<WorksTableSkeleton />}>
+        <WorksContent />
+      </Suspense>
+    </div>
+  )
 }

@@ -13,6 +13,7 @@ import {
 import { HugeiconsIcon } from "@hugeicons/react"
 import { MoreVerticalCircle01Icon, UserCircle02Icon, Logout01Icon } from "@hugeicons/core-free-icons"
 import { useAuth } from "@/hooks/use-auth"
+import { getRoleLabel } from "@/lib/roles"
 
 export function NavUser({ user }: { user: { name: string; email: string; avatar: string; role?: string } }) {
   const { isMobile } = useSidebar()
@@ -48,7 +49,7 @@ export function NavUser({ user }: { user: { name: string; email: string; avatar:
                 <div className="grid flex-1 text-start text-sm leading-tight">
                   <span className="truncate font-medium">{user.name}</span>
                   <span className="truncate text-xs text-muted-foreground">{user.email}</span>
-                  {user.role && <span className="truncate text-xs text-green-600 font-medium">{user.role}</span>}
+                  {user.role && <span className="truncate text-xs text-green-600 font-medium">{getRoleLabel(user.role)}</span>}
                 </div>
               </div>
             </DropdownMenuLabel>

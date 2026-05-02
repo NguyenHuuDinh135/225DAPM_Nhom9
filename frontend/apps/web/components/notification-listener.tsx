@@ -1,28 +1,76 @@
 "use client"
 
 import { useEffect } from "react"
-import { HubConnectionBuilder, LogLevel } from "@microsoft/signalr"
+import { HubConnectionBuilder, LogLevel, HttpTransportType } from "@microsoft/signalr"
 import { toast } from "@workspace/ui/components/sonner"
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000"
+const BASE_URL = "http://localhost:5000"
 
 export function NotificationListener() {
   useEffect(() => {
     const connection = new HubConnectionBuilder()
       .withUrl(`${BASE_URL}/hubs/incidents`, {
-        accessTokenFactory: () => localStorage.getItem("access_token") ?? "",
+        accessTokenFactory: () => {
+          // Check local storage for token (standard key in this project is auth-storage or similar, 
+          // but based on previous code it uses access_token)
+          const token = localStorage.getItem("access_token") || localStorage.getItem("auth_token");
+          return token || "";
+        }
       })
       .withAutomaticReconnect()
-      .configureLogging(LogLevel.Warning)
+      .configureLogging(LogLevel.Error)
       .build()
 
     connection.on("ReceiveIncidentNotification", (message: string, incidentId: number) => {
       toast.warning(message, { description: `Sự cố #${incidentId}` })
     })
 
-    connection.start().catch(() => {/* silent fail if hub unreachable */})
+    connection.on("ReceiveNotification", (title: string, message: string, type: string) => {
+      if (type === "success") toast.success(title, { description: message })
+      else if (type === "warning") toast.warning(title, { description: message })
+      else toast.info(title, { description: message })
+    })
 
-    return () => { connection.stop() }
+    let isMounted = true
+    let startPromise: Promise<void> | null = null
+
+    const startConnection = async () => {
+      if (connection.state !== "Disconnected") return;
+
+      try {
+        startPromise = connection.start()
+        await startPromise
+        console.log("SignalR Connected.")
+      } catch (err) {
+        if (isMounted) {
+          console.warn("SignalR connection error, retrying in 5s...", err)
+          setTimeout(startConnection, 5000)
+        }
+      }
+    }
+
+    startConnection()
+
+    return () => {
+      isMounted = false
+      
+      const stopConnection = async () => {
+        if (startPromise) {
+            try { await startPromise; } catch (e) { /* ignore start errors during stop */ }
+        }
+        if (connection.state !== "Disconnected" && connection.state !== "Disconnecting") {
+            try {
+                await connection.stop()
+                console.log("SignalR Disconnected.")
+            } catch (err) {
+                console.error("SignalR Stop Error:", err)
+            }
+        }
+      }
+      
+      stopConnection()
+    }
+
   }, [])
 
   return null

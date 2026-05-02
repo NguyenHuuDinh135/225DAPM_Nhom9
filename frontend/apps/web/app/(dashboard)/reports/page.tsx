@@ -1,92 +1,56 @@
-import { type Metadata } from "next"
-import { cookies } from "next/headers"
-import { SectionCards, type DashboardStats } from "@/app/(dashboard)/components/section-cards"
-import { ExportStatsButton } from "@/app/(dashboard)/components/export-stats-button"
-import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
-} from "@workspace/ui/components/table"
-import { Badge } from "@workspace/ui/components/badge"
+"use client"
 
-export const metadata: Metadata = { title: "Báo cáo" }
+import * as React from "react"
+import { BarChart3Icon, DownloadIcon, PieChartIcon, TrendingUpIcon } from "lucide-react"
+import { Button } from "@workspace/ui/components/button"
+import { Card } from "@workspace/ui/components/card"
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000"
-
-interface OverdueWork {
-  id: number
-  workTypeName: string
-  endDate: string | null
-  status: string
-}
-
-interface StatsResponse extends DashboardStats {
-  overdueWorks: OverdueWork[]
-}
-
-async function fetchStats(): Promise<StatsResponse> {
-  const token = (await cookies()).get("access_token")?.value
-  const res = await fetch(`${BASE_URL}/api/reports/dashboard-stats`, {
-    headers: token ? { Authorization: `Bearer ${token}` } : {},
-    cache: "no-store",
-  })
-  if (!res.ok) return { totalTrees: 0, pendingIncidents: 0, completedWorksThisMonth: 0, pendingWorksThisMonth: 0, overdueWorks: [] }
-  return res.json()
-}
-
-const STATUS_LABEL: Record<string, string> = {
-  New: "Mới", InProgress: "Đang thực hiện", WaitingForApproval: "Chờ duyệt",
-  Completed: "Hoàn thành", Cancelled: "Đã hủy",
-}
-
-export default async function ReportsPage() {
-  const stats = await fetchStats()
-
+export default function ReportsPage() {
   return (
-    <div className="flex flex-1 flex-col gap-6 p-4 md:p-6">
-      <div className="flex items-center justify-between">
+    <div className="p-4 md:p-8 space-y-8 bg-slate-50 min-h-screen">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold">Báo cáo</h1>
-          <p className="text-sm text-muted-foreground">Thống kê tổng quan hệ thống cây xanh</p>
+          <h1 className="text-2xl font-black text-slate-800 tracking-tight">Báo cáo chiến lược</h1>
+          <p className="text-sm text-slate-500 font-medium">Tổng hợp số liệu, phân tích hiệu suất và định hướng quản lý.</p>
         </div>
-        <ExportStatsButton />
+        
+        <Button className="bg-slate-800 hover:bg-slate-900 h-11 px-6 rounded-xl shadow-lg font-bold gap-2">
+          <DownloadIcon className="size-5" /> XUẤT BÁO CÁO (PDF)
+        </Button>
       </div>
 
-      <SectionCards stats={stats} />
-
-      <div className="rounded-lg border">
-        <div className="px-4 py-3 border-b">
-          <h2 className="font-medium">Công việc quá hạn ({stats.overdueWorks.length})</h2>
-        </div>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Mã</TableHead>
-              <TableHead>Loại công việc</TableHead>
-              <TableHead>Hạn chót</TableHead>
-              <TableHead>Trạng thái</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {stats.overdueWorks.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={4} className="text-center text-muted-foreground py-8">
-                  Không có công việc quá hạn.
-                </TableCell>
-              </TableRow>
-            ) : stats.overdueWorks.map((w) => (
-              <TableRow key={w.id}>
-                <TableCell className="font-mono">#{w.id}</TableCell>
-                <TableCell>{w.workTypeName}</TableCell>
-                <TableCell className="text-destructive">
-                  {w.endDate ? new Date(w.endDate).toLocaleDateString("vi-VN") : "—"}
-                </TableCell>
-                <TableCell>
-                  <Badge variant="outline">{STATUS_LABEL[w.status] ?? w.status}</Badge>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <ReportCard title="Báo cáo Mật độ phủ xanh" icon={PieChartIcon} desc="Phân tích tỷ lệ cây xanh theo từng quận/huyện." color="green" />
+        <ReportCard title="Hiệu suất xử lý sự cố" icon={BarChart3Icon} desc="Đánh giá thời gian phản hồi của đội ngũ thực địa." color="blue" />
+        <ReportCard title="Dự báo chi phí bảo trì" icon={TrendingUpIcon} desc="Ước tính ngân sách cắt tỉa, chăm sóc quý tới." color="orange" />
       </div>
+
+      <Card className="border-none shadow-sm rounded-3xl overflow-hidden bg-white p-12 flex flex-col items-center justify-center text-center h-[400px]">
+        <BarChart3Icon className="size-16 text-slate-200 mb-4" />
+        <h3 className="text-lg font-black text-slate-800">Khu vực phân tích Dữ liệu lớn</h3>
+        <p className="text-sm text-slate-500 max-w-md mt-2">Tính năng phân tích nâng cao đang được xây dựng. Các biểu đồ chi tiết sẽ sớm được cập nhật tại đây.</p>
+      </Card>
     </div>
   )
+}
+
+function ReportCard({ title, icon: Icon, desc, color }: { title: string, icon: any, desc: string, color: string }) {
+  const colors: any = {
+    green: "bg-green-50 text-green-600",
+    blue: "bg-blue-50 text-blue-600",
+    orange: "bg-orange-50 text-orange-600"
+  }
+  return (
+    <Card className="p-6 border-none shadow-sm rounded-3xl bg-white hover:scale-[1.02] transition-transform cursor-pointer">
+      <div className={cn("size-10 rounded-xl flex items-center justify-center mb-4", colors[color])}>
+        <Icon className="size-5" />
+      </div>
+      <h3 className="text-base font-bold text-slate-800 mb-2">{title}</h3>
+      <p className="text-xs text-slate-500 leading-relaxed">{desc}</p>
+    </Card>
+  )
+}
+
+function cn(...classes: any[]) {
+  return classes.filter(Boolean).join(" ");
 }

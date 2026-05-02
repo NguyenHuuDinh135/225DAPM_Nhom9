@@ -8,4 +8,6 @@ public class TreeDto
     public int TreeTypeId { get; set; }
     public string? TreeTypeName { get; set; }
     public DateTime? LastMaintenanceDate { get; set; }
+    public double? Latitude { get; set; }
+    public double? Longitude { get; set; }
 }

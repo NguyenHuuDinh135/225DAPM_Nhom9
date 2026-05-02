@@ -44,20 +44,28 @@ export function TaskMap() {
 
   React.useEffect(() => {
     const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
-    const headers = token ? { Authorization: `Bearer ${token}` } : {};
+    const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
 
     fetch(`${BASE_URL}/api/work-items`, { headers })
       .then((r) => r.ok ? r.json() : { workItems: [] })
-      .then((d: { workItems: WorkItem[] }) => {
+      .then((d: any) => {
+        const items = d.workItems ?? d.WorkItems ?? [];
         const flat: WorkMarker[] = [];
-        for (const w of d.workItems) {
-          for (const loc of w.treeLocations) {
+        for (const w of items) {
+          const treeLocs = w.treeLocations ?? w.TreeLocations ?? [];
+          for (const loc of treeLocs) {
             flat.push({
-              workId: w.id, treeId: loc.treeId, treeName: loc.treeName,
-              workTypeName: w.workTypeName, planName: w.planName,
-              startDate: w.startDate, endDate: w.endDate,
-              status: w.status, statusName: w.statusName,
-              lat: loc.latitude, lng: loc.longitude,
+              workId: w.id ?? w.Id,
+              treeId: loc.treeId ?? loc.TreeId,
+              treeName: loc.treeName ?? loc.TreeName,
+              workTypeName: w.workTypeName ?? w.WorkTypeName,
+              planName: w.planName ?? w.PlanName,
+              startDate: w.startDate ?? w.StartDate,
+              endDate: w.endDate ?? w.EndDate,
+              status: w.status ?? w.Status,
+              statusName: w.statusName ?? w.StatusName,
+              lat: loc.latitude ?? loc.Latitude,
+              lng: loc.longitude ?? loc.Longitude,
             });
           }
         }
@@ -95,6 +103,7 @@ export function TaskMap() {
 
         {markers.map((m, i) => {
           const cfg = STATUS_CONFIG[m.status] ?? STATUS_CONFIG.New;
+          if (m.lng == null || m.lat == null) return null;
           return (
             <MapMarker key={`${m.workId}-${m.treeId}-${i}`} longitude={m.lng} latitude={m.lat}>
               <MarkerContent>

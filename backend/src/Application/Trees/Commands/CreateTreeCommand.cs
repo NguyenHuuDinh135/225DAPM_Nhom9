@@ -9,6 +9,11 @@ namespace backend.Application.Trees.Commands
         public string? Name { get; set; }
         public int TreeTypeId { get; set; }
         public string? Condition { get; set; }
+        public string? MainImageUrl { get; set; }
+        public double? Latitude { get; set; }
+        public double? Longitude { get; set; }
+        public decimal? Height { get; set; }
+        public decimal? TrunkDiameter { get; set; }
     }
 
     public class CreateTreeCommandHandler : IRequestHandler<CreateTreeCommand, int>
@@ -22,30 +27,23 @@ namespace backend.Application.Trees.Commands
 
         public async Task<int> Handle(CreateTreeCommand request, CancellationToken cancellationToken)
         {
-            try 
+            var tree = new Tree
             {
-                var tree = new Tree
-                {
-                    Name = request.Name,
-                    TreeTypeId = request.TreeTypeId,
-                    Condition = request.Condition,
-                    RecordedDate = DateTime.UtcNow
-                };
+                Name = request.Name,
+                TreeTypeId = request.TreeTypeId,
+                Condition = request.Condition,
+                MainImageUrl = request.MainImageUrl,
+                Latitude = request.Latitude,
+                Longitude = request.Longitude,
+                Height = request.Height,
+                TrunkDiameter = request.TrunkDiameter,
+                RecordedDate = DateTime.UtcNow
+            };
 
-                _context.Trees.Add(tree);
-                await _context.SaveChangesAsync(cancellationToken);
+            _context.Trees.Add(tree);
+            await _context.SaveChangesAsync(cancellationToken);
 
-                return tree.Id;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"[ERROR] CreateTreeCommandHandler: {ex.Message}");
-                if (ex.InnerException != null)
-                {
-                    Console.WriteLine($"[INNER ERROR] {ex.InnerException.Message}");
-                }
-                throw;
-            }
+            return tree.Id;
         }
     }
 }

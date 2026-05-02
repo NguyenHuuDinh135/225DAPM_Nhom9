@@ -42,7 +42,9 @@ public class ApplicationDbContextInitialiser
     {
         try
         {
-            // await _context.Database.EnsureDeletedAsync();
+            // Use MigrateAsync for persistence. 
+            // Only use EnsureDeleted if you want a complete reset on EVERY restart.
+            // await _context.Database.EnsureDeletedAsync(); 
             await _context.Database.EnsureCreatedAsync();
         }
         catch (Exception ex)
@@ -70,21 +72,32 @@ public class ApplicationDbContextInitialiser
         var rand = new Random(42);
 
         // ── Roles & Users ──────────────────────────────────────────────
-        foreach (var role in new[] { Roles.Administrator, Roles.Manager, Roles.Employee })
+        foreach (var role in new[] { Roles.GiamDoc, Roles.DoiTruong, Roles.NhanVien })
             if (!await _roleManager.RoleExistsAsync(role))
                 await _roleManager.CreateAsync(new IdentityRole(role));
 
-        var admin   = await EnsureUser("admin@localhost",   "Admin1!",    "Nguyễn Văn Admin",      Roles.Administrator);
-        var manager = await EnsureUser("manager@localhost", "Manager1!",  "Trần Thị Manager",       Roles.Manager);
-        var emp1    = await EnsureUser("emp1@localhost",    "Employee1!", "Lê Văn Nhân Viên",       Roles.Employee);
-        var emp2    = await EnsureUser("emp2@localhost",    "Employee1!", "Phạm Thị Công Nhân",     Roles.Employee);
-        var emp3    = await EnsureUser("emp3@localhost",    "Employee1!", "Nguyễn Thị Hoa",         Roles.Employee);
-        var emp4    = await EnsureUser("emp4@localhost",    "Employee1!", "Trần Văn Bình",          Roles.Employee);
-        var emp5    = await EnsureUser("emp5@localhost",    "Employee1!", "Võ Thị Lan",             Roles.Employee);
+        var giamDoc   = await EnsureUser("giamdoc@localhost",   "GiamDoc1!",   "Nguyễn Văn Giám Đốc",       Roles.GiamDoc,   "https://api.dicebear.com/7.x/avataaars/svg?seed=GiamDoc");
+        var doiTruong = await EnsureUser("doitruong@localhost", "DoiTruong1!", "Trần Thị Đội Trưởng",        Roles.DoiTruong,  "https://api.dicebear.com/7.x/avataaars/svg?seed=DoiTruong");
+        var emp1      = await EnsureUser("emp1@localhost",      "NhanVien1!", "Lê Văn Nhân Viên",            Roles.NhanVien,   "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix");
+        var emp2      = await EnsureUser("emp2@localhost",      "NhanVien1!", "Phạm Thị Công Nhân",          Roles.NhanVien,   "https://api.dicebear.com/7.x/avataaars/svg?seed=Aneka");
+        var emp3      = await EnsureUser("emp3@localhost",      "NhanVien1!", "Nguyễn Thị Hoa",              Roles.NhanVien,   "https://api.dicebear.com/7.x/avataaars/svg?seed=Milo");
+        var emp4      = await EnsureUser("emp4@localhost",      "NhanVien1!", "Trần Văn Bình",               Roles.NhanVien,   "https://api.dicebear.com/7.x/avataaars/svg?seed=Kiki");
+        var emp5      = await EnsureUser("emp5@localhost",      "NhanVien1!", "Võ Thị Lan",                  Roles.NhanVien,   "https://api.dicebear.com/7.x/avataaars/svg?seed=Tigger");
 
         var employees = new[] { emp1.Id, emp2.Id, emp3.Id, emp4.Id, emp5.Id };
 
         // ── 1. Master Data ─────────────────────────────────────────────
+        var treeTypeImages = new Dictionary<string, string>
+        {
+            { "Phượng vĩ",       "https://images.unsplash.com/photo-1596720426673-e483d47a8a1b?auto=format&fit=crop&q=80&w=800" },
+            { "Bàng đài loan",   "https://images.unsplash.com/photo-1544139150-4729feee40f4?auto=format&fit=crop&q=80&w=800" },
+            { "Muồng hoàng yến", "https://images.unsplash.com/photo-1621274790572-7c32596bc67f?auto=format&fit=crop&q=80&w=800" },
+            { "Xà cừ",           "https://images.unsplash.com/photo-1523712999610-f77fbcfc3843?auto=format&fit=crop&q=80&w=800" },
+            { "Lim sẹt",         "https://images.unsplash.com/photo-1464391618274-9ca34f93680e?auto=format&fit=crop&q=80&w=800" },
+            { "Sao đen",         "https://images.unsplash.com/photo-1425913397330-cf8af2ff40a1?auto=format&fit=crop&q=80&w=800" },
+            { "Dầu rái",         "https://images.unsplash.com/photo-1473448912268-2022ce9509d8?auto=format&fit=crop&q=80&w=800" }
+        };
+
         if (!_context.TreeTypes.Any())
         {
             _context.TreeTypes.AddRange(
@@ -151,7 +164,7 @@ public class ApplicationDbContextInitialiser
         if (!_context.Trees.Any())
         {
             var treeTypes  = _context.TreeTypes.ToList();
-            if (!treeTypes.Any()) return; // Prevent 500 error if master data is missing
+            if (!treeTypes.Any()) return; 
 
             var locations  = _context.Locations.ToList();
             if (!locations.Any()) return;
@@ -169,6 +182,7 @@ public class ApplicationDbContextInitialiser
                     Condition     = conditions[i % conditions.Length],
                     Height        = Math.Round(3m + (decimal)(rand.NextDouble() * 15), 1),
                     TrunkDiameter = Math.Round(10m + (decimal)(rand.NextDouble() * 50), 1),
+                    MainImageUrl  = treeTypeImages.GetValueOrDefault(tt.Name),
                     RecordedDate  = DateTime.UtcNow.AddMonths(-rand.Next(1, 48)),
                 };
                 tree.Relocate((double)loc.Latitude!.Value, (double)loc.Longitude!.Value);
@@ -206,40 +220,61 @@ public class ApplicationDbContextInitialiser
             await _context.SaveChangesAsync();
         }
 
-        // ── 5. Plans (5) & Works (75) ─────────────────────────────────
-        if (!_context.Plans.Any())
+        // ── 5. Plans (15) & Works (300) ────────────────────────────────
+        if (_context.Plans.Count() < 5)
         {
             var workTypes = _context.WorkTypes.ToList();
             var trees     = _context.Trees.ToList();
 
-            var planDefs = new[]
+            for (int p = 0; p < 15; p++)
             {
-                ("Kế hoạch mùa mưa 2024",      DateTime.UtcNow.AddMonths(-10), DateTime.UtcNow.AddMonths(-6)),
-                ("Kế hoạch định kỳ Q4/2024",   DateTime.UtcNow.AddMonths(-6),  DateTime.UtcNow.AddMonths(-3)),
-                ("Kế hoạch định kỳ Q1/2025",   DateTime.UtcNow.AddMonths(-3),  DateTime.UtcNow.AddMonths(0)),
-                ("Kế hoạch bảo dưỡng hè 2025", DateTime.UtcNow.AddMonths(0),   DateTime.UtcNow.AddMonths(3)),
-                ("Kế hoạch cuối năm 2025",     DateTime.UtcNow.AddMonths(3),   DateTime.UtcNow.AddMonths(6)),
-            };
+                var start = DateTime.UtcNow.AddMonths(-p + 2).AddDays(rand.Next(1, 10));
+                var end   = start.AddMonths(1).AddDays(rand.Next(1, 10));
+                var planName = $"Kế hoạch bảo trì tháng {(DateTime.UtcNow.AddMonths(-p + 2)).Month}/{start.Year}";
 
-            foreach (var (planName, start, end) in planDefs)
-            {
-                var plan = Plan.Create(planName, manager.Id, start, end);
-                plan.Approve(admin.Id);
+                var plan = Plan.Create(planName, doiTruong.Id, start, end);
+                
+                if (p < 5)
+                {
+                    plan.SubmitForApproval();
+                    plan.Approve(giamDoc.Id);
+                    plan.Complete();
+                }
+                else if (p < 8)
+                {
+                    plan.SubmitForApproval();
+                    plan.Approve(giamDoc.Id);
+                }
+                else if (p == 8)
+                {
+                    plan.SubmitForApproval();
+                }
+                else if (p == 9)
+                {
+                    plan.SubmitForApproval();
+                    plan.RequestRevision("Kinh phí dự kiến quá cao, cần tối ưu lại số lượng nhân công.");
+                }
+
                 _context.Plans.Add(plan);
                 await _context.SaveChangesAsync();
 
-                for (int w = 0; w < 15; w++)
+                for (int w = 0; w < 10; w++)
                 {
                     var wt   = workTypes[rand.Next(workTypes.Count)];
-                    var work = Work.Create(wt.Id, plan.Id, manager.Id,
-                        start.AddDays(rand.Next(0, 20)),
-                        end.AddDays(-rand.Next(0, 10)));
+                    var workStart = start.AddDays(rand.Next(0, 20));
+                    var workEnd   = workStart.AddDays(rand.Next(1, 7));
+                    
+                    var work = Work.Create(wt.Id, plan.Id, doiTruong.Id, workStart, workEnd);
 
-                    switch (w % 5)
+                    if (plan.Status == PlanStatus.Completed)
                     {
-                        case 1: work.SubmitForApproval(); break;
-                        case 2: work.SubmitForApproval(); work.Reject("Cần bổ sung thêm thông tin"); break;
-                        case 3: work.SubmitForApproval(); work.Complete(); break;
+                        work.SubmitForApproval();
+                        work.Complete();
+                    }
+                    else if (plan.Status == PlanStatus.Approved && w < 5)
+                    {
+                        work.SubmitForApproval();
+                        work.Complete();
                     }
 
                     _context.Works.Add(work);
@@ -259,27 +294,15 @@ public class ApplicationDbContextInitialiser
                         WorkId  = work.Id,
                         TreeId  = tree.Id,
                         Content = $"{wt.Name} cho {tree.Name}",
-                        Status  = (w % 5 == 3) ? "Completed" : "Pending"
+                        Status  = (work.Status == WorkStatus.Completed) ? "Completed" : "Pending"
                     });
-
-                    if (w % 5 == 2 || w % 5 == 3)
-                    {
-                        _context.WorkProgresses.Add(new WorkProgress
-                        {
-                            WorkId      = work.Id,
-                            UpdaterId   = employees[rand.Next(employees.Length)],
-                            Percentage  = w % 5 == 3 ? 100 : rand.Next(20, 80),
-                            Note        = w % 5 == 3 ? "Hoàn thành công việc" : "Đang thực hiện",
-                            UpdatedDate = start.AddDays(rand.Next(1, 15))
-                        });
-                    }
                 }
-                await _context.SaveChangesAsync();
             }
+            await _context.SaveChangesAsync();
         }
 
-        // ── 6. Incidents (30) ─────────────────────────────────────────
-        if (!_context.TreeIncidents.Any())
+        // ── 6. Incidents (150) ────────────────────────────────────────
+        if (_context.TreeIncidents.Count() < 50)
         {
             var trees    = _context.Trees.ToList();
             var contents = new[]
@@ -295,39 +318,59 @@ public class ApplicationDbContextInitialiser
                 "Cây thiếu nước, lá héo",
                 "Vỏ cây bị bóc tách",
             };
-            var statuses = new[] { "Pending", "InProgress", "Resolved", "Pending", "Resolved" };
+            var incidentImages = new[]
+            {
+                "https://images.unsplash.com/photo-1542332213-31f87348057f?auto=format&fit=crop&q=80&w=800",
+                "https://images.unsplash.com/photo-1638202993928-7267aad84c31?auto=format&fit=crop&q=80&w=800",
+                "https://images.unsplash.com/photo-1621944190310-e3cca1564bd7?auto=format&fit=crop&q=80&w=800"
+            };
+            var statuses = new[] { "Pending", "InProgress", "Resolved" };
 
-            for (int i = 0; i < 30; i++)
+            for (int i = 0; i < 150; i++)
             {
                 var tree     = trees[rand.Next(trees.Count)];
                 var incident = TreeIncident.Create(
                     tree.Id,
                     employees[i % employees.Length],
-                    contents[i % contents.Length],
+                    contents[rand.Next(contents.Length)],
                     reporterName:  $"Người dân {i + 1}",
                     reporterPhone: $"09{rand.Next(10000000, 99999999)}"
                 );
-                var status = statuses[i % statuses.Length];
+
+                if (i % 3 == 0)
+                {
+                    incident.AddImage(new TreeIncidentImage { Path = incidentImages[rand.Next(incidentImages.Length)], Description = "Ảnh hiện trường" });
+                }
+                
+                var reportedDate = DateTime.UtcNow.AddDays(-rand.Next(0, 180));
+                var prop = typeof(TreeIncident).GetProperty("ReportedDate");
+                prop?.SetValue(incident, reportedDate);
+
+                var status = statuses[rand.Next(statuses.Length)];
                 incident.UpdateStatus(status);
                 if (status != "Pending")
-                    incident.Approve(manager.Id);
+                    incident.Approve(doiTruong.Id);
+                    
                 _context.TreeIncidents.Add(incident);
             }
             await _context.SaveChangesAsync();
         }
     }
 
-    private async Task<ApplicationUser> EnsureUser(string email, string password, string fullName, string role)
+    private async Task<ApplicationUser> EnsureUser(string email, string password, string fullName, string role, string? avatarUrl = null)
     {
         var user = await _userManager.FindByEmailAsync(email);
         if (user == null)
         {
-            user = new ApplicationUser { UserName = email, Email = email, FullName = fullName };
+            user = new ApplicationUser { UserName = email, Email = email, FullName = fullName, Status = UserStatus.Active, AvatarUrl = avatarUrl };
             await _userManager.CreateAsync(user, password);
         }
         else
         {
-            // Reset password to ensure the user can log in with the expected credentials
+            user.AvatarUrl = avatarUrl;
+            user.FullName = fullName;
+            await _userManager.UpdateAsync(user);
+
             var token = await _userManager.GeneratePasswordResetTokenAsync(user);
             await _userManager.ResetPasswordAsync(user, token, password);
         }

@@ -10,6 +10,7 @@ using backend.Domain.Constants;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace backend.Web.Endpoints;
 
@@ -19,14 +20,14 @@ public class WorkItems : EndpointGroupBase
 
     public override void Map(RouteGroupBuilder groupBuilder)
     {
-        groupBuilder.MapGet(GetWorkItems).RequireAuthorization();
-        groupBuilder.MapGet(GetWorkItemDetail, "{id}").RequireAuthorization();
-        groupBuilder.MapPost(CreateWorkItem).RequireAuthorization(new AuthorizeAttribute { Roles = $"{Roles.Manager},{Roles.Admin},{Roles.Administrator}" });
-        groupBuilder.MapPut(UpdateWorkItem, "{id}").RequireAuthorization(new AuthorizeAttribute { Roles = $"{Roles.Manager},{Roles.Admin},{Roles.Administrator}" });
-        groupBuilder.MapDelete(DeleteWorkItem, "{id}").RequireAuthorization(new AuthorizeAttribute { Roles = $"{Roles.Manager},{Roles.Admin},{Roles.Administrator}" });
-        groupBuilder.MapPost(ReportProgress, "{id}/report-progress").RequireAuthorization(new AuthorizeAttribute { Roles = Roles.Employee }).DisableAntiforgery();
-        groupBuilder.MapPut(ApproveWork, "{id}/approve").RequireAuthorization(new AuthorizeAttribute { Roles = $"{Roles.Manager},{Roles.Admin},{Roles.Administrator}" });
-        groupBuilder.MapPost(AssignUser, "{id}/assign-user").RequireAuthorization(new AuthorizeAttribute { Roles = $"{Roles.Manager},{Roles.Admin},{Roles.Administrator}" });
+        groupBuilder.MapGet(GetWorkItems).RequireAuthorization(new AuthorizeAttribute { Roles = $"{Roles.GiamDoc},{Roles.DoiTruong},{Roles.NhanVien}" });
+        groupBuilder.MapGet(GetWorkItemDetail, "{id}").RequireAuthorization(new AuthorizeAttribute { Roles = $"{Roles.GiamDoc},{Roles.DoiTruong},{Roles.NhanVien}" });
+        groupBuilder.MapPost(CreateWorkItem).RequireAuthorization(new AuthorizeAttribute { Roles = $"{Roles.GiamDoc},{Roles.DoiTruong}" });
+        groupBuilder.MapPut(UpdateWorkItem, "{id}").RequireAuthorization(new AuthorizeAttribute { Roles = $"{Roles.GiamDoc},{Roles.DoiTruong}" });
+        groupBuilder.MapDelete(DeleteWorkItem, "{id}").RequireAuthorization(new AuthorizeAttribute { Roles = $"{Roles.GiamDoc},{Roles.DoiTruong}" });
+        groupBuilder.MapPost(ReportProgress, "{id}/report-progress").RequireAuthorization(new AuthorizeAttribute { Roles = Roles.NhanVien }).DisableAntiforgery();
+        groupBuilder.MapPut(ApproveWork, "{id}/approve").RequireAuthorization(new AuthorizeAttribute { Roles = $"{Roles.GiamDoc},{Roles.DoiTruong}" });
+        groupBuilder.MapPost(AssignUser, "{id}/assign-user").RequireAuthorization(new AuthorizeAttribute { Roles = $"{Roles.GiamDoc},{Roles.DoiTruong}" });
     }
 
     public async Task<Ok<WorkItemsVm>> GetWorkItems(ISender sender)
@@ -58,14 +59,16 @@ public class WorkItems : EndpointGroupBase
     }
 
     public async Task<Results<NoContent, BadRequest<string[]>>> ReportProgress(
-        ISender sender, int id, IFormFileCollection images, [FromForm] string? note, [FromForm] string? updaterId)
+        ClaimsPrincipal principal, ISender sender, int id, IFormFileCollection images, [FromForm] string? note, [FromForm] int? percentage)
     {
+        var userId = principal.FindFirstValue(ClaimTypes.NameIdentifier);
         var cmd = new ReportWorkProgressCommand
         {
             WorkItemId = id,
             Images = images.ToList(),
             Note = note,
-            UpdaterId = updaterId ?? string.Empty
+            Percentage = percentage,
+            UpdaterId = userId ?? string.Empty
         };
         var result = await sender.Send(cmd);
         return result.Succeeded ? TypedResults.NoContent() : TypedResults.BadRequest(result.Errors);

@@ -6,7 +6,7 @@ import { Textarea } from "@workspace/ui/components/textarea"
 import { toast } from "@workspace/ui/components/sonner"
 import { useRouter } from "next/navigation"
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000"
+import { apiClient } from "@/lib/api-client"
 
 export function ApproveWorkItem({ workId }: { workId: number }) {
   const router = useRouter()
@@ -14,23 +14,19 @@ export function ApproveWorkItem({ workId }: { workId: number }) {
   const [loading, setLoading] = useState<"approve" | "reject" | null>(null)
 
   async function handle(action: "approve" | "reject") {
-    const token = localStorage.getItem("access_token")
-    const approverId = localStorage.getItem("user_id") ?? ""
     setLoading(action)
     try {
-      const res = await fetch(`${BASE_URL}/api/work-items/${workId}/${action}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify({ approverId, feedback: feedback || null }),
+      const isApproved = action === "approve"
+      await apiClient.put(`/api/work-items/${workId}/approve`, { 
+        workItemId: workId,
+        isApproved, 
+        feedback: feedback || null 
       })
-      if (!res.ok) throw new Error(await res.text())
-      toast.success(action === "approve" ? "Đã duyệt công việc" : "Đã từ chối công việc")
+      
+      toast.success(isApproved ? "Đã duyệt công việc" : "Đã từ chối công việc")
       router.refresh()
-    } catch (err) {
-      toast.error((err as Error).message || "Thao tác thất bại")
+    } catch (err: any) {
+      toast.error(err.message || "Thao tác thất bại")
     } finally {
       setLoading(null)
     }

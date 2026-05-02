@@ -5,18 +5,29 @@ import { HugeiconsIcon } from "@hugeicons/react"
 import { ChartUpIcon, ChartDownIcon, Tree01Icon, AlertCircleIcon, CheckmarkCircle01Icon, Clock01Icon } from "@hugeicons/core-free-icons"
 
 export interface DashboardStats {
-  totalTrees: number
-  pendingIncidents: number
-  completedWorksThisMonth: number
-  pendingWorksThisMonth: number
+  totalTrees?: number
+  TotalTrees?: number
+  pendingIncidents?: number
+  PendingIncidents?: number
+  completedWorksThisMonth?: number
+  CompletedWorksThisMonth?: number
+  pendingWorksThisMonth?: number
+  PendingWorksThisMonth?: number
 }
 
 export function SectionCards({ stats }: { stats: DashboardStats }) {
+  const data = {
+    totalTrees: stats.totalTrees ?? stats.TotalTrees ?? 0,
+    pendingIncidents: stats.pendingIncidents ?? stats.PendingIncidents ?? 0,
+    completedWorksThisMonth: stats.completedWorksThisMonth ?? stats.CompletedWorksThisMonth ?? 0,
+    pendingWorksThisMonth: stats.pendingWorksThisMonth ?? stats.PendingWorksThisMonth ?? 0,
+  }
+
   const cards = [
-    { label: "Tổng số cây xanh", value: stats.totalTrees, icon: Tree01Icon, footer: "Toàn bộ cây trong hệ thống", trend: "up" as const },
-    { label: "Sự cố chờ xử lý", value: stats.pendingIncidents, icon: AlertCircleIcon, footer: "Cần được xử lý sớm", trend: "down" as const },
-    { label: "Công việc hoàn thành", value: stats.completedWorksThisMonth, icon: CheckmarkCircle01Icon, footer: "Trong tháng này", trend: "up" as const },
-    { label: "Công việc đang chờ", value: stats.pendingWorksThisMonth, icon: Clock01Icon, footer: "Trong tháng này", trend: "down" as const },
+    { label: "Tổng số cây xanh", value: data.totalTrees, icon: Tree01Icon, footer: "Toàn bộ cây trong hệ thống", trend: "up" as const },
+    { label: "Sự cố chờ xử lý", value: data.pendingIncidents, icon: AlertCircleIcon, footer: "Cần được xử lý sớm", trend: "down" as const },
+    { label: "Công việc hoàn thành", value: data.completedWorksThisMonth, icon: CheckmarkCircle01Icon, footer: "Trong tháng này", trend: "up" as const },
+    { label: "Công việc đang chờ", value: data.pendingWorksThisMonth, icon: Clock01Icon, footer: "Trong tháng này", trend: "down" as const },
   ]
 
   return (

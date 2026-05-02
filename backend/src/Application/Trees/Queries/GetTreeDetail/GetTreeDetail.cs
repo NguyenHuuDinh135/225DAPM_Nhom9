@@ -12,6 +12,7 @@ public class TreeDetailDto
     public string? TreeTypeName { get; init; }
     public decimal? Height { get; init; }
     public decimal? TrunkDiameter { get; init; }
+    public string? MainImageUrl { get; init; }
     public DateTime? RecordedDate { get; init; }
     public DateTime? LastMaintenanceDate { get; init; }
     public double? Latitude { get; init; }
@@ -41,6 +42,7 @@ public class GetTreeDetailQueryHandler : IRequestHandler<GetTreeDetailQuery, Tre
                 TreeTypeName = t.TreeType.Name,
                 Height = t.Height,
                 TrunkDiameter = t.TrunkDiameter,
+                MainImageUrl = t.MainImageUrl,
                 RecordedDate = t.RecordedDate,
                 LastMaintenanceDate = t.LastMaintenanceDate,
                 Latitude = t.Latitude,

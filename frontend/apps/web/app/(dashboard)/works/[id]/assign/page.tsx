@@ -10,6 +10,7 @@ import { Badge } from "@workspace/ui/components/badge"
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@workspace/ui/components/dialog"
 import { ArrowLeftIcon, PlusIcon } from "lucide-react"
 import { toast } from "@workspace/ui/components/sonner"
+import { getRoleLabel } from "@/lib/roles"
 
 interface WorkUser { userId: string; role: string | null; status: string | null }
 interface WorkDetail { id: number; workTypeName: string | null; planName: string | null; users: WorkUser[] }
@@ -29,7 +30,7 @@ export default function AssignPage({ params }: { params: Promise<{ id: string }>
 
   function loadWork() {
     const token = localStorage.getItem("access_token")
-    const headers = token ? { Authorization: `Bearer ${token}` } : {}
+    const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {}
     Promise.all([
       fetch(`${BASE_URL}/api/work-items/${id}`, { headers }).then((r) => r.ok ? r.json() : Promise.reject()),
       fetch(`${BASE_URL}/api/employees`, { headers }).then((r) => r.ok ? r.json() : { employees: [] }),
@@ -110,7 +111,7 @@ export default function AssignPage({ params }: { params: Promise<{ id: string }>
                   <TableCell className="font-medium">
                     {emp?.fullName ?? emp?.email ?? <span className="font-mono text-xs text-muted-foreground">{u.userId}</span>}
                   </TableCell>
-                  <TableCell><Badge variant="outline">{u.role ?? "—"}</Badge></TableCell>
+                  <TableCell><Badge variant="outline">{getRoleLabel(u.role) || "—"}</Badge></TableCell>
                   <TableCell className="hidden sm:table-cell">
                     <span className="text-xs text-green-600 font-medium">{u.status ?? "—"}</span>
                   </TableCell>

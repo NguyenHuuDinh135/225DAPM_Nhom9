@@ -8,6 +8,7 @@ export const planSchema = z.object({
   startDate: z.string().nullable(),
   endDate: z.string().nullable(),
   status: z.string().nullable(),
+  statusName: z.string().nullable(),
   workCount: z.number(),
 })
 

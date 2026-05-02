@@ -1,134 +1,210 @@
-import { Suspense } from "react"
-import { cookies } from "next/headers"
-import Link from "next/link"
-import { notFound } from "next/navigation"
-import { ArrowLeftIcon, MapPinIcon } from "lucide-react"
-import { Badge } from "@workspace/ui/components/badge"
-import { Card, CardContent, CardHeader, CardTitle } from "@workspace/ui/components/card"
-import { Skeleton } from "@workspace/ui/components/skeleton"
-import { RelocateTreeForm } from "./relocate-form"
+"use client"
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000"
+import * as React from "react"
+import { useParams, useRouter } from "next/navigation"
+import { 
+  TreePine, MapPin, Calendar, Ruler, 
+  ArrowLeft, AlertTriangle, History, 
+  Wrench, Edit2, Loader2, Camera
+} from "lucide-react"
+import { Button } from "@workspace/ui/components/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@workspace/ui/components/card"
+import { Badge } from "@workspace/ui/components/badge"
+import { apiClient, getImageUrl } from "@/lib/api-client"
+import { Map, MapMarker, MarkerContent, MapControls } from "@workspace/ui/components/ui/map"
+import { toast } from "@workspace/ui/components/sonner"
 
 interface TreeDetail {
-  id: number; name: string | null; condition: string | null; treeTypeName: string | null
-  height: number | null; trunkDiameter: number | null; recordedDate: string | null
-  lastMaintenanceDate: string | null; latitude: number | null; longitude: number | null
-  relocationCount: number
+  id: number;
+  name: string | null;
+  condition: string | null;
+  treeTypeName: string | null;
+  height: number | null;
+  trunkDiameter: number | null;
+  latitude: number | null;
+  longitude: number | null;
+  mainImageUrl: string | null;
+  recordedDate: string | null;
+  lastMaintenanceDate: string | null;
 }
 
-interface LocationHistory {
-  locationId: number; streetName: string | null; houseNumber: number | null
-  fromDate: string; toDate: string | null
-}
+export default function TreeDetailPage() {
+  const { id } = useParams()
+  const router = useRouter()
+  const [tree, setTree] = React.useState<TreeDetail | null>(null)
+  const [loading, setLoading] = React.useState(true)
 
-async function fetchTree(id: string) {
-  const token = (await cookies()).get("access_token")?.value
-  const headers = token ? { Authorization: `Bearer ${token}` } : {}
-  const [treeRes, histRes] = await Promise.all([
-    fetch(`${BASE_URL}/api/trees/${id}`, { headers, cache: "no-store" }),
-    fetch(`${BASE_URL}/api/trees/${id}/location-history`, { headers, cache: "no-store" }),
-  ])
-  if (!treeRes.ok) return null
-  const tree: TreeDetail = await treeRes.json()
-  const history: LocationHistory[] = histRes.ok ? await histRes.json() : []
-  return { tree, history }
-}
+  const loadDetail = async () => {
+    try {
+      const data = await apiClient.get<TreeDetail>(`/api/trees/${id}`)
+      setTree(data)
+    } catch (err) {
+      toast.error("Lỗi", { description: "Không thể tải thông tin chi tiết cây xanh." })
+    } finally {
+      setLoading(false)
+    }
+  }
 
-const conditionColor: Record<string, string> = {
-  Good: "bg-green-100 text-green-700", Fair: "bg-yellow-100 text-yellow-700", Poor: "bg-red-100 text-red-700",
-}
+  React.useEffect(() => {
+    loadDetail()
+  }, [id])
 
-function Row({ label, value }: { label: string; value: React.ReactNode }) {
-  return (
-    <div className="flex justify-between gap-4 py-2 text-sm">
-      <span className="text-muted-foreground shrink-0">{label}</span>
-      <span className="font-medium text-right">{value ?? "—"}</span>
-    </div>
-  )
-}
-
-async function TreeDetailContent({ id }: { id: string }) {
-  const data = await fetchTree(id)
-  if (!data) notFound()
-  const { tree, history } = data
-  const cls = conditionColor[tree.condition ?? ""] ?? "bg-muted text-muted-foreground"
-
-  return (
-    <div className="grid gap-4 md:grid-cols-2">
-      <Card>
-        <CardHeader><CardTitle className="text-base">Thông tin cơ bản</CardTitle></CardHeader>
-        <CardContent className="divide-y">
-          <Row label="Mã cây" value={`#${tree.id}`} />
-          <Row label="Tên cây" value={tree.name} />
-          <Row label="Loại cây" value={tree.treeTypeName} />
-          <Row label="Tình trạng" value={<Badge className={cls}>{tree.condition ?? "—"}</Badge>} />
-          <Row label="Số lần di dời" value={tree.relocationCount ?? 0} />
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader><CardTitle className="text-base">Thông số kỹ thuật</CardTitle></CardHeader>
-        <CardContent className="divide-y">
-          <Row label="Chiều cao (m)" value={tree.height} />
-          <Row label="Đường kính thân (cm)" value={tree.trunkDiameter} />
-          <Row label="Ngày ghi nhận" value={tree.recordedDate ? new Date(tree.recordedDate).toLocaleDateString("vi-VN") : null} />
-          <Row label="Bảo dưỡng gần nhất" value={tree.lastMaintenanceDate ? new Date(tree.lastMaintenanceDate).toLocaleDateString("vi-VN") : null} />
-        </CardContent>
-      </Card>
-
-      {(tree.latitude != null || tree.longitude != null) && (
-        <Card>
-          <CardHeader><CardTitle className="text-base flex items-center gap-2"><MapPinIcon className="size-4" />Tọa độ hiện tại</CardTitle></CardHeader>
-          <CardContent>
-            <p className="text-sm font-mono">{tree.latitude?.toFixed(6)}, {tree.longitude?.toFixed(6)}</p>
-          </CardContent>
-        </Card>
-      )}
-
-      {history.length > 0 && (
-        <Card>
-          <CardHeader><CardTitle className="text-base">Lịch sử vị trí</CardTitle></CardHeader>
-          <CardContent>
-            <ol className="relative border-l border-border ml-2 flex flex-col gap-4">
-              {history.map((h) => (
-                <li key={h.locationId} className="ml-4">
-                  <div className="absolute -left-1.5 mt-1.5 size-3 rounded-full border border-background bg-primary" />
-                  <p className="text-sm font-medium">{h.streetName ?? "—"}{h.houseNumber ? ` số ${h.houseNumber}` : ""}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {new Date(h.fromDate).toLocaleDateString("vi-VN")}
-                    {" → "}
-                    {h.toDate ? new Date(h.toDate).toLocaleDateString("vi-VN") : "Hiện tại"}
-                  </p>
-                </li>
-              ))}
-            </ol>
-          </CardContent>
-        </Card>
-      )}
-
-      <RelocateTreeForm treeId={tree.id} />
-    </div>
-  )
-}
-
-export default function TreeDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  return (
-    <div className="flex flex-1 flex-col gap-4 p-4 md:p-6">
-      <div className="flex items-center gap-3">
-        <Link href="/trees" className="inline-flex items-center justify-center size-9 rounded-md hover:bg-muted">
-          <ArrowLeftIcon className="size-4" />
-        </Link>
-        <h1 className="text-xl font-semibold md:text-2xl">Chi tiết cây xanh</h1>
+  if (loading) {
+    return (
+      <div className="flex h-[80vh] items-center justify-center">
+        <Loader2 className="size-10 animate-spin text-green-600" />
       </div>
-      <Suspense fallback={<div className="grid gap-4 md:grid-cols-2">{[0,1].map(i=><Card key={i}><CardContent className="p-6"><Skeleton className="h-40 w-full"/></CardContent></Card>)}</div>}>
-        <TreeDetailContentWrapper params={params} />
-      </Suspense>
+    )
+  }
+
+  if (!tree) {
+    return (
+      <div className="p-12 text-center">
+        <h2 className="text-xl font-bold">Không tìm thấy cây xanh</h2>
+        <Button onClick={() => router.back()} variant="ghost" className="mt-4">
+          <ArrowLeft className="mr-2 size-4" /> Quay lại
+        </Button>
+      </div>
+    )
+  }
+
+  return (
+    <div className="p-6 space-y-6 max-w-7xl mx-auto">
+      <div className="flex items-center gap-4">
+        <Button variant="ghost" size="icon" onClick={() => router.back()} className="rounded-full">
+          <ArrowLeft className="size-5" />
+        </Button>
+        <div>
+          <h1 className="text-2xl font-black text-slate-800 tracking-tight">Chi tiết Cây xanh #{tree.id}</h1>
+          <p className="text-sm text-slate-500 font-medium italic">{tree.name || "Cây chưa đặt tên"}</p>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Left Column: Image & Basic Info */}
+        <div className="space-y-6">
+          <Card className="overflow-hidden rounded-[2rem] border-none shadow-xl">
+            <div className="aspect-square relative group">
+              {tree.mainImageUrl ? (
+                <img 
+                  src={getImageUrl(tree.mainImageUrl)} 
+                  className="w-full h-full object-cover transition-transform group-hover:scale-105 duration-500" 
+                  alt={tree.name || "Tree"} 
+                />
+              ) : (
+                <div className="w-full h-full bg-slate-100 flex flex-col items-center justify-center text-slate-300">
+                  <Camera className="size-16 mb-2" />
+                  <span className="font-bold uppercase tracking-widest text-[10px]">Chưa có hình ảnh</span>
+                </div>
+              )}
+              <div className="absolute top-4 right-4">
+                <Badge className={cn(
+                  "px-3 py-1 rounded-full font-black uppercase tracking-widest border-none shadow-lg",
+                  tree.condition === "Tốt" ? "bg-green-600 text-white" : "bg-amber-500 text-white"
+                )}>
+                  {tree.condition?.toUpperCase() || "Bình thường"}
+                </Badge>
+              </div>
+            </div>
+            <CardContent className="p-6">
+              <h3 className="text-xl font-black text-slate-800 mb-1">{tree.treeTypeName}</h3>
+              <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mb-4">Loài cây đô thị</p>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-slate-50 p-3 rounded-2xl">
+                  <p className="text-[10px] font-black text-slate-400 uppercase mb-1">Chiều cao</p>
+                  <p className="font-bold text-slate-700">{tree.height ? `${tree.height} m` : "—"}</p>
+                </div>
+                <div className="bg-slate-50 p-3 rounded-2xl">
+                  <p className="text-[10px] font-black text-slate-400 uppercase mb-1">Đường kính</p>
+                  <p className="font-bold text-slate-700">{tree.trunkDiameter ? `${tree.trunkDiameter} cm` : "—"}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="rounded-[2rem] border-none shadow-xl">
+            <CardHeader>
+              <CardTitle className="text-sm font-black uppercase tracking-widest flex items-center gap-2">
+                <History className="size-4 text-green-600" /> Lịch sử & Bảo trì
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Calendar className="size-4 text-slate-400" />
+                  <span className="text-xs font-medium text-slate-500">Ngày ghi nhận:</span>
+                </div>
+                <span className="text-xs font-bold text-slate-700">
+                  {tree.recordedDate ? new Date(tree.recordedDate).toLocaleDateString("vi-VN") : "—"}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Wrench className="size-4 text-slate-400" />
+                  <span className="text-xs font-medium text-slate-500">Bảo trì cuối:</span>
+                </div>
+                <span className="text-xs font-bold text-slate-700">
+                  {tree.lastMaintenanceDate ? new Date(tree.lastMaintenanceDate).toLocaleDateString("vi-VN") : "Chưa bảo trì"}
+                </span>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Right Column: Map & Location Details */}
+        <div className="lg:col-span-2 space-y-6">
+          <Card className="h-full flex flex-col rounded-[2rem] border-none shadow-xl overflow-hidden">
+            <CardHeader className="bg-white z-10">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-sm font-black uppercase tracking-widest flex items-center gap-2">
+                  <MapPin className="size-4 text-red-500" /> Vị trí trên bản đồ
+                </CardTitle>
+                <div className="flex items-center gap-2">
+                   <span className="text-[10px] font-mono bg-slate-100 px-2 py-1 rounded-lg text-slate-600 font-bold">
+                    {tree.latitude?.toFixed(6)}, {tree.longitude?.toFixed(6)}
+                   </span>
+                </div>
+              </div>
+            </CardHeader>
+            <div className="flex-1 min-h-[400px] relative">
+              {tree.latitude && tree.longitude && (
+                <Map
+                  center={[tree.longitude, tree.latitude]}
+                  zoom={17}
+                >
+                  <MapControls showLocate showZoom />
+                  <MapMarker longitude={tree.longitude} latitude={tree.latitude}>
+                    <MarkerContent>
+                      <div className="size-10 bg-green-600 rounded-full flex items-center justify-center text-white shadow-2xl border-4 border-white animate-bounce-slow">
+                        <TreePine className="size-6" />
+                      </div>
+                    </MarkerContent>
+                  </MapMarker>
+                </Map>
+              )}
+            </div>
+            <CardContent className="p-6 bg-slate-50">
+               <div className="flex items-start gap-4">
+                 <div className="size-10 rounded-xl bg-orange-100 flex items-center justify-center text-orange-600 flex-shrink-0">
+                    <AlertTriangle className="size-5" />
+                 </div>
+                 <div>
+                   <h4 className="text-sm font-bold text-slate-800">Thông báo hiện trạng</h4>
+                   <p className="text-xs text-slate-500 leading-relaxed">
+                     Vị trí cây xanh được xác định qua tọa độ GPS thực tế. Cây xanh này đang trong trạng thái <strong>{tree.condition}</strong>. 
+                     Mọi sự thay đổi về vị trí hoặc hiện trạng cần được cập nhật ngay bởi Đội trưởng phụ trách khu vực.
+                   </p>
+                 </div>
+               </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </div>
   )
 }
 
-async function TreeDetailContentWrapper({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params
-  return <TreeDetailContent id={id} />
+function cn(...inputs: any[]) {
+    return inputs.filter(Boolean).join(" ");
 }

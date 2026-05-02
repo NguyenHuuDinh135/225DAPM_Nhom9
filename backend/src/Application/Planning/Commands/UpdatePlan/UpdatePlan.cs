@@ -3,7 +3,7 @@ using backend.Application.Common.Models;
 
 namespace backend.Application.Planning.Commands.UpdatePlan;
 
-public record UpdatePlanCommand : IRequest<IStatusResult>
+public record UpdatePlanCommand : IRequest<Result>
 {
     public int Id { get; init; }
     public string? Name { get; init; }
@@ -19,7 +19,7 @@ public class UpdatePlanCommandValidator : AbstractValidator<UpdatePlanCommand>
     }
 }
 
-public class UpdatePlanCommandHandler : IRequestHandler<UpdatePlanCommand, IStatusResult>
+public class UpdatePlanCommandHandler : IRequestHandler<UpdatePlanCommand, Result>
 {
     private readonly IApplicationDbContext _context;
 
@@ -28,15 +28,15 @@ public class UpdatePlanCommandHandler : IRequestHandler<UpdatePlanCommand, IStat
         _context = context;
     }
 
-    public async Task<IStatusResult> Handle(UpdatePlanCommand request, CancellationToken cancellationToken)
+    public async Task<Result> Handle(UpdatePlanCommand request, CancellationToken cancellationToken)
     {
         var plan = await _context.Plans.FindAsync([request.Id], cancellationToken);
         if (plan is null)
-            return StatusResult.Failure($"Plan {request.Id} not found.");
+            return Result.Failure($"Plan {request.Id} not found.");
 
         plan.Update(request.Name, request.StartDate, request.EndDate);
 
         await _context.SaveChangesAsync(cancellationToken);
-        return StatusResult.Success();
+        return Result.Success();
     }
 }

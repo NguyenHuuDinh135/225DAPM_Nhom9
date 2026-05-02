@@ -2,13 +2,20 @@
 
 import * as React from "react"
 import Link from "next/link"
-import { ChevronLeft, ChevronRight, X } from "lucide-react"
+import { ChevronLeft, ChevronRight, X, ImageIcon, CameraOff } from "lucide-react"
 import { Button } from "@workspace/ui/components/button"
 import { Map, MapControls, MapMarker, MapPopup, MarkerContent, type MapRef } from "@workspace/ui/components/ui/map"
+import { apiClient, getImageUrl } from "@/lib/api-client"
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000"
-
-interface TreeMapDto { id: number; name: string | null; condition: string | null; treeTypeName: string | null; latitude: number | null; longitude: number | null }
+interface TreeMapDto { 
+  id: number; 
+  name: string | null; 
+  condition: string | null; 
+  treeTypeName: string | null; 
+  latitude: number | null; 
+  longitude: number | null;
+  mainImageUrl: string | null;
+}
 
 function markerColor(condition: string | null) {
   if (!condition) return "bg-gray-400"
@@ -20,9 +27,9 @@ function markerColor(condition: string | null) {
 
 function Row({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex border-b border-[#007B22] last:border-b-0">
-      <div className="w-1/3 border-r border-[#007B22] p-2 font-medium text-foreground">{label}</div>
-      <div className="w-2/3 p-2 text-foreground">{value}</div>
+    <div className="flex border-b border-slate-100 last:border-b-0">
+      <div className="w-1/3 border-r border-slate-100 p-2 font-bold text-slate-500 text-[11px] uppercase tracking-wider">{label}</div>
+      <div className="w-2/3 p-2 text-slate-700 font-medium text-[12px]">{value}</div>
     </div>
   )
 }
@@ -33,10 +40,9 @@ export function TreeManagementMap() {
   const [selectedIndex, setSelectedIndex] = React.useState<number | null>(null)
 
   React.useEffect(() => {
-    fetch(`${BASE_URL}/api/trees/map`)
-      .then((r) => r.ok ? r.json() : { trees: [] })
-      .then((d: { trees: TreeMapDto[] }) => setTrees(d.trees.filter((t) => t.latitude != null && t.longitude != null)))
-      .catch(() => {})
+    apiClient.get<{ trees: TreeMapDto[] }>("/api/trees/map")
+      .then((d) => setTrees(d.trees.filter((t) => t.latitude != null && t.longitude != null)))
+      .catch((e) => console.error("Failed to fetch trees for map", e))
   }, [])
 
   function navigateTo(index: number) {
@@ -57,7 +63,7 @@ export function TreeManagementMap() {
           <MapMarker key={tree.id} longitude={tree.longitude!} latitude={tree.latitude!}>
             <MarkerContent>
               <div onClick={(e) => { e.stopPropagation(); navigateTo(index) }} className="flex h-7 w-7 cursor-pointer items-center justify-center">
-                <div className={`h-3 w-3 rounded-full border border-green-950 shadow-sm transition-transform hover:scale-[1.9] ${markerColor(tree.condition)}`} />
+                <div className={`h-3 w-3 rounded-full border-2 border-white shadow-lg transition-transform hover:scale-[1.9] ${markerColor(tree.condition)}`} />
               </div>
             </MarkerContent>
           </MapMarker>
@@ -66,41 +72,63 @@ export function TreeManagementMap() {
           <MapPopup
             longitude={selected.longitude!} latitude={selected.latitude!}
             onClose={() => setSelectedIndex(null)} closeButton={false} anchor="bottom" offset={15}
-            className="z-50 w-[390px] overflow-hidden rounded-md border border-border bg-background p-0 shadow-2xl"
+            className="z-50 w-[350px] overflow-hidden rounded-2xl border border-white/20 bg-white/95 backdrop-blur-md p-0 shadow-2xl"
           >
             <div className="flex flex-col">
-              <div className="flex items-center justify-between border-b p-3">
-                <div>
-                  <h3 className="text-[15px] font-bold text-[#007B22]">Thông tin cơ bản</h3>
-                  <p className="text-xs text-muted-foreground">#{selected.id} • {selected.treeTypeName ?? "—"}</p>
+              {/* Image Section */}
+              <div className="relative h-40 w-full overflow-hidden bg-slate-100">
+                {selected.mainImageUrl ? (
+                  <img 
+                    src={getImageUrl(selected.mainImageUrl)} 
+                    className="h-full w-full object-cover" 
+                    alt={selected.name || "Cây"} 
+                  />
+                ) : (
+                  <div className="flex h-full w-full flex-col items-center justify-center text-slate-400">
+                    <CameraOff className="size-8" />
+                    <span className="text-[10px] font-bold mt-1 uppercase">Không có ảnh</span>
+                  </div>
+                )}
+                <div className="absolute top-3 right-3">
+                  <button onClick={() => setSelectedIndex(null)} className="p-1.5 bg-black/20 hover:bg-black/40 backdrop-blur-md rounded-full text-white transition-colors">
+                    <X className="size-4" />
+                  </button>
                 </div>
-                <X className="h-4 w-4 cursor-pointer text-muted-foreground" onClick={() => setSelectedIndex(null)} />
               </div>
-              <div className="p-3">
-                <div className="overflow-hidden rounded-[2px] border border-[#007B22] text-[13px]">
-                  <Row label="Tên cây" value={selected.name ?? "—"} />
+
+              <div className="p-4">
+                <div className="mb-3">
+                  <h3 className="text-base font-black text-green-900 leading-tight">{selected.name || `Cây #${selected.id}`}</h3>
+                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-0.5">#{selected.id} • {selected.treeTypeName ?? "Chưa rõ loài"}</p>
+                </div>
+
+                <div className="overflow-hidden rounded-xl border border-slate-100 bg-slate-50/50 mb-4">
                   <Row label="Loại cây" value={selected.treeTypeName ?? "—"} />
                   <Row label="Tình trạng" value={selected.condition ?? "—"} />
                 </div>
-              </div>
-              <div className="flex items-center gap-1.5 px-3 pb-3">
-                <Button asChild className="h-7 rounded-sm bg-[#007B22] px-3 text-[12px] text-white shadow-none hover:bg-[#006400]">
-                  <Link href={`/tree-detail/${selected.id}`}>Chi tiết</Link>
-                </Button>
-                <Button asChild variant="outline" className="h-7 rounded-sm border-[#007B22] px-3 text-[12px] text-[#007B22] hover:bg-[#007B22] hover:text-white">
-                  <Link href={`/report-incident?treeId=${selected.id}`}>Báo sự cố</Link>
-                </Button>
-                <div className="flex-1" />
-                <Button variant="outline" className="h-7 w-7 rounded-sm border-none bg-[#007B22] p-0 text-white hover:bg-[#006400]"
-                  disabled={selectedIndex === 0}
-                  onClick={() => selectedIndex !== null && navigateTo(selectedIndex - 1)}>
-                  <ChevronLeft className="h-4 w-4" />
-                </Button>
-                <Button variant="outline" className="h-7 w-7 rounded-sm border-none bg-[#007B22] p-0 text-white hover:bg-[#006400]"
-                  disabled={selectedIndex === trees.length - 1}
-                  onClick={() => selectedIndex !== null && navigateTo(selectedIndex + 1)}>
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
+
+                <div className="flex items-center gap-2">
+                  <Button asChild className="flex-1 h-10 rounded-xl bg-green-600 px-3 text-[12px] font-bold text-white shadow-lg shadow-green-600/20 hover:bg-green-700">
+                    <Link href={`/tree-detail/${selected.id}`}>Xem chi tiết</Link>
+                  </Button>
+                  <Button asChild variant="outline" className="flex-1 h-10 rounded-xl border-orange-200 bg-orange-50 px-3 text-[12px] font-bold text-orange-700 hover:bg-orange-100 hover:text-orange-800 border-dashed">
+                    <Link href={`/report-incident?treeId=${selected.id}`}>Báo sự cố</Link>
+                  </Button>
+                </div>
+
+                <div className="flex items-center justify-center gap-4 mt-4 pt-3 border-t border-slate-100">
+                  <Button variant="ghost" className="h-8 w-8 rounded-full p-0"
+                    disabled={selectedIndex === 0}
+                    onClick={() => selectedIndex !== null && navigateTo(selectedIndex - 1)}>
+                    <ChevronLeft className="h-5 w-5 text-slate-400" />
+                  </Button>
+                  <span className="text-[10px] font-bold text-slate-400 tracking-tighter uppercase">Duyệt danh sách</span>
+                  <Button variant="ghost" className="h-8 w-8 rounded-full p-0"
+                    disabled={selectedIndex === trees.length - 1}
+                    onClick={() => selectedIndex !== null && navigateTo(selectedIndex + 1)}>
+                    <ChevronRight className="h-5 w-5 text-slate-400" />
+                  </Button>
+                </div>
               </div>
             </div>
           </MapPopup>

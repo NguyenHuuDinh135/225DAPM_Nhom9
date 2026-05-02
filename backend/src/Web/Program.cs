@@ -47,13 +47,15 @@ app.MapDefaultEndpoints();
 app.MapEndpoints();
 app.MapHub<IncidentHub>("/hubs/incidents");
 
-if (app.Configuration.GetConnectionString("QLCayXanhDb") is not null || app.Configuration.GetConnectionString("backendDb") is not null)
+/*
+if (!app.Environment.IsEnvironment("Testing") && (app.Configuration.GetConnectionString("QLCayXanhDb") is not null || app.Configuration.GetConnectionString("backendDb") is not null))
 {
     RecurringJob.AddOrUpdate<IMaintenanceJobService>(
         "tree-maintenance",
         svc => svc.CheckAndGenerateMaintenanceWorkAsync(CancellationToken.None),
         Cron.Daily);
 }
+*/
 
 app.Run();
 

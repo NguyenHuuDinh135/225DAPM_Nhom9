@@ -33,7 +33,17 @@ public class CustomExceptionHandler : IExceptionHandler
             return true;
         }
 
-        return false;
+        // Generic handler for unhandled exceptions
+        httpContext.Response.StatusCode = StatusCodes.Status500InternalServerError;
+        await httpContext.Response.WriteAsJsonAsync(new ProblemDetails
+        {
+            Status = StatusCodes.Status500InternalServerError,
+            Title = "Internal Server Error",
+            Detail = exception.Message, // Include message for easier debugging in dev
+            Type = "https://tools.ietf.org/html/rfc7231#section-6.6.1"
+        }, cancellationToken);
+
+        return true;
     }
 
     private async Task HandleValidationException(HttpContext httpContext, Exception ex)

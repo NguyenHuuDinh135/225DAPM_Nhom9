@@ -3,7 +3,7 @@ using backend.Application.Common.Models;
 
 namespace backend.Application.Planning.Commands.ApprovePlan;
 
-public record ApprovePlanCommand : IRequest<IStatusResult>
+public record ApprovePlanCommand : IRequest<Result>
 {
     public int Id { get; init; }
     public string ApproverId { get; init; } = string.Empty;
@@ -18,24 +18,39 @@ public class ApprovePlanCommandValidator : AbstractValidator<ApprovePlanCommand>
     }
 }
 
-public class ApprovePlanCommandHandler : IRequestHandler<ApprovePlanCommand, IStatusResult>
+public class ApprovePlanCommandHandler : IRequestHandler<ApprovePlanCommand, Result>
 {
     private readonly IApplicationDbContext _context;
+    private readonly INotificationService _notificationService;
 
-    public ApprovePlanCommandHandler(IApplicationDbContext context)
+    public ApprovePlanCommandHandler(IApplicationDbContext context, INotificationService notificationService)
     {
         _context = context;
+        _notificationService = notificationService;
     }
 
-    public async Task<IStatusResult> Handle(ApprovePlanCommand request, CancellationToken cancellationToken)
+    public async Task<Result> Handle(ApprovePlanCommand request, CancellationToken cancellationToken)
     {
         var plan = await _context.Plans.FindAsync([request.Id], cancellationToken);
         if (plan is null)
-            return StatusResult.Failure($"Plan {request.Id} not found.");
+            return Result.Failure($"Plan {request.Id} not found.");
 
-        plan.Approve(request.ApproverId);
+        try 
+        {
+            plan.Approve(request.ApproverId);
+            await _context.SaveChangesAsync(cancellationToken);
 
-        await _context.SaveChangesAsync(cancellationToken);
-        return StatusResult.Success();
+            await _notificationService.SendNotificationAsync(
+                "Kế hoạch đã duyệt",
+                $"Kế hoạch '{plan.Name}' đã được Giám đốc phê duyệt.",
+                "success"
+            );
+
+            return Result.Success();
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Result.Failure(ex.Message);
+        }
     }
 }

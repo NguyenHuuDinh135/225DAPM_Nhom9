@@ -12,8 +12,10 @@ import {
 } from "@workspace/ui/components/dropdown-menu"
 import { UsersIcon, BarChart3Icon, MoreHorizontalIcon, Trash2Icon } from "lucide-react"
 import { CreateWorkDialog } from "./create-work-dialog"
+import { WorkSheet } from "./work-sheet"
 import type { WorkItem, WorkStatus } from "../page"
 import { useAuth } from "@/hooks/use-auth"
+import { ROLES } from "@/lib/roles"
 import { apiClient } from "@/lib/api-client"
 
 const STATUS_CLASSES: Record<WorkStatus, string> = {
@@ -26,13 +28,28 @@ const STATUS_CLASSES: Record<WorkStatus, string> = {
 
 export function WorksClient({ initialWorks }: { initialWorks: WorkItem[] }) {
   const { user } = useAuth()
-  const canManage = user?.role === "Administrator" || user?.role === "Manager"
+  const canManage = user?.role === ROLES.DoiTruong
+  const canViewDetail = user?.role === ROLES.DoiTruong || user?.role === ROLES.GiamDoc
   const [works, setWorks] = useState<WorkItem[]>(initialWorks)
+  const [sheetOpen, setSheetOpen] = useState(false)
+  const [selectedWork, setSelectedWork] = useState<WorkItem | undefined>()
 
-  async function handleDelete(id: number) {
-    if (!confirm("Xác nhận xóa công tác này?")) return
-    await apiClient.delete(`/api/work-items/${id}`)
-    setWorks((prev) => prev.filter((w) => w.id !== id))
+  const BASE_URL = typeof window !== "undefined" ? "" : (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000")
+
+  async function refresh() {
+    const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null
+    const res = await fetch(`${BASE_URL}/api/work-items`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    })
+    if (res.ok) {
+      const json = await res.json() as { workItems: WorkItem[] }
+      setWorks(json.workItems ?? [])
+    }
+  }
+
+  function handleView(work: WorkItem) {
+    setSelectedWork(work)
+    setSheetOpen(true)
   }
 
   return (
@@ -66,7 +83,7 @@ export function WorksClient({ initialWorks }: { initialWorks: WorkItem[] }) {
             ) : works.map((work) => {
               const cls = STATUS_CLASSES[work.status] ?? "bg-muted text-muted-foreground"
               return (
-                <TableRow key={work.id}>
+                <TableRow key={work.id} className="cursor-pointer hover:bg-muted/40 transition-colors" onClick={() => handleView(work)}>
                   <TableCell>
                     <div className="font-medium">{work.workTypeName}</div>
                     <div className="text-xs text-muted-foreground md:hidden">{work.planName}</div>
@@ -80,7 +97,7 @@ export function WorksClient({ initialWorks }: { initialWorks: WorkItem[] }) {
                       {work.statusName}
                     </span>
                   </TableCell>
-                  <TableCell>
+                  <TableCell onClick={(e) => e.stopPropagation()}>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="icon" className="size-8">
@@ -89,6 +106,11 @@ export function WorksClient({ initialWorks }: { initialWorks: WorkItem[] }) {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => handleView(work)} className="flex items-center gap-2 font-semibold">
+                          <ClipboardList className="size-4" />
+                          Xem chi tiết
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
                         {canManage && (
                           <DropdownMenuItem asChild>
                             <Link href={`/works/${work.id}/assign`} className="flex items-center gap-2">
@@ -103,12 +125,7 @@ export function WorksClient({ initialWorks }: { initialWorks: WorkItem[] }) {
                             Cập nhật tiến độ
                           </Link>
                         </DropdownMenuItem>
-                        {canManage && (
-                          <DropdownMenuItem variant="destructive" onClick={() => handleDelete(work.id)} className="flex items-center gap-2">
-                            <Trash2Icon className="size-4" />
-                            Xóa
-                          </DropdownMenuItem>
-                        )}                      </DropdownMenuContent>
+                      </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>
                 </TableRow>
@@ -117,6 +134,16 @@ export function WorksClient({ initialWorks }: { initialWorks: WorkItem[] }) {
           </TableBody>
         </Table>
       </div>
+
+      <WorkSheet 
+        open={sheetOpen}
+        onOpenChange={setSheetOpen}
+        work={selectedWork}
+        onSuccess={refresh}
+        canManage={canManage}
+      />
     </div>
   )
 }
+
+import { ClipboardList } from "lucide-react"

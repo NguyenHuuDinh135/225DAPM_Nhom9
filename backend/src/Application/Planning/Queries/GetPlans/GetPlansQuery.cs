@@ -13,6 +13,7 @@ public class PlanDto
     public DateTime? StartDate { get; init; }
     public DateTime? EndDate { get; init; }
     public string? Status { get; init; }
+    public string? StatusName { get; init; }
     public int WorkCount { get; init; }
 }
 
@@ -28,6 +29,7 @@ public class GetPlansQueryHandler : IRequestHandler<GetPlansQuery, List<PlanDto>
     public async Task<List<PlanDto>> Handle(GetPlansQuery request, CancellationToken cancellationToken)
     {
         return await _context.Plans
+            .AsNoTracking()
             .Select(p => new PlanDto
             {
                 Id = p.Id,
@@ -36,9 +38,16 @@ public class GetPlansQueryHandler : IRequestHandler<GetPlansQuery, List<PlanDto>
                 ApproverId = p.ApproverId,
                 StartDate = p.StartDate,
                 EndDate = p.EndDate,
-                Status = p.Status,
+                Status = p.Status.ToString(),
+                StatusName = p.Status == Domain.Enums.PlanStatus.Draft ? "Nháp" :
+                             p.Status == Domain.Enums.PlanStatus.PendingApproval ? "Chờ duyệt" :
+                             p.Status == Domain.Enums.PlanStatus.NeedsRevision ? "Cần chỉnh sửa" :
+                             p.Status == Domain.Enums.PlanStatus.Approved ? "Đã duyệt" :
+                             p.Status == Domain.Enums.PlanStatus.Rejected ? "Bị từ chối" :
+                             p.Status == Domain.Enums.PlanStatus.Completed ? "Hoàn thành" : "Đã hủy",
                 WorkCount = p.Works.Count
             })
+            .OrderByDescending(p => p.Id)
             .ToListAsync(cancellationToken);
     }
 }

@@ -10,15 +10,19 @@ public class Employees : EndpointGroupBase
 {
     public override void Map(RouteGroupBuilder groupBuilder)
     {
-        groupBuilder.MapGet("", GetEmployees).RequireAuthorization(Roles.Manager, Roles.Admin, Roles.Administrator);
-        groupBuilder.MapPost("", CreateEmployee).RequireAuthorization(Roles.Admin, Roles.Administrator);
-        groupBuilder.MapPut("{id}", UpdateEmployee).RequireAuthorization(Roles.Admin, Roles.Administrator);
-        groupBuilder.MapDelete("{id}", DeleteEmployee).RequireAuthorization(Roles.Admin, Roles.Administrator);
-        groupBuilder.MapPut("{id}/roles", AssignRole).RequireAuthorization(Roles.Admin, Roles.Administrator);
+        groupBuilder.MapGet("", GetEmployees).RequireAuthorization(new Microsoft.AspNetCore.Authorization.AuthorizeAttribute { Roles = $"{Roles.GiamDoc},{Roles.DoiTruong}" });
+        groupBuilder.MapPost("", CreateEmployee).RequireAuthorization(new Microsoft.AspNetCore.Authorization.AuthorizeAttribute { Roles = $"{Roles.GiamDoc},{Roles.DoiTruong}" });
+        groupBuilder.MapPut("{id}", UpdateEmployee).RequireAuthorization(new Microsoft.AspNetCore.Authorization.AuthorizeAttribute { Roles = $"{Roles.GiamDoc},{Roles.DoiTruong}" });
+        groupBuilder.MapDelete("{id}", DeleteEmployee).RequireAuthorization(new Microsoft.AspNetCore.Authorization.AuthorizeAttribute { Roles = $"{Roles.GiamDoc},{Roles.DoiTruong}" });
+        groupBuilder.MapPut("{id}/roles", AssignRole).RequireAuthorization(new Microsoft.AspNetCore.Authorization.AuthorizeAttribute { Roles = $"{Roles.GiamDoc},{Roles.DoiTruong}" });
     }
 
-    public async Task<EmployeesVm> GetEmployees(ISender sender)
-        => await sender.Send(new GetEmployeesQuery());
+    public async Task<EmployeesVm> GetEmployees(ISender sender, ILogger<Employees> logger)
+    {
+        var result = await sender.Send(new GetEmployeesQuery());
+        logger.LogInformation("GetEmployees returned {Count} employees", result.Employees.Count);
+        return result;
+    }
 
     public async Task<Results<NoContent, BadRequest<string[]>>> CreateEmployee(ISender sender, CreateEmployeeCommand command)
     {

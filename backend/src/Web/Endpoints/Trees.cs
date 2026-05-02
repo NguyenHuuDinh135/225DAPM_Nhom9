@@ -7,31 +7,41 @@ using backend.Application.Trees.Queries.GetTreeDetail;
 using backend.Application.Trees.Queries.GetTreeLocationHistory;
 using backend.Application.Trees.Queries.GetTreeMap;
 using backend.Application.Trees.Queries.GetTrees;
+using backend.Application.Common.Interfaces;
+using backend.Application.Common.Models;
 using backend.Domain.Constants;
 using backend.Infrastructure.Data;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
 
 namespace backend.Web.Endpoints;
 
 public class Trees : EndpointGroupBase
 {
+    public override string? GroupName => "trees";
+
     public override void Map(RouteGroupBuilder groupBuilder)
     {
-        groupBuilder.MapGet("", GetAllTrees).RequireAuthorization();
+        groupBuilder.MapGet("", GetAllTrees).AllowAnonymous();
         groupBuilder.MapGet("map", GetTreeMap).AllowAnonymous();
         groupBuilder.MapGet("{id}", GetTreeDetail).AllowAnonymous();
         groupBuilder.MapGet("{id}/location-history", GetLocationHistory).RequireAuthorization();
-        groupBuilder.MapPost("", CreateTree).RequireAuthorization(new AuthorizeAttribute { Roles = $"{Roles.Manager},{Roles.Admin},{Roles.Administrator}" });
-        groupBuilder.MapPost("import", ImportTrees).RequireAuthorization(new AuthorizeAttribute { Roles = $"{Roles.Manager},{Roles.Admin},{Roles.Administrator}" }).DisableAntiforgery();
-        groupBuilder.MapPut("{id}", UpdateTree).RequireAuthorization(new AuthorizeAttribute { Roles = $"{Roles.Manager},{Roles.Admin},{Roles.Administrator}" });
-        groupBuilder.MapPut("{id}/relocate", RelocateTree).RequireAuthorization(new AuthorizeAttribute { Roles = $"{Roles.Manager},{Roles.Admin},{Roles.Administrator}" });
-        groupBuilder.MapDelete("{id}", DeleteTree).RequireAuthorization(new AuthorizeAttribute { Roles = $"{Roles.Manager},{Roles.Admin},{Roles.Administrator}" });
+        groupBuilder.MapPost("", CreateTree).RequireAuthorization(new AuthorizeAttribute { Roles = $"{Roles.GiamDoc},{Roles.DoiTruong}" });
+        groupBuilder.MapPost("import", ImportTrees).RequireAuthorization(new AuthorizeAttribute { Roles = $"{Roles.GiamDoc},{Roles.DoiTruong}" }).DisableAntiforgery();
+        groupBuilder.MapPut("{id}", UpdateTree).RequireAuthorization(new AuthorizeAttribute { Roles = $"{Roles.GiamDoc},{Roles.DoiTruong}" });
+        groupBuilder.MapPut("{id}/relocate", RelocateTree).RequireAuthorization(new AuthorizeAttribute { Roles = $"{Roles.GiamDoc},{Roles.DoiTruong}" });
+        groupBuilder.MapDelete("{id}", DeleteTree).RequireAuthorization(new AuthorizeAttribute { Roles = $"{Roles.GiamDoc},{Roles.DoiTruong}" });
         groupBuilder.MapPost("seed", SeedTrees).AllowAnonymous();
     }
 
-    public async Task<IEnumerable<TreeDto>> GetAllTrees(ISender sender)
-        => await sender.Send(new GetTreesQuery());
+    public async Task<PaginatedList<TreeDto>> GetAllTrees(
+        ISender sender, 
+        [FromQuery] int? pageNumber = 1, 
+        [FromQuery] int? pageSize = 10, 
+        [FromQuery] string? searchTerm = null)
+        => await sender.Send(new GetTreesQuery { PageNumber = pageNumber ?? 1, PageSize = pageSize ?? 10, SearchTerm = searchTerm });
 
     public async Task<Ok<TreeMapVm>> GetTreeMap(ISender sender)
         => TypedResults.Ok(await sender.Send(new GetTreeMapQuery()));
@@ -55,9 +65,13 @@ public class Trees : EndpointGroupBase
         return result.Succeeded ? TypedResults.NoContent() : TypedResults.BadRequest(result.Errors);
     }
 
-    public async Task<Results<NoContent, BadRequest<string[]>>> UpdateTree(ISender sender, int id, UpdateTreeCommand command)
+    public async Task<Results<NoContent, BadRequest<string[]>>> UpdateTree(
+        ISender sender, 
+        int id, 
+        UpdateTreeCommand command)
     {
-        var result = await sender.Send(command with { Id = id });
+        if (id != command.Id) return TypedResults.BadRequest(new[] { "ID mismatch" });
+        var result = await sender.Send(command);
         return result.Succeeded ? TypedResults.NoContent() : TypedResults.BadRequest(result.Errors);
     }
 

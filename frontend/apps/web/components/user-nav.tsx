@@ -12,6 +12,8 @@ import { HugeiconsIcon } from "@hugeicons/react"
 import { UserCircle02Icon, Logout01Icon } from "@hugeicons/core-free-icons"
 import { useAuth } from "@/hooks/use-auth"
 
+import { getRoleLabel } from "@/lib/roles"
+
 export function UserNav({ user }: { user: { name: string; email: string; avatar: string; role?: string } }) {
   const { logout } = useAuth()
 
@@ -30,7 +32,7 @@ export function UserNav({ user }: { user: { name: string; email: string; avatar:
           <div className="flex flex-col space-y-1">
             <p className="text-sm font-medium leading-none">{user.name}</p>
             <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
-            {user.role && <p className="text-xs font-medium text-green-600">{user.role}</p>}
+            {user.role && <p className="text-xs font-medium text-green-600">{getRoleLabel(user.role)}</p>}
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />

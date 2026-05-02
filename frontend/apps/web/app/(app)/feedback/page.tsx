@@ -16,11 +16,12 @@ import {
 } from "@workspace/ui/components/select"
 import { toast } from "@workspace/ui/components/sonner"
 import { useAuth } from "@/hooks/use-auth"
+import { ROLES } from "@/lib/roles"
 import Link from "next/link"
 
 export default function FeedbackPage() {
   const { user } = useAuth()
-  const isAdmin = user?.role === "Administrator" || user?.role === "Manager"
+  const isAdmin = user?.role === ROLES.DoiTruong || user?.role === ROLES.GiamDoc
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
 
