@@ -3,15 +3,24 @@
 import MapLibreGL, { type PopupOptions, type MarkerOptions } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 
-// Re-export GeoJSON types từ maplibre-gl để tránh phụ thuộc @types/geojson riêng
-type GeoJSONFeatureCollection<G extends MapLibreGL.GeoJSONGeometry = MapLibreGL.GeoJSONGeometry, P = Record<string, unknown>> = {
-  type: "FeatureCollection";
-  features: GeoJSONFeature<G, P>[];
-};
-type GeoJSONFeature<G extends MapLibreGL.GeoJSONGeometry = MapLibreGL.GeoJSONGeometry, P = Record<string, unknown>> = {
+// Local GeoJSON types — không phụ thuộc @types/geojson hay maplibre types
+type GeoJSONGeometry =
+  | { type: "Point"; coordinates: number[] }
+  | { type: "MultiPoint"; coordinates: number[][] }
+  | { type: "LineString"; coordinates: number[][] }
+  | { type: "MultiLineString"; coordinates: number[][][] }
+  | { type: "Polygon"; coordinates: number[][][] }
+  | { type: "MultiPolygon"; coordinates: number[][][][] }
+  | { type: "GeometryCollection"; geometries: GeoJSONGeometry[] };
+
+type GeoJSONFeature<G extends GeoJSONGeometry = GeoJSONGeometry, P = Record<string, unknown>> = {
   type: "Feature";
   geometry: G;
   properties: P | null;
+};
+type GeoJSONFeatureCollection<G extends GeoJSONGeometry = GeoJSONGeometry, P = Record<string, unknown>> = {
+  type: "FeatureCollection";
+  features: GeoJSONFeature<G, P>[];
 };
 type GeoJSONPoint = { type: "Point"; coordinates: [number, number] };
 type GeoJSONProperties = Record<string, unknown> | null;
