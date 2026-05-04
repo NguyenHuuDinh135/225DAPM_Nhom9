@@ -29,23 +29,31 @@ export function WorkerDashboard() {
   const [loading, setLoading] = useState(true)
 
   const loadTasks = async () => {
+    // Guard: không load nếu chưa có user id
+    if (!user?.id) return
+
     setLoading(true)
     try {
       const res = await apiClient.get<any>("/api/work-items")
       const allWorks = res?.workItems || []
-      
-      // Lọc công việc gán cho tôi
-      const myTasks = allWorks.filter((w: any) => 
-        w.assignedUsers?.some((au: any) => au.userId === user?.id)
-      ).map((w: any) => ({
-        id: w.id,
-        workTypeName: w.workTypeName,
-        treeName: w.treeLocations?.[0]?.treeName || `Cây #${w.treeLocations?.[0]?.treeId}`,
-        location: `Lat: ${w.treeLocations?.[0]?.latitude?.toFixed(4)}, Lng: ${w.treeLocations?.[0]?.longitude?.toFixed(4)}`,
-        status: w.statusName,
-        endDate: w.endDate
-      }))
-      
+
+      // Lọc công việc được gán cho nhân viên hiện tại
+      const myTasks = allWorks
+        .filter((w: any) =>
+          Array.isArray(w.assignedUsers) &&
+          w.assignedUsers.some((au: any) => au.userId === user.id)
+        )
+        .map((w: any) => ({
+          id: w.id,
+          workTypeName: w.workTypeName,
+          treeName: w.treeLocations?.[0]?.treeName || `Cây #${w.treeLocations?.[0]?.treeId || "?"}`,
+          location: w.treeLocations?.[0]?.latitude != null
+            ? `Lat: ${w.treeLocations[0].latitude.toFixed(4)}, Lng: ${w.treeLocations[0].longitude.toFixed(4)}`
+            : "Chưa có vị trí",
+          status: w.statusName,
+          endDate: w.endDate
+        }))
+
       setTasks(myTasks)
     } catch (err) {
       console.error(err)
@@ -132,7 +140,7 @@ export function WorkerDashboard() {
 
                                 <div className="flex w-full md:w-auto gap-3">
                                     <Button asChild className="flex-1 md:w-48 h-14 rounded-2xl bg-primary hover:bg-primary/90 text-primary-foreground font-black shadow-xl shadow-primary/20 transition-all active:scale-95">
-                                        <Link href={`/works/${task.id}/progress`}>
+                                        <Link href={task.id ? `/works/${task.id}/progress` : "#"}>
                                             Tiếp nhận <ChevronRight className="ml-2 size-5" />
                                         </Link>
                                     </Button>

@@ -60,17 +60,35 @@ export default function ProgressPage({ params }: { params: Promise<{ id: string 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
     if (files) {
+      // Cleanup các object URL cũ để tránh memory leak
+      previewImages.forEach(url => URL.revokeObjectURL(url))
       const newPreviews = Array.from(files).map(file => URL.createObjectURL(file))
       setPreviewImages(newPreviews)
     }
   }
 
+  // Cleanup object URLs khi component unmount
+  useEffect(() => {
+    return () => {
+      previewImages.forEach(url => URL.revokeObjectURL(url))
+    }
+  }, [previewImages])
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    
-    if (!note && percentage !== "100") {
-        toast.error("Vui lòng nhập ghi chú hoặc cập nhật 100%")
-        return
+
+    const pct = Number(percentage)
+
+    // Validate percentage hợp lệ (0-100)
+    if (isNaN(pct) || pct < 0 || pct > 100) {
+      toast.error("Tiến độ phải là số từ 0 đến 100")
+      return
+    }
+
+    // Bắt buộc nhập ghi chú trong mọi trường hợp để có bằng chứng công việc
+    if (!note.trim()) {
+      toast.error("Vui lòng nhập mô tả công việc đã thực hiện")
+      return
     }
 
     const fd = new FormData()
@@ -86,6 +104,7 @@ export default function ProgressPage({ params }: { params: Promise<{ id: string 
       
       toast.success(percentage === "100" ? "Đã gửi báo cáo hoàn thành!" : "Đã cập nhật tiến độ")
       setNote("")
+      previewImages.forEach(url => URL.revokeObjectURL(url))
       setPreviewImages([])
       if (fileRef.current) fileRef.current.value = ""
       loadWork()
