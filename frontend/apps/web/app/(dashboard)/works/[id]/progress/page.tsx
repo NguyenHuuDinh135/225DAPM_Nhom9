@@ -9,7 +9,8 @@ import { Textarea } from "@workspace/ui/components/textarea"
 import { 
   ArrowLeft, Send, CheckCircle2, Clock, Camera, 
   History, Sparkles, User, Percent, ClipboardList,
-  ChevronLeft, Loader2, Image as ImageIcon, X
+  ChevronLeft, Loader2, Image as ImageIcon, X,
+  TreePine, CalendarCheck2, BadgeCheck, Star,
 } from "lucide-react"
 import { toast } from "@workspace/ui/components/sonner"
 import { Card, CardContent } from "@workspace/ui/components/card"
@@ -31,6 +32,7 @@ interface WorkDetail {
   workTypeName: string | null; 
   planName: string | null; 
   statusName: string;
+  status: string;
   progresses: ProgressEntry[] 
 }
 
@@ -138,6 +140,14 @@ export default function ProgressPage({ params }: { params: Promise<{ id: string 
     </div>
   )
 
+  const isCompleted = work.status === "Completed"
+  const totalImages = work.progresses.reduce((sum, p) => sum + p.images.length, 0)
+  const lastProgress = work.progresses.length > 0
+    ? [...work.progresses].sort((a, b) =>
+        new Date(b.updatedDate ?? 0).getTime() - new Date(a.updatedDate ?? 0).getTime()
+      )[0]
+    : null
+
   return (
     <div className="flex flex-col gap-8 p-6 md:p-10 max-w-5xl mx-auto w-full min-h-screen bg-background">
       {/* Header */}
@@ -168,8 +178,88 @@ export default function ProgressPage({ params }: { params: Promise<{ id: string 
       </div>
 
       <div className="grid gap-8 lg:grid-cols-[1fr_400px]">
-        {/* Left: Reporting Form */}
+        {/* Left: Completed summary OR Reporting Form */}
         <div className="space-y-6">
+          {isCompleted ? (
+            /* ── Completed State ── */
+            <Card className="rounded-[3rem] border-none shadow-2xl shadow-green-500/10 bg-card/50 backdrop-blur-xl overflow-hidden">
+              <CardContent className="p-8 md:p-10">
+                {/* Success banner */}
+                <div className="flex flex-col items-center text-center mb-10">
+                  <div className="relative mb-6">
+                    <div className="size-24 rounded-full bg-green-500/10 flex items-center justify-center">
+                      <CheckCircle2 className="size-12 text-green-500" />
+                    </div>
+                    <div className="absolute -top-1 -right-1 size-8 rounded-full bg-amber-400 flex items-center justify-center shadow-lg">
+                      <Star className="size-4 text-white fill-white" />
+                    </div>
+                  </div>
+                  <h2 className="text-2xl font-black text-foreground tracking-tight">Công tác hoàn thành!</h2>
+                  <p className="text-sm font-medium text-muted-foreground mt-2 max-w-xs leading-relaxed">
+                    Công tác này đã được đội trưởng xác nhận và đánh dấu hoàn thành.
+                  </p>
+                </div>
+
+                {/* Stats */}
+                <div className="grid grid-cols-3 gap-4 mb-8">
+                  <div className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-green-50 border border-green-100">
+                    <BadgeCheck className="size-6 text-green-600" />
+                    <span className="text-2xl font-black text-green-700">100%</span>
+                    <span className="text-[10px] font-bold text-green-600/70 uppercase tracking-widest text-center">Tiến độ</span>
+                  </div>
+                  <div className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-blue-50 border border-blue-100">
+                    <History className="size-6 text-blue-600" />
+                    <span className="text-2xl font-black text-blue-700">{work.progresses.length}</span>
+                    <span className="text-[10px] font-bold text-blue-600/70 uppercase tracking-widest text-center">Lần cập nhật</span>
+                  </div>
+                  <div className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-purple-50 border border-purple-100">
+                    <ImageIcon className="size-6 text-purple-600" />
+                    <span className="text-2xl font-black text-purple-700">{totalImages}</span>
+                    <span className="text-[10px] font-bold text-purple-600/70 uppercase tracking-widest text-center">Ảnh minh chứng</span>
+                  </div>
+                </div>
+
+                {/* Last update summary */}
+                {lastProgress && (
+                  <div className="p-5 rounded-2xl bg-muted/30 border border-muted/40 space-y-3">
+                    <div className="flex items-center gap-2">
+                      <CalendarCheck2 className="size-4 text-primary" />
+                      <span className="text-xs font-black text-muted-foreground uppercase tracking-widest">Báo cáo hoàn thành</span>
+                      <span className="ml-auto text-xs font-bold text-muted-foreground">
+                        {lastProgress.updatedDate && new Date(lastProgress.updatedDate).toLocaleDateString("vi-VN", {
+                          day: "2-digit", month: "2-digit", year: "numeric",
+                        })}
+                      </span>
+                    </div>
+                    {lastProgress.note && (
+                      <p className="text-sm font-medium text-foreground leading-relaxed">
+                        &ldquo;{lastProgress.note}&rdquo;
+                      </p>
+                    )}
+                    {lastProgress.images.length > 0 && (
+                      <div className="flex gap-2 overflow-x-auto no-scrollbar pt-1">
+                        {lastProgress.images.map((src, idx) => (
+                          <a key={idx} href={src} target="_blank" rel="noreferrer"
+                            className="size-16 rounded-xl overflow-hidden shrink-0 border-2 border-green-200 hover:border-green-400 transition-colors">
+                            <img src={src} alt="work" className="w-full h-full object-cover" />
+                          </a>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Back button */}
+                <Button asChild variant="outline" className="w-full h-14 rounded-2xl mt-6 font-black text-base transition-all">
+                  <Link href="/nhanvien/tasks">
+                    <TreePine className="mr-3 size-5" />
+                    Quay lại danh sách nhiệm vụ
+                  </Link>
+                </Button>
+              </CardContent>
+            </Card>
+          ) : (
+            /* ── Reporting Form ── */
             <Card className="rounded-[3rem] border-none shadow-2xl shadow-primary/5 bg-card/50 backdrop-blur-xl overflow-hidden">
                 <CardContent className="p-8 md:p-10">
                     <div className="flex items-center gap-3 mb-8">
@@ -274,6 +364,7 @@ export default function ProgressPage({ params }: { params: Promise<{ id: string 
                     </form>
                 </CardContent>
             </Card>
+          )}
         </div>
 
         {/* Right: History Timeline */}

@@ -18,7 +18,15 @@ public class WorkItemDto
     public DateTime? StartDate { get; init; }
     public DateTime? EndDate { get; init; }
     public WorkStatus Status { get; init; }
-    public string StatusName => Status.ToString();
+    public string StatusName => Status switch
+    {
+        WorkStatus.New => "Mới",
+        WorkStatus.InProgress => "Đang thực hiện",
+        WorkStatus.WaitingForApproval => "Chờ duyệt",
+        WorkStatus.Completed => "Hoàn thành",
+        WorkStatus.Cancelled => "Đã hủy",
+        _ => Status.ToString()
+    };
     public IList<WorkTreeLocationDto> TreeLocations { get; init; } = new List<WorkTreeLocationDto>();
     public IList<WorkUserDto> AssignedUsers { get; init; } = new List<WorkUserDto>();
 }

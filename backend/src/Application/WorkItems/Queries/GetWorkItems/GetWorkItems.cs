@@ -1,3 +1,7 @@
+using backend.Application.Common.Interfaces;
+using backend.Domain.Constants;
+using backend.Domain.Enums;
+
 namespace backend.Application.WorkItems.Queries.GetWorkItems;
 
 public record GetWorkItemsQuery : IRequest<WorkItemsVm>;
@@ -6,21 +10,35 @@ public class GetWorkItemsQueryHandler : IRequestHandler<GetWorkItemsQuery, WorkI
 {
     private readonly IApplicationDbContext _context;
     private readonly IIdentityService _identityService;
+    private readonly IUser _currentUser;
 
-    public GetWorkItemsQueryHandler(IApplicationDbContext context, IIdentityService identityService)
+    public GetWorkItemsQueryHandler(IApplicationDbContext context, IIdentityService identityService, IUser currentUser)
     {
         _context = context;
         _identityService = identityService;
+        _currentUser = currentUser;
     }
 
     public async Task<WorkItemsVm> Handle(GetWorkItemsQuery request, CancellationToken cancellationToken)
     {
-        var items = await _context.Works
+        bool isNhanVien = _currentUser.Roles?.Contains(Roles.NhanVien) == true;
+
+        var query = _context.Works
             .Include(w => w.WorkType)
             .Include(w => w.Plan)
             .Include(w => w.WorkUsers)
             .Include(w => w.WorkDetails)
                 .ThenInclude(wd => wd.Tree)
+            .AsQueryable();
+
+        // Nhân viên chỉ thấy công việc thuộc kế hoạch đã được Giám đốc duyệt
+        if (isNhanVien)
+        {
+            query = query.Where(w => w.Plan.Status == PlanStatus.Approved
+                                  || w.Plan.Status == PlanStatus.Completed);
+        }
+
+        var items = await query
             .Select(w => new WorkItemDto
             {
                 Id = w.Id,

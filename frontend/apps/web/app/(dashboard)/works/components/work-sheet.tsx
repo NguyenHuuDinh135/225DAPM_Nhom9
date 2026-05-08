@@ -17,9 +17,12 @@ import {
 import { Badge } from "@workspace/ui/components/badge"
 import { Separator } from "@workspace/ui/components/separator"
 import { ScrollArea } from "@workspace/ui/components/scroll-area"
+import { Textarea } from "@workspace/ui/components/textarea"
+import { Label } from "@workspace/ui/components/label"
 import { 
   ClipboardList, Users, BarChart3, Clock, Calendar, 
-  Trash2, ExternalLink, ChevronRight, Info, CheckCircle2
+  Trash2, ExternalLink, ChevronRight, Info, CheckCircle2,
+  XCircle, ThumbsUp, ThumbsDown,
 } from "lucide-react"
 import { apiClient } from "@/lib/api-client"
 import { toast } from "@workspace/ui/components/sonner"
@@ -44,6 +47,11 @@ const STATUS_VARIANTS: Record<WorkStatus, "default" | "secondary" | "destructive
 export function WorkSheet({ open, onOpenChange, work, onSuccess, canManage }: WorkSheetProps) {
   const [loading, setLoading] = React.useState(false)
   const [showDeleteDialog, setShowDeleteDialog] = React.useState(false)
+  const [showApproveDialog, setShowApproveDialog] = React.useState(false)
+  const [approveAction, setApproveAction] = React.useState<"approve" | "reject" | null>(null)
+  const [rejectFeedback, setRejectFeedback] = React.useState("")
+
+  const isWaitingForApproval = work?.status === "WaitingForApproval"
 
   const handleDelete = () => {
     if (!work) return
@@ -62,6 +70,35 @@ export function WorkSheet({ open, onOpenChange, work, onSuccess, canManage }: Wo
       onOpenChange(false)
     } catch (err: any) {
       toast.error(err.message || "Xóa thất bại")
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  function openApprove(action: "approve" | "reject") {
+    setApproveAction(action)
+    setRejectFeedback("")
+    setShowApproveDialog(true)
+  }
+
+  const confirmApprove = async () => {
+    if (!work || !approveAction) return
+    if (approveAction === "reject" && !rejectFeedback.trim()) {
+      toast.error("Vui lòng nhập lý do từ chối")
+      return
+    }
+    setLoading(true)
+    try {
+      await apiClient.put(`/api/work-items/${work.id}/approve`, {
+        isApproved: approveAction === "approve",
+        feedback: approveAction === "reject" ? rejectFeedback : null,
+      })
+      toast.success(approveAction === "approve" ? "Đã duyệt — công tác hoàn thành!" : "Đã từ chối — nhân viên sẽ tiếp tục thực hiện")
+      setShowApproveDialog(false)
+      onSuccess()
+      onOpenChange(false)
+    } catch (err: any) {
+      toast.error(err.message || "Thao tác thất bại")
     } finally {
       setLoading(false)
     }
@@ -169,6 +206,35 @@ export function WorkSheet({ open, onOpenChange, work, onSuccess, canManage }: Wo
                   </Button>
                 </div>
               </section>
+
+              {/* Duyệt công tác — chỉ hiện khi đang WaitingForApproval và canManage */}
+              {canManage && isWaitingForApproval && (
+                <section className="space-y-3">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Duyệt công tác</h4>
+                  <div className="p-4 rounded-xl bg-purple-50 border border-purple-100 space-y-3">
+                    <p className="text-xs font-semibold text-purple-800">
+                      Nhân viên đã báo cáo hoàn thành 100%. Vui lòng xem xét và duyệt hoặc từ chối.
+                    </p>
+                    <div className="grid grid-cols-2 gap-2">
+                      <Button
+                        onClick={() => openApprove("approve")}
+                        disabled={loading}
+                        className="h-11 rounded-xl bg-green-600 hover:bg-green-700 text-white font-bold text-sm shadow-lg shadow-green-600/20"
+                      >
+                        <ThumbsUp className="mr-2 size-4" /> Duyệt
+                      </Button>
+                      <Button
+                        onClick={() => openApprove("reject")}
+                        disabled={loading}
+                        variant="outline"
+                        className="h-11 rounded-xl border-red-200 text-red-600 hover:bg-red-50 font-bold text-sm"
+                      >
+                        <ThumbsDown className="mr-2 size-4" /> Từ chối
+                      </Button>
+                    </div>
+                  </div>
+                </section>
+              )}
             </div>
           )}
         </ScrollArea>
@@ -214,6 +280,56 @@ export function WorkSheet({ open, onOpenChange, work, onSuccess, canManage }: Wo
             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
           >
             {loading ? "Đang xóa..." : "Xóa"}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+
+    {/* Dialog duyệt / từ chối */}
+    <AlertDialog open={showApproveDialog} onOpenChange={setShowApproveDialog}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>
+            {approveAction === "approve" ? "Xác nhận duyệt công tác" : "Từ chối công tác"}
+          </AlertDialogTitle>
+          <AlertDialogDescription>
+            {approveAction === "approve"
+              ? `Duyệt công tác #${work?.id} — trạng thái sẽ chuyển sang Hoàn thành.`
+              : `Từ chối công tác #${work?.id} — nhân viên sẽ tiếp tục thực hiện lại.`}
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+
+        {approveAction === "reject" && (
+          <div className="space-y-2 px-1">
+            <Label htmlFor="feedback" className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
+              Lý do từ chối <span className="text-red-500">*</span>
+            </Label>
+            <Textarea
+              id="feedback"
+              placeholder="VD: Ảnh chưa rõ nét, cần chụp lại toàn bộ cây..."
+              value={rejectFeedback}
+              onChange={(e) => setRejectFeedback(e.target.value)}
+              rows={3}
+              className="rounded-xl border-muted-foreground/10 bg-muted/30 text-sm"
+            />
+          </div>
+        )}
+
+        <AlertDialogFooter>
+          <AlertDialogCancel disabled={loading}>Hủy</AlertDialogCancel>
+          <AlertDialogAction
+            disabled={loading}
+            onClick={(e) => {
+              e.preventDefault()
+              confirmApprove()
+            }}
+            className={approveAction === "approve"
+              ? "bg-green-600 text-white hover:bg-green-700"
+              : "bg-destructive text-destructive-foreground hover:bg-destructive/90"}
+          >
+            {loading
+              ? "Đang xử lý..."
+              : approveAction === "approve" ? "Duyệt hoàn thành" : "Xác nhận từ chối"}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
