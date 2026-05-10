@@ -1308,6 +1308,46 @@
         }
       }
     },
+    "/api/trees/export": {
+      "get": {
+        "tags": [
+          "trees"
+        ],
+        "operationId": "GetApiTreesExport",
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "trees"
+        ],
+        "operationId": "PostApiTreesExport",
+        "requestBody": {
+          "x-name": "treeIds",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
     "/api/trees/{id}": {
       "get": {
         "tags": [

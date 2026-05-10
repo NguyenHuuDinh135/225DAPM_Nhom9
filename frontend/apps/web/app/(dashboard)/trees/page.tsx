@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { TreePineIcon, PlusIcon, SearchIcon, FilterIcon, ChevronRightIcon, Trash2, Edit2, Loader2, ChevronLeft, ChevronRight } from "lucide-react"
+import { TreePineIcon, PlusIcon, SearchIcon, FilterIcon, ChevronRightIcon, Trash2, Edit2, Loader2, ChevronLeft, ChevronRight, FileDownIcon } from "lucide-react"
 import { Button } from "@workspace/ui/components/button"
 import { Input } from "@workspace/ui/components/input"
 import { Badge } from "@workspace/ui/components/badge"
@@ -74,6 +74,8 @@ export default function TreesPage() {
     hasNextPage: false,
     hasPreviousPage: false
   })
+  const [selectedTrees, setSelectedTrees] = React.useState<number[]>([])
+  const [isExporting, setIsExporting] = React.useState(false)
   
   // State for Add/Edit Dialog
   const [isDialogOpen, setIsDialogOpen] = React.useState(false)
@@ -202,6 +204,88 @@ export default function TreesPage() {
     }
   }
 
+  const handleExportAll = async () => {
+    setIsExporting(true)
+    try {
+      const response = await fetch("http://localhost:5000/api/trees/export", {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${localStorage.getItem("access_token")}`
+        }
+      })
+      
+      if (!response.ok) throw new Error("Không thể xuất file")
+      
+      const blob = await response.blob()
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement("a")
+      a.href = url
+      a.download = `DanhSachCayXanh_${new Date().toISOString().slice(0,10)}.xlsx`
+      document.body.appendChild(a)
+      a.click()
+      window.URL.revokeObjectURL(url)
+      document.body.removeChild(a)
+      
+      toast.success("Thành công", { description: "Đã xuất toàn bộ danh sách cây xanh ra file Excel." })
+    } catch (err: any) {
+      toast.error("Lỗi", { description: err.message || "Không thể xuất file Excel." })
+    } finally {
+      setIsExporting(false)
+    }
+  }
+
+  const handleExportSelected = async () => {
+    if (selectedTrees.length === 0) {
+      toast.error("Chưa chọn cây", { description: "Vui lòng chọn ít nhất một cây để xuất." })
+      return
+    }
+
+    setIsExporting(true)
+    try {
+      const response = await fetch("http://localhost:5000/api/trees/export", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem("access_token")}`
+        },
+        body: JSON.stringify(selectedTrees)
+      })
+      
+      if (!response.ok) throw new Error("Không thể xuất file")
+      
+      const blob = await response.blob()
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement("a")
+      a.href = url
+      a.download = `DanhSachCayXanh_${selectedTrees.length}cay_${new Date().toISOString().slice(0,10)}.xlsx`
+      document.body.appendChild(a)
+      a.click()
+      window.URL.revokeObjectURL(url)
+      document.body.removeChild(a)
+      
+      toast.success("Thành công", { description: `Đã xuất ${selectedTrees.length} cây xanh ra file Excel.` })
+      setSelectedTrees([])
+    } catch (err: any) {
+      toast.error("Lỗi", { description: err.message || "Không thể xuất file Excel." })
+    } finally {
+      setIsExporting(false)
+    }
+  }
+
+  const toggleSelectTree = (id: number) => {
+    setSelectedTrees(prev => 
+      prev.includes(id) ? prev.filter(tId => tId !== id) : [...prev, id]
+    )
+  }
+
+  const toggleSelectAll = () => {
+    if (selectedTrees.length === trees.length) {
+      setSelectedTrees([])
+    } else {
+      setSelectedTrees(trees.map(t => t.id))
+    }
+  }
+
   return (
     <div className="p-6 space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -210,14 +294,38 @@ export default function TreesPage() {
           <p className="text-sm text-slate-500 font-medium italic">Quản lý tài sản xanh và theo dõi hiện trạng sinh trưởng.</p>
         </div>
         
-        {isAdmin && (
+        <div className="flex gap-2">
+          {selectedTrees.length > 0 && (
+            <Button 
+              onClick={handleExportSelected}
+              disabled={isExporting}
+              variant="outline"
+              className="h-11 px-6 rounded-2xl font-bold gap-2 border-green-600 text-green-600 hover:bg-green-50"
+            >
+              <FileDownIcon className="size-5" />
+              XUẤT {selectedTrees.length} CÂY
+            </Button>
+          )}
+          
           <Button 
-            onClick={handleOpenAdd}
-            className="bg-green-600 hover:bg-green-700 h-11 px-6 rounded-2xl shadow-lg shadow-green-600/20 font-bold gap-2 transition-all hover:scale-105 active:scale-95"
+            onClick={handleExportAll}
+            disabled={isExporting}
+            variant="outline"
+            className="h-11 px-6 rounded-2xl font-bold gap-2 border-blue-600 text-blue-600 hover:bg-blue-50"
           >
-            <PlusIcon className="size-5" /> THÊM CÂY MỚI
+            <FileDownIcon className="size-5" />
+            {isExporting ? "ĐANG XUẤT..." : "XUẤT TẤT CẢ"}
           </Button>
-        )}
+
+          {isAdmin && (
+            <Button 
+              onClick={handleOpenAdd}
+              className="bg-green-600 hover:bg-green-700 h-11 px-6 rounded-2xl shadow-lg shadow-green-600/20 font-bold gap-2 transition-all hover:scale-105 active:scale-95"
+            >
+              <PlusIcon className="size-5" /> THÊM CÂY MỚI
+            </Button>
+          )}
+        </div>
       </div>
 
       <Card className="border-none shadow-2xl shadow-slate-200/50 rounded-[2rem] overflow-hidden bg-white/80 backdrop-blur-xl">
@@ -248,6 +356,14 @@ export default function TreesPage() {
           <table className="w-full text-left">
             <thead>
               <tr className="bg-slate-50/50">
+                <th className="px-6 py-4 text-[10px] font-black uppercase text-slate-400 tracking-widest w-12">
+                  <input 
+                    type="checkbox" 
+                    checked={trees.length > 0 && selectedTrees.length === trees.length}
+                    onChange={toggleSelectAll}
+                    className="size-4 rounded border-slate-300"
+                  />
+                </th>
                 <th className="px-6 py-4 text-[10px] font-black uppercase text-slate-400 tracking-widest">Cây xanh</th>
                 <th className="px-6 py-4 text-[10px] font-black uppercase text-slate-400 tracking-widest">Thông tin loại</th>
                 <th className="px-6 py-4 text-[10px] font-black uppercase text-slate-400 tracking-widest">Vị trí</th>
@@ -258,7 +374,7 @@ export default function TreesPage() {
             <tbody className="divide-y divide-slate-50">
               {loading ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-12 text-center">
+                  <td colSpan={6} className="px-6 py-12 text-center">
                     <div className="flex flex-col items-center gap-3">
                         <Loader2 className="size-10 animate-spin text-green-600" />
                         <p className="text-xs font-bold text-slate-400 animate-pulse">ĐANG TẢI DỮ LIỆU...</p>
@@ -268,6 +384,14 @@ export default function TreesPage() {
               ) : (trees && trees.length > 0) ? (
                 trees.map(tree => (
                   <tr key={tree.id} className="hover:bg-green-50/30 transition-all cursor-pointer group">
+                    <td className="px-6 py-5" onClick={(e) => e.stopPropagation()}>
+                      <input 
+                        type="checkbox" 
+                        checked={selectedTrees.includes(tree.id)}
+                        onChange={() => toggleSelectTree(tree.id)}
+                        className="size-4 rounded border-slate-300"
+                      />
+                    </td>
                     <td className="px-6 py-5" onClick={() => window.location.href = `/trees/${tree.id}`}>
                       <div className="flex items-center gap-3">
                         <div className="size-12 rounded-2xl bg-white shadow-sm border border-slate-100 text-green-600 flex items-center justify-center group-hover:bg-green-600 group-hover:text-white transition-all duration-300">
@@ -335,7 +459,7 @@ export default function TreesPage() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan={5} className="px-6 py-20 text-center">
+                  <td colSpan={6} className="px-6 py-20 text-center">
                     <div className="flex flex-col items-center gap-2 opacity-20">
                         <TreePineIcon className="size-16" />
                         <p className="font-black text-xl italic uppercase tracking-tighter">Không có dữ liệu</p>

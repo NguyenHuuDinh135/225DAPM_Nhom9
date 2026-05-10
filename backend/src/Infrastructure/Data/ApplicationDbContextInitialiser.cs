@@ -42,9 +42,8 @@ public class ApplicationDbContextInitialiser
     {
         try
         {
-            // Use MigrateAsync for persistence. 
-            // Only use EnsureDeleted if you want a complete reset on EVERY restart.
-            // await _context.Database.EnsureDeletedAsync(); 
+            // Force delete and recreate database to ensure clean state
+            await _context.Database.EnsureDeletedAsync();
             await _context.Database.EnsureCreatedAsync();
         }
         catch (Exception ex)

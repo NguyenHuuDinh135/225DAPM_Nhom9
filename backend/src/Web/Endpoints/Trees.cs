@@ -7,6 +7,7 @@ using backend.Application.Trees.Queries.GetTreeDetail;
 using backend.Application.Trees.Queries.GetTreeLocationHistory;
 using backend.Application.Trees.Queries.GetTreeMap;
 using backend.Application.Trees.Queries.GetTrees;
+using backend.Application.Trees.Queries.ExportTrees;
 using backend.Application.Common.Interfaces;
 using backend.Application.Common.Models;
 using backend.Domain.Constants;
@@ -26,6 +27,8 @@ public class Trees : EndpointGroupBase
     {
         groupBuilder.MapGet("", GetAllTrees).AllowAnonymous();
         groupBuilder.MapGet("map", GetTreeMap).AllowAnonymous();
+        groupBuilder.MapGet("export", ExportTrees).AllowAnonymous();
+        groupBuilder.MapPost("export", ExportSelectedTrees).AllowAnonymous();
         groupBuilder.MapGet("{id}", GetTreeDetail).AllowAnonymous();
         groupBuilder.MapGet("{id}/location-history", GetLocationHistory).RequireAuthorization();
         groupBuilder.MapPost("", CreateTree).RequireAuthorization(new AuthorizeAttribute { Roles = $"{Roles.GiamDoc},{Roles.DoiTruong}" });
@@ -91,5 +94,19 @@ public class Trees : EndpointGroupBase
     {
         await initialiser.TrySeedAsync();
         return TypedResults.NoContent();
+    }
+
+    public async Task<IResult> ExportTrees(ISender sender)
+    {
+        var fileBytes = await sender.Send(new ExportTreesToExcelQuery());
+        var fileName = $"DanhSachCayXanh_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
+        return Results.File(fileBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
+    }
+
+    public async Task<IResult> ExportSelectedTrees(ISender sender, [FromBody] List<int> treeIds)
+    {
+        var fileBytes = await sender.Send(new ExportTreesToExcelQuery(treeIds));
+        var fileName = $"DanhSachCayXanh_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
+        return Results.File(fileBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
     }
 }
