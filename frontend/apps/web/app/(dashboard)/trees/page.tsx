@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { TreePineIcon, PlusIcon, SearchIcon, FilterIcon, ChevronRightIcon, Trash2, Edit2, Loader2, ChevronLeft, ChevronRight, FileDownIcon } from "lucide-react"
+import { TreePineIcon, PlusIcon, SearchIcon, FilterIcon, ChevronRightIcon, Trash2, Edit2, Loader2, ChevronLeft, ChevronRight, FileDownIcon, ChevronDownIcon } from "lucide-react"
 import { Button } from "@workspace/ui/components/button"
 import { Input } from "@workspace/ui/components/input"
 import { Badge } from "@workspace/ui/components/badge"
@@ -24,6 +24,12 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@workspace/ui/components/alert-dialog"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@workspace/ui/components/dropdown-menu"
 import { Label } from "@workspace/ui/components/label"
 import { 
   Select, 
@@ -207,26 +213,57 @@ export default function TreesPage() {
   const handleExportAll = async () => {
     setIsExporting(true)
     try {
-      const response = await fetch("http://localhost:5000/api/trees/export", {
-        method: "GET",
-        headers: {
-          "Authorization": `Bearer ${localStorage.getItem("access_token")}`
-        }
-      })
+      let url = "http://localhost:5000/api/trees/export"
+      let fileName = `DanhSachCayXanh_${new Date().toISOString().slice(0,10)}.xlsx`
       
-      if (!response.ok) throw new Error("Không thể xuất file")
-      
-      const blob = await response.blob()
-      const url = window.URL.createObjectURL(blob)
-      const a = document.createElement("a")
-      a.href = url
-      a.download = `DanhSachCayXanh_${new Date().toISOString().slice(0,10)}.xlsx`
-      document.body.appendChild(a)
-      a.click()
-      window.URL.revokeObjectURL(url)
-      document.body.removeChild(a)
-      
-      toast.success("Thành công", { description: "Đã xuất toàn bộ danh sách cây xanh ra file Excel." })
+      // Nếu có chọn cây, xuất các cây đã chọn
+      if (selectedTrees.length > 0) {
+        const response = await fetch(url, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${localStorage.getItem("access_token")}`
+          },
+          body: JSON.stringify(selectedTrees)
+        })
+        
+        if (!response.ok) throw new Error("Không thể xuất file")
+        
+        const blob = await response.blob()
+        const downloadUrl = window.URL.createObjectURL(blob)
+        const a = document.createElement("a")
+        a.href = downloadUrl
+        a.download = `DanhSachCayXanh_${selectedTrees.length}cay_${new Date().toISOString().slice(0,10)}.xlsx`
+        document.body.appendChild(a)
+        a.click()
+        window.URL.revokeObjectURL(downloadUrl)
+        document.body.removeChild(a)
+        
+        toast.success("Thành công", { description: `Đã xuất ${selectedTrees.length} cây xanh ra file Excel.` })
+        setSelectedTrees([])
+      } else {
+        // Nếu không chọn cây nào, xuất tất cả
+        const response = await fetch(url, {
+          method: "GET",
+          headers: {
+            "Authorization": `Bearer ${localStorage.getItem("access_token")}`
+          }
+        })
+        
+        if (!response.ok) throw new Error("Không thể xuất file")
+        
+        const blob = await response.blob()
+        const downloadUrl = window.URL.createObjectURL(blob)
+        const a = document.createElement("a")
+        a.href = downloadUrl
+        a.download = fileName
+        document.body.appendChild(a)
+        a.click()
+        window.URL.revokeObjectURL(downloadUrl)
+        document.body.removeChild(a)
+        
+        toast.success("Thành công", { description: "Đã xuất toàn bộ danh sách cây xanh ra file Excel." })
+      }
     } catch (err: any) {
       toast.error("Lỗi", { description: err.message || "Không thể xuất file Excel." })
     } finally {
@@ -272,6 +309,61 @@ export default function TreesPage() {
     }
   }
 
+  const handleExportEachTree = async () => {
+    setIsExporting(true)
+    try {
+      let treesToExport: number[] = []
+      
+      // Nếu có chọn cây, xuất các cây đã chọn
+      if (selectedTrees.length > 0) {
+        treesToExport = selectedTrees
+      } else {
+        // Nếu không chọn cây nào, lấy TẤT CẢ cây từ API (không phân trang)
+        const allTreesData = await apiClient.get<any>(`/api/trees?pageNumber=1&pageSize=999999`)
+        const allTrees = allTreesData?.items || (Array.isArray(allTreesData) ? allTreesData : [])
+        treesToExport = allTrees.map((t: TreeDto) => t.id)
+      }
+      
+      let successCount = 0
+      for (const treeId of treesToExport) {
+        const response = await fetch("http://localhost:5000/api/trees/export", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${localStorage.getItem("access_token")}`
+          },
+          body: JSON.stringify([treeId])
+        })
+        
+        if (!response.ok) {
+          console.error(`Failed to export tree ${treeId}`)
+          continue
+        }
+        
+        const blob = await response.blob()
+        const url = window.URL.createObjectURL(blob)
+        const a = document.createElement("a")
+        a.href = url
+        a.download = `Cay_${treeId}_${new Date().toISOString().slice(0,10)}.xlsx`
+        document.body.appendChild(a)
+        a.click()
+        window.URL.revokeObjectURL(url)
+        document.body.removeChild(a)
+        
+        successCount++
+        // Delay để tránh quá nhiều download cùng lúc
+        await new Promise(resolve => setTimeout(resolve, 300))
+      }
+      
+      toast.success("Thành công", { description: `Đã xuất ${successCount}/${treesToExport.length} file Excel riêng lẻ.` })
+      setSelectedTrees([])
+    } catch (err: any) {
+      toast.error("Lỗi", { description: err.message || "Không thể xuất file Excel." })
+    } finally {
+      setIsExporting(false)
+    }
+  }
+
   const toggleSelectTree = (id: number) => {
     setSelectedTrees(prev => 
       prev.includes(id) ? prev.filter(tId => tId !== id) : [...prev, id]
@@ -295,27 +387,37 @@ export default function TreesPage() {
         </div>
         
         <div className="flex gap-2">
-          {selectedTrees.length > 0 && (
-            <Button 
-              onClick={handleExportSelected}
-              disabled={isExporting}
-              variant="outline"
-              className="h-11 px-6 rounded-2xl font-bold gap-2 border-green-600 text-green-600 hover:bg-green-50"
-            >
-              <FileDownIcon className="size-5" />
-              XUẤT {selectedTrees.length} CÂY
-            </Button>
-          )}
-          
-          <Button 
-            onClick={handleExportAll}
-            disabled={isExporting}
-            variant="outline"
-            className="h-11 px-6 rounded-2xl font-bold gap-2 border-blue-600 text-blue-600 hover:bg-blue-50"
-          >
-            <FileDownIcon className="size-5" />
-            {isExporting ? "ĐANG XUẤT..." : "XUẤT TẤT CẢ"}
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button 
+                disabled={isExporting}
+                variant="outline"
+                className="h-11 px-6 rounded-2xl font-bold gap-2 border-blue-600 text-blue-600 hover:bg-blue-50"
+              >
+                <FileDownIcon className="size-5" />
+                {isExporting ? "ĐANG XUẤT..." : "XUẤT EXCEL"}
+                <ChevronDownIcon className="size-4 ml-1" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-64 rounded-xl border-none shadow-xl">
+              <DropdownMenuItem 
+                onClick={handleExportAll}
+                disabled={isExporting}
+                className="cursor-pointer rounded-lg py-3 px-4 font-semibold"
+              >
+                <FileDownIcon className="size-4 mr-2" />
+                Xuất tất cả vào 1 file
+              </DropdownMenuItem>
+              <DropdownMenuItem 
+                onClick={handleExportEachTree}
+                disabled={isExporting}
+                className="cursor-pointer rounded-lg py-3 px-4 font-semibold"
+              >
+                <FileDownIcon className="size-4 mr-2" />
+                Xuất mỗi cây vào 1 file
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
 
           {isAdmin && (
             <Button 
