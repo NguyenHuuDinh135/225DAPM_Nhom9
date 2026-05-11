@@ -15,7 +15,7 @@ export default function ReportsPage() {
         </div>
         
         <Button className="bg-slate-800 hover:bg-slate-900 h-11 px-6 rounded-xl shadow-lg font-bold gap-2">
-          <DownloadIcon className="size-5" /> XUẤT BÁO CÁO (PDF)
+          <DownloadIcon className="size-5" /> XUẤT BÁO CÁO (EXCEL)
         </Button>
       </div>
 
