@@ -1323,6 +1323,26 @@
           "trees"
         ],
         "operationId": "GetApiTreesExport",
+        "parameters": [
+          {
+            "name": "condition",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "nullable": true
+            },
+            "x-position": 1
+          },
+          {
+            "name": "searchTerm",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "nullable": true
+            },
+            "x-position": 2
+          }
+        ],
         "responses": {
           "200": {
             "description": ""
@@ -1335,15 +1355,11 @@
         ],
         "operationId": "PostApiTreesExport",
         "requestBody": {
-          "x-name": "treeIds",
+          "x-name": "request",
           "content": {
             "application/json": {
               "schema": {
-                "type": "array",
-                "items": {
-                  "type": "integer",
-                  "format": "int32"
-                }
+                "$ref": "#/components/schemas/ExportTreesRequest"
               }
             }
           },
@@ -3030,6 +3046,28 @@
           "longitude": {
             "type": "number",
             "format": "double",
+            "nullable": true
+          }
+        }
+      },
+      "ExportTreesRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "treeIds": {
+            "type": "array",
+            "nullable": true,
+            "items": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          "condition": {
+            "type": "string",
+            "nullable": true
+          },
+          "searchTerm": {
+            "type": "string",
             "nullable": true
           }
         }

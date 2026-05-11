@@ -364,7 +364,7 @@ export default function TreesPage() {
               >
                 <FileDownIcon className="size-4 mr-2" />
                 <div className="flex flex-col items-start">
-                  <span>Xuất tất cả vào 1 file</span>
+                  <span>Xuất tất cả</span>
                   {(conditionFilter || search) && (
                     <span className="text-[10px] text-slate-500 font-normal">
                       Áp dụng bộ lọc hiện tại
@@ -379,7 +379,7 @@ export default function TreesPage() {
               >
                 <FileDownIcon className="size-4 mr-2" />
                 <div className="flex flex-col items-start">
-                  <span>Xuất cây đã chọn vào 1 file</span>
+                  <span>Xuất cây đã chọn</span>
                   <span className="text-[10px] text-slate-500 font-normal">
                     {selectedTrees.length > 0 
                       ? `${selectedTrees.length} cây được chọn` 
