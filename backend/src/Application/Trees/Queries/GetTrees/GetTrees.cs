@@ -9,6 +9,7 @@ public record GetTreesQuery : IRequest<PaginatedList<TreeDto>>
     public int? PageNumber { get; init; }
     public int? PageSize { get; init; }
     public string? SearchTerm { get; init; }
+    public string? Condition { get; init; }
 }
 
 public class GetTreesQueryHandler : IRequestHandler<GetTreesQuery, PaginatedList<TreeDto>>
@@ -33,6 +34,11 @@ public class GetTreesQueryHandler : IRequestHandler<GetTreesQuery, PaginatedList
                     (t.Name != null && t.Name.ToLower().Contains(searchTerm)) ||
                     (t.TreeType != null && t.TreeType.Name != null && t.TreeType.Name.ToLower().Contains(searchTerm)) ||
                     t.Id.ToString().Contains(searchTerm));
+            }
+
+            if (!string.IsNullOrWhiteSpace(request.Condition))
+            {
+                query = query.Where(t => t.Condition != null && t.Condition == request.Condition);
             }
 
             return await query

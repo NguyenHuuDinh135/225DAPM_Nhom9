@@ -72,6 +72,7 @@ export default function TreesPage() {
   const [trees, setTrees] = React.useState<TreeDto[]>([])
   const [loading, setLoading] = React.useState(true)
   const [search, setSearch] = React.useState("")
+  const [conditionFilter, setConditionFilter] = React.useState<string>("")
   const [page, setPage] = React.useState(1)
   const [pageSize] = React.useState(10)
   const [pagination, setPagination] = React.useState({
@@ -102,6 +103,11 @@ export default function TreesPage() {
         pageSize: pageSize.toString(),
         searchTerm: search
       })
+      
+      if (conditionFilter) {
+        queryParams.append("condition", conditionFilter)
+      }
+      
       const data = await apiClient.get<any>(`/api/trees?${queryParams.toString()}`)
       
       console.log("Trees API Response:", data)
@@ -136,7 +142,7 @@ export default function TreesPage() {
       loadTrees()
     }, 500)
     return () => clearTimeout(timer)
-  }, [search])
+  }, [search, conditionFilter])
 
   // Load when page changes
   React.useEffect(() => {
@@ -213,57 +219,46 @@ export default function TreesPage() {
   const handleExportAll = async () => {
     setIsExporting(true)
     try {
-      let url = "http://localhost:5000/api/trees/export"
-      let fileName = `DanhSachCayXanh_${new Date().toISOString().slice(0,10)}.xlsx`
-      
-      // Nếu có chọn cây, xuất các cây đã chọn
-      if (selectedTrees.length > 0) {
-        const response = await fetch(url, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${localStorage.getItem("access_token")}`
-          },
-          body: JSON.stringify(selectedTrees)
-        })
-        
-        if (!response.ok) throw new Error("Không thể xuất file")
-        
-        const blob = await response.blob()
-        const downloadUrl = window.URL.createObjectURL(blob)
-        const a = document.createElement("a")
-        a.href = downloadUrl
-        a.download = `DanhSachCayXanh_${selectedTrees.length}cay_${new Date().toISOString().slice(0,10)}.xlsx`
-        document.body.appendChild(a)
-        a.click()
-        window.URL.revokeObjectURL(downloadUrl)
-        document.body.removeChild(a)
-        
-        toast.success("Thành công", { description: `Đã xuất ${selectedTrees.length} cây xanh ra file Excel.` })
-        setSelectedTrees([])
-      } else {
-        // Nếu không chọn cây nào, xuất tất cả
-        const response = await fetch(url, {
-          method: "GET",
-          headers: {
-            "Authorization": `Bearer ${localStorage.getItem("access_token")}`
-          }
-        })
-        
-        if (!response.ok) throw new Error("Không thể xuất file")
-        
-        const blob = await response.blob()
-        const downloadUrl = window.URL.createObjectURL(blob)
-        const a = document.createElement("a")
-        a.href = downloadUrl
-        a.download = fileName
-        document.body.appendChild(a)
-        a.click()
-        window.URL.revokeObjectURL(downloadUrl)
-        document.body.removeChild(a)
-        
-        toast.success("Thành công", { description: "Đã xuất toàn bộ danh sách cây xanh ra file Excel." })
+      // Tạo query params với filter hiện tại
+      const queryParams = new URLSearchParams()
+      if (conditionFilter) {
+        queryParams.append("condition", conditionFilter)
       }
+      if (search) {
+        queryParams.append("searchTerm", search)
+      }
+      
+      const url = `http://localhost:5000/api/trees/export?${queryParams.toString()}`
+      
+      const response = await fetch(url, {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${localStorage.getItem("access_token")}`
+        }
+      })
+      
+      if (!response.ok) throw new Error("Không thể xuất file")
+      
+      const blob = await response.blob()
+      const downloadUrl = window.URL.createObjectURL(blob)
+      const a = document.createElement("a")
+      a.href = downloadUrl
+      
+      // Tạo tên file mô tả filter
+      let filterDesc = ""
+      if (conditionFilter) filterDesc += `_${conditionFilter}`
+      if (search) filterDesc += `_TimKiem`
+      a.download = `DanhSachCayXanh${filterDesc}_${new Date().toISOString().slice(0,10)}.xlsx`
+      
+      document.body.appendChild(a)
+      a.click()
+      window.URL.revokeObjectURL(downloadUrl)
+      document.body.removeChild(a)
+      
+      const filterMsg = (conditionFilter || search) 
+        ? ` theo bộ lọc${conditionFilter ? ` (${conditionFilter})` : ""}` 
+        : ""
+      toast.success("Thành công", { description: `Đã xuất danh sách cây xanh${filterMsg} ra file Excel.` })
     } catch (err: any) {
       toast.error("Lỗi", { description: err.message || "Không thể xuất file Excel." })
     } finally {
@@ -285,7 +280,11 @@ export default function TreesPage() {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${localStorage.getItem("access_token")}`
         },
-        body: JSON.stringify(selectedTrees)
+        body: JSON.stringify({
+          treeIds: selectedTrees,
+          condition: null,
+          searchTerm: null
+        })
       })
       
       if (!response.ok) throw new Error("Không thể xuất file")
@@ -300,62 +299,7 @@ export default function TreesPage() {
       window.URL.revokeObjectURL(url)
       document.body.removeChild(a)
       
-      toast.success("Thành công", { description: `Đã xuất ${selectedTrees.length} cây xanh ra file Excel.` })
-      setSelectedTrees([])
-    } catch (err: any) {
-      toast.error("Lỗi", { description: err.message || "Không thể xuất file Excel." })
-    } finally {
-      setIsExporting(false)
-    }
-  }
-
-  const handleExportEachTree = async () => {
-    setIsExporting(true)
-    try {
-      let treesToExport: number[] = []
-      
-      // Nếu có chọn cây, xuất các cây đã chọn
-      if (selectedTrees.length > 0) {
-        treesToExport = selectedTrees
-      } else {
-        // Nếu không chọn cây nào, lấy TẤT CẢ cây từ API (không phân trang)
-        const allTreesData = await apiClient.get<any>(`/api/trees?pageNumber=1&pageSize=999999`)
-        const allTrees = allTreesData?.items || (Array.isArray(allTreesData) ? allTreesData : [])
-        treesToExport = allTrees.map((t: TreeDto) => t.id)
-      }
-      
-      let successCount = 0
-      for (const treeId of treesToExport) {
-        const response = await fetch("http://localhost:5000/api/trees/export", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${localStorage.getItem("access_token")}`
-          },
-          body: JSON.stringify([treeId])
-        })
-        
-        if (!response.ok) {
-          console.error(`Failed to export tree ${treeId}`)
-          continue
-        }
-        
-        const blob = await response.blob()
-        const url = window.URL.createObjectURL(blob)
-        const a = document.createElement("a")
-        a.href = url
-        a.download = `Cay_${treeId}_${new Date().toISOString().slice(0,10)}.xlsx`
-        document.body.appendChild(a)
-        a.click()
-        window.URL.revokeObjectURL(url)
-        document.body.removeChild(a)
-        
-        successCount++
-        // Delay để tránh quá nhiều download cùng lúc
-        await new Promise(resolve => setTimeout(resolve, 300))
-      }
-      
-      toast.success("Thành công", { description: `Đã xuất ${successCount}/${treesToExport.length} file Excel riêng lẻ.` })
+      toast.success("Thành công", { description: `Đã xuất ${selectedTrees.length} cây đã chọn ra file Excel.` })
       setSelectedTrees([])
     } catch (err: any) {
       toast.error("Lỗi", { description: err.message || "Không thể xuất file Excel." })
@@ -392,30 +336,74 @@ export default function TreesPage() {
               <Button 
                 disabled={isExporting}
                 variant="outline"
-                className="h-11 px-6 rounded-2xl font-bold gap-2 border-blue-600 text-blue-600 hover:bg-blue-50"
+                className={cn(
+                  "h-11 px-6 rounded-2xl font-bold gap-2 border-blue-600 text-blue-600 hover:bg-blue-50",
+                  (conditionFilter || search || selectedTrees.length > 0) && "bg-blue-50"
+                )}
               >
                 <FileDownIcon className="size-5" />
                 {isExporting ? "ĐANG XUẤT..." : "XUẤT EXCEL"}
+                {selectedTrees.length > 0 && (
+                  <Badge className="ml-1 bg-blue-600 text-white text-[10px] px-1.5 py-0">
+                    {selectedTrees.length}
+                  </Badge>
+                )}
+                {(conditionFilter || search) && selectedTrees.length === 0 && (
+                  <Badge className="ml-1 bg-blue-600 text-white text-[10px] px-1.5 py-0">
+                    LỌC
+                  </Badge>
+                )}
                 <ChevronDownIcon className="size-4 ml-1" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-64 rounded-xl border-none shadow-xl">
+            <DropdownMenuContent align="end" className="w-72 rounded-xl border-none shadow-xl">
               <DropdownMenuItem 
                 onClick={handleExportAll}
                 disabled={isExporting}
                 className="cursor-pointer rounded-lg py-3 px-4 font-semibold"
               >
                 <FileDownIcon className="size-4 mr-2" />
-                Xuất tất cả vào 1 file
+                <div className="flex flex-col items-start">
+                  <span>Xuất tất cả</span>
+                  {(conditionFilter || search) && (
+                    <span className="text-[10px] text-slate-500 font-normal">
+                      Áp dụng bộ lọc hiện tại
+                    </span>
+                  )}
+                </div>
               </DropdownMenuItem>
               <DropdownMenuItem 
-                onClick={handleExportEachTree}
-                disabled={isExporting}
+                onClick={handleExportSelected}
+                disabled={isExporting || selectedTrees.length === 0}
                 className="cursor-pointer rounded-lg py-3 px-4 font-semibold"
               >
                 <FileDownIcon className="size-4 mr-2" />
-                Xuất mỗi cây vào 1 file
+                <div className="flex flex-col items-start">
+                  <span>Xuất cây đã chọn</span>
+                  <span className="text-[10px] text-slate-500 font-normal">
+                    {selectedTrees.length > 0 
+                      ? `${selectedTrees.length} cây được chọn` 
+                      : "Chưa chọn cây nào"}
+                  </span>
+                </div>
               </DropdownMenuItem>
+              {(conditionFilter || search) && (
+                <div className="px-4 py-2 text-xs text-slate-500 border-t mt-1">
+                  <div className="font-semibold mb-1">Bộ lọc đang áp dụng:</div>
+                  {conditionFilter && (
+                    <div className="flex items-center gap-1">
+                      <FilterIcon className="size-3" />
+                      Tình trạng: <span className="font-bold">{conditionFilter}</span>
+                    </div>
+                  )}
+                  {search && (
+                    <div className="flex items-center gap-1">
+                      <SearchIcon className="size-3" />
+                      Tìm kiếm: <span className="font-bold">{search}</span>
+                    </div>
+                  )}
+                </div>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
 
@@ -448,9 +436,106 @@ export default function TreesPage() {
                 onChange={(e) => setSearch(e.target.value)}
               />
             </div>
-            <Button variant="outline" size="icon" className="h-10 w-10 border-slate-200 rounded-xl hover:bg-slate-50">
-              <FilterIcon className="size-4" />
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button 
+                  variant="outline" 
+                  className={cn(
+                    "h-10 px-4 border-slate-200 rounded-xl hover:bg-slate-50 gap-2 font-semibold",
+                    conditionFilter && "bg-green-50 border-green-200 text-green-700"
+                  )}
+                >
+                  <FilterIcon className="size-4" />
+                  {conditionFilter || "Lọc"}
+                  {conditionFilter && (
+                    <span className="ml-1 size-5 rounded-full bg-green-600 text-white text-[10px] flex items-center justify-center font-bold">
+                      1
+                    </span>
+                  )}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56 rounded-xl border-none shadow-xl">
+                <DropdownMenuItem 
+                  onClick={() => setConditionFilter("")}
+                  className={cn(
+                    "cursor-pointer rounded-lg py-3 px-4 font-semibold",
+                    !conditionFilter && "bg-slate-100"
+                  )}
+                >
+                  Tất cả tình trạng
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={() => setConditionFilter("Tốt")}
+                  className={cn(
+                    "cursor-pointer rounded-lg py-3 px-4 font-semibold",
+                    conditionFilter === "Tốt" && "bg-green-100 text-green-700"
+                  )}
+                >
+                  <div className="size-2 rounded-full bg-green-500 mr-2" />
+                  Tốt
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={() => setConditionFilter("Bình thường")}
+                  className={cn(
+                    "cursor-pointer rounded-lg py-3 px-4 font-semibold",
+                    conditionFilter === "Bình thường" && "bg-blue-100 text-blue-700"
+                  )}
+                >
+                  <div className="size-2 rounded-full bg-blue-500 mr-2" />
+                  Bình thường
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={() => setConditionFilter("Sắp bệnh")}
+                  className={cn(
+                    "cursor-pointer rounded-lg py-3 px-4 font-semibold",
+                    conditionFilter === "Sắp bệnh" && "bg-amber-100 text-amber-700"
+                  )}
+                >
+                  <div className="size-2 rounded-full bg-amber-500 mr-2" />
+                  Sắp bệnh
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={() => setConditionFilter("Mới trồng")}
+                  className={cn(
+                    "cursor-pointer rounded-lg py-3 px-4 font-semibold",
+                    conditionFilter === "Mới trồng" && "bg-cyan-100 text-cyan-700"
+                  )}
+                >
+                  <div className="size-2 rounded-full bg-cyan-500 mr-2" />
+                  Mới trồng
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={() => setConditionFilter("Cần cắt tỉa")}
+                  className={cn(
+                    "cursor-pointer rounded-lg py-3 px-4 font-semibold",
+                    conditionFilter === "Cần cắt tỉa" && "bg-orange-100 text-orange-700"
+                  )}
+                >
+                  <div className="size-2 rounded-full bg-orange-500 mr-2" />
+                  Cần cắt tỉa
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={() => setConditionFilter("Yếu")}
+                  className={cn(
+                    "cursor-pointer rounded-lg py-3 px-4 font-semibold",
+                    conditionFilter === "Yếu" && "bg-red-100 text-red-700"
+                  )}
+                >
+                  <div className="size-2 rounded-full bg-red-500 mr-2" />
+                  Yếu
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={() => setConditionFilter("Cần thay thế")}
+                  className={cn(
+                    "cursor-pointer rounded-lg py-3 px-4 font-semibold",
+                    conditionFilter === "Cần thay thế" && "bg-rose-100 text-rose-700"
+                  )}
+                >
+                  <div className="size-2 rounded-full bg-rose-500 mr-2" />
+                  Cần thay thế
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
 
@@ -521,9 +606,14 @@ export default function TreesPage() {
                     <td className="px-6 py-5">
                       <Badge variant="outline" className={cn(
                         "text-[10px] font-black px-2.5 py-1 rounded-full border-none shadow-sm",
-                        tree.condition === "Tốt" || tree.condition === "Bình thường" 
-                          ? "bg-green-100 text-green-700" 
-                          : "bg-amber-100 text-amber-700 animate-pulse"
+                        tree.condition === "Tốt" && "bg-green-100 text-green-700",
+                        tree.condition === "Bình thường" && "bg-blue-100 text-blue-700",
+                        tree.condition === "Sắp bệnh" && "bg-amber-100 text-amber-700 animate-pulse",
+                        tree.condition === "Mới trồng" && "bg-cyan-100 text-cyan-700",
+                        tree.condition === "Cần cắt tỉa" && "bg-orange-100 text-orange-700",
+                        tree.condition === "Yếu" && "bg-red-100 text-red-700",
+                        tree.condition === "Cần thay thế" && "bg-rose-100 text-rose-700 animate-pulse",
+                        !tree.condition && "bg-slate-100 text-slate-500"
                       )}>
                         {tree.condition?.toUpperCase() || "KHÔNG RÕ"}
                       </Badge>
@@ -675,8 +765,11 @@ export default function TreesPage() {
                       <SelectValue placeholder="Tình trạng" />
                     </SelectTrigger>
                     <SelectContent className="rounded-2xl border-none shadow-xl">
+                      <SelectItem value="Tốt">Tốt</SelectItem>
                       <SelectItem value="Bình thường">Bình thường</SelectItem>
-                      <SelectItem value="Tốt">Phát triển tốt</SelectItem>
+                      <SelectItem value="Sắp bệnh">Sắp bệnh</SelectItem>
+                      <SelectItem value="Mới trồng">Mới trồng</SelectItem>
+                      <SelectItem value="Cần cắt tỉa">Cần cắt tỉa</SelectItem>
                       <SelectItem value="Yếu">Yếu/Sâu bệnh</SelectItem>
                       <SelectItem value="Cần thay thế">Cần thay thế</SelectItem>
                     </SelectContent>
