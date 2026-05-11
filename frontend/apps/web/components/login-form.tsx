@@ -88,9 +88,6 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
                   <span className="sr-only">Đăng nhập với Meta</span>
                 </Button>
               </Field>
-              <FieldDescription className="text-center">
-                Chưa có tài khoản? <a href="#">Đăng ký</a>
-              </FieldDescription>
             </FieldGroup>
           </form>
           <div className="relative hidden bg-muted md:block">
