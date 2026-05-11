@@ -129,7 +129,7 @@ export default function StrategicReportsPage() {
         </div>
         <Button onClick={handleExport} className="bg-green-600 hover:bg-green-700">
           <DownloadIcon className="size-4 mr-2" />
-          Xuất báo cáo (PDF)
+          Xuất báo cáo (EXCEL)
         </Button>
       </div>
 
