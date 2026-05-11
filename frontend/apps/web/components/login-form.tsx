@@ -94,7 +94,11 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
             </FieldGroup>
           </form>
           <div className="relative hidden bg-muted md:block">
-            <img src="/placeholder.svg" alt="Hình ảnh" className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale" />
+            <img 
+              src="/cayxanh.png" 
+              alt="Cây xanh Đà Nẵng" 
+              className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale" 
+            />
           </div>
         </CardContent>
       </Card>
