@@ -3,7 +3,7 @@ using ClosedXML.Excel;
 
 namespace backend.Application.Trees.Queries.ExportTrees;
 
-public record ExportTreesToExcelQuery(List<int>? TreeIds = null) : IRequest<byte[]>;
+public record ExportTreesToExcelQuery(List<int>? TreeIds = null, string? Condition = null, string? SearchTerm = null) : IRequest<byte[]>;
 
 public class ExportTreesToExcelQueryHandler : IRequestHandler<ExportTreesToExcelQuery, byte[]>
 {
@@ -28,6 +28,22 @@ public class ExportTreesToExcelQueryHandler : IRequestHandler<ExportTreesToExcel
         if (request.TreeIds != null && request.TreeIds.Any())
         {
             query = query.Where(t => request.TreeIds.Contains(t.Id));
+        }
+        
+        // Lọc theo tình trạng
+        if (!string.IsNullOrWhiteSpace(request.Condition))
+        {
+            query = query.Where(t => t.Condition != null && t.Condition == request.Condition);
+        }
+        
+        // Lọc theo từ khóa tìm kiếm
+        if (!string.IsNullOrWhiteSpace(request.SearchTerm))
+        {
+            var searchTerm = request.SearchTerm.ToLower();
+            query = query.Where(t => 
+                (t.Name != null && t.Name.ToLower().Contains(searchTerm)) ||
+                (t.TreeType != null && t.TreeType.Name != null && t.TreeType.Name.ToLower().Contains(searchTerm)) ||
+                t.Id.ToString().Contains(searchTerm));
         }
 
         var trees = await query.ToListAsync(cancellationToken);

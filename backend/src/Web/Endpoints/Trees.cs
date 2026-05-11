@@ -97,17 +97,19 @@ public class Trees : EndpointGroupBase
         return TypedResults.NoContent();
     }
 
-    public async Task<IResult> ExportTrees(ISender sender)
+    public async Task<IResult> ExportTrees(ISender sender, [FromQuery] string? condition = null, [FromQuery] string? searchTerm = null)
     {
-        var fileBytes = await sender.Send(new ExportTreesToExcelQuery());
+        var fileBytes = await sender.Send(new ExportTreesToExcelQuery(null, condition, searchTerm));
         var fileName = $"DanhSachCayXanh_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
         return Results.File(fileBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
     }
 
-    public async Task<IResult> ExportSelectedTrees(ISender sender, [FromBody] List<int> treeIds)
+    public async Task<IResult> ExportSelectedTrees(ISender sender, [FromBody] ExportTreesRequest request)
     {
-        var fileBytes = await sender.Send(new ExportTreesToExcelQuery(treeIds));
+        var fileBytes = await sender.Send(new ExportTreesToExcelQuery(request.TreeIds, request.Condition, request.SearchTerm));
         var fileName = $"DanhSachCayXanh_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
         return Results.File(fileBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
     }
 }
+
+public record ExportTreesRequest(List<int>? TreeIds = null, string? Condition = null, string? SearchTerm = null);

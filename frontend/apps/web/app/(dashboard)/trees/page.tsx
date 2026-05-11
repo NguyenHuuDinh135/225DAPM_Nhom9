@@ -219,18 +219,31 @@ export default function TreesPage() {
   const handleExportAll = async () => {
     setIsExporting(true)
     try {
-      let url = "http://localhost:5000/api/trees/export"
+      // Tạo query params với filter hiện tại
+      const queryParams = new URLSearchParams()
+      if (conditionFilter) {
+        queryParams.append("condition", conditionFilter)
+      }
+      if (search) {
+        queryParams.append("searchTerm", search)
+      }
+      
+      let url = `http://localhost:5000/api/trees/export?${queryParams.toString()}`
       let fileName = `DanhSachCayXanh_${new Date().toISOString().slice(0,10)}.xlsx`
       
       // Nếu có chọn cây, xuất các cây đã chọn
       if (selectedTrees.length > 0) {
-        const response = await fetch(url, {
+        const response = await fetch("http://localhost:5000/api/trees/export", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
             "Authorization": `Bearer ${localStorage.getItem("access_token")}`
           },
-          body: JSON.stringify(selectedTrees)
+          body: JSON.stringify({
+            treeIds: selectedTrees,
+            condition: conditionFilter || null,
+            searchTerm: search || null
+          })
         })
         
         if (!response.ok) throw new Error("Không thể xuất file")
@@ -248,7 +261,7 @@ export default function TreesPage() {
         toast.success("Thành công", { description: `Đã xuất ${selectedTrees.length} cây xanh ra file Excel.` })
         setSelectedTrees([])
       } else {
-        // Nếu không chọn cây nào, xuất tất cả
+        // Nếu không chọn cây nào, xuất theo filter
         const response = await fetch(url, {
           method: "GET",
           headers: {
@@ -262,13 +275,20 @@ export default function TreesPage() {
         const downloadUrl = window.URL.createObjectURL(blob)
         const a = document.createElement("a")
         a.href = downloadUrl
-        a.download = fileName
+        
+        // Tạo tên file mô tả filter
+        let filterDesc = ""
+        if (conditionFilter) filterDesc += `_${conditionFilter}`
+        if (search) filterDesc += `_TimKiem`
+        a.download = `DanhSachCayXanh${filterDesc}_${new Date().toISOString().slice(0,10)}.xlsx`
+        
         document.body.appendChild(a)
         a.click()
         window.URL.revokeObjectURL(downloadUrl)
         document.body.removeChild(a)
         
-        toast.success("Thành công", { description: "Đã xuất toàn bộ danh sách cây xanh ra file Excel." })
+        const filterMsg = conditionFilter ? ` (Lọc: ${conditionFilter})` : ""
+        toast.success("Thành công", { description: `Đã xuất danh sách cây xanh${filterMsg} ra file Excel.` })
       }
     } catch (err: any) {
       toast.error("Lỗi", { description: err.message || "Không thể xuất file Excel." })
@@ -324,8 +344,15 @@ export default function TreesPage() {
       if (selectedTrees.length > 0) {
         treesToExport = selectedTrees
       } else {
-        // Nếu không chọn cây nào, lấy TẤT CẢ cây từ API (không phân trang)
-        const allTreesData = await apiClient.get<any>(`/api/trees?pageNumber=1&pageSize=999999`)
+        // Nếu không chọn cây nào, lấy cây theo filter hiện tại
+        const queryParams = new URLSearchParams({
+          pageNumber: "1",
+          pageSize: "999999"
+        })
+        if (search) queryParams.append("searchTerm", search)
+        if (conditionFilter) queryParams.append("condition", conditionFilter)
+        
+        const allTreesData = await apiClient.get<any>(`/api/trees?${queryParams.toString()}`)
         const allTrees = allTreesData?.items || (Array.isArray(allTreesData) ? allTreesData : [])
         treesToExport = allTrees.map((t: TreeDto) => t.id)
       }
@@ -338,7 +365,11 @@ export default function TreesPage() {
             "Content-Type": "application/json",
             "Authorization": `Bearer ${localStorage.getItem("access_token")}`
           },
-          body: JSON.stringify([treeId])
+          body: JSON.stringify({
+            treeIds: [treeId],
+            condition: null,
+            searchTerm: null
+          })
         })
         
         if (!response.ok) {
@@ -398,10 +429,18 @@ export default function TreesPage() {
               <Button 
                 disabled={isExporting}
                 variant="outline"
-                className="h-11 px-6 rounded-2xl font-bold gap-2 border-blue-600 text-blue-600 hover:bg-blue-50"
+                className={cn(
+                  "h-11 px-6 rounded-2xl font-bold gap-2 border-blue-600 text-blue-600 hover:bg-blue-50",
+                  (conditionFilter || search) && "bg-blue-50"
+                )}
               >
                 <FileDownIcon className="size-5" />
                 {isExporting ? "ĐANG XUẤT..." : "XUẤT EXCEL"}
+                {(conditionFilter || search) && (
+                  <Badge className="ml-1 bg-blue-600 text-white text-[10px] px-1.5 py-0">
+                    LỌC
+                  </Badge>
+                )}
                 <ChevronDownIcon className="size-4 ml-1" />
               </Button>
             </DropdownMenuTrigger>
@@ -412,7 +451,9 @@ export default function TreesPage() {
                 className="cursor-pointer rounded-lg py-3 px-4 font-semibold"
               >
                 <FileDownIcon className="size-4 mr-2" />
-                Xuất tất cả vào 1 file
+                {(conditionFilter || search) 
+                  ? "Xuất theo bộ lọc vào 1 file" 
+                  : "Xuất tất cả vào 1 file"}
               </DropdownMenuItem>
               <DropdownMenuItem 
                 onClick={handleExportEachTree}
@@ -420,8 +461,27 @@ export default function TreesPage() {
                 className="cursor-pointer rounded-lg py-3 px-4 font-semibold"
               >
                 <FileDownIcon className="size-4 mr-2" />
-                Xuất mỗi cây vào 1 file
+                {(conditionFilter || search) 
+                  ? "Xuất theo bộ lọc, mỗi cây 1 file" 
+                  : "Xuất mỗi cây vào 1 file"}
               </DropdownMenuItem>
+              {(conditionFilter || search) && (
+                <div className="px-4 py-2 text-xs text-slate-500 border-t mt-1">
+                  <div className="font-semibold mb-1">Bộ lọc đang áp dụng:</div>
+                  {conditionFilter && (
+                    <div className="flex items-center gap-1">
+                      <FilterIcon className="size-3" />
+                      Tình trạng: <span className="font-bold">{conditionFilter}</span>
+                    </div>
+                  )}
+                  {search && (
+                    <div className="flex items-center gap-1">
+                      <SearchIcon className="size-3" />
+                      Tìm kiếm: <span className="font-bold">{search}</span>
+                    </div>
+                  )}
+                </div>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
 
