@@ -72,6 +72,7 @@ export default function TreesPage() {
   const [trees, setTrees] = React.useState<TreeDto[]>([])
   const [loading, setLoading] = React.useState(true)
   const [search, setSearch] = React.useState("")
+  const [conditionFilter, setConditionFilter] = React.useState<string>("")
   const [page, setPage] = React.useState(1)
   const [pageSize] = React.useState(10)
   const [pagination, setPagination] = React.useState({
@@ -102,6 +103,11 @@ export default function TreesPage() {
         pageSize: pageSize.toString(),
         searchTerm: search
       })
+      
+      if (conditionFilter) {
+        queryParams.append("condition", conditionFilter)
+      }
+      
       const data = await apiClient.get<any>(`/api/trees?${queryParams.toString()}`)
       
       console.log("Trees API Response:", data)
@@ -136,7 +142,7 @@ export default function TreesPage() {
       loadTrees()
     }, 500)
     return () => clearTimeout(timer)
-  }, [search])
+  }, [search, conditionFilter])
 
   // Load when page changes
   React.useEffect(() => {
@@ -448,9 +454,106 @@ export default function TreesPage() {
                 onChange={(e) => setSearch(e.target.value)}
               />
             </div>
-            <Button variant="outline" size="icon" className="h-10 w-10 border-slate-200 rounded-xl hover:bg-slate-50">
-              <FilterIcon className="size-4" />
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button 
+                  variant="outline" 
+                  className={cn(
+                    "h-10 px-4 border-slate-200 rounded-xl hover:bg-slate-50 gap-2 font-semibold",
+                    conditionFilter && "bg-green-50 border-green-200 text-green-700"
+                  )}
+                >
+                  <FilterIcon className="size-4" />
+                  {conditionFilter || "Lọc"}
+                  {conditionFilter && (
+                    <span className="ml-1 size-5 rounded-full bg-green-600 text-white text-[10px] flex items-center justify-center font-bold">
+                      1
+                    </span>
+                  )}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56 rounded-xl border-none shadow-xl">
+                <DropdownMenuItem 
+                  onClick={() => setConditionFilter("")}
+                  className={cn(
+                    "cursor-pointer rounded-lg py-3 px-4 font-semibold",
+                    !conditionFilter && "bg-slate-100"
+                  )}
+                >
+                  Tất cả tình trạng
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={() => setConditionFilter("Tốt")}
+                  className={cn(
+                    "cursor-pointer rounded-lg py-3 px-4 font-semibold",
+                    conditionFilter === "Tốt" && "bg-green-100 text-green-700"
+                  )}
+                >
+                  <div className="size-2 rounded-full bg-green-500 mr-2" />
+                  Tốt
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={() => setConditionFilter("Bình thường")}
+                  className={cn(
+                    "cursor-pointer rounded-lg py-3 px-4 font-semibold",
+                    conditionFilter === "Bình thường" && "bg-blue-100 text-blue-700"
+                  )}
+                >
+                  <div className="size-2 rounded-full bg-blue-500 mr-2" />
+                  Bình thường
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={() => setConditionFilter("Sắp bệnh")}
+                  className={cn(
+                    "cursor-pointer rounded-lg py-3 px-4 font-semibold",
+                    conditionFilter === "Sắp bệnh" && "bg-amber-100 text-amber-700"
+                  )}
+                >
+                  <div className="size-2 rounded-full bg-amber-500 mr-2" />
+                  Sắp bệnh
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={() => setConditionFilter("Mới trồng")}
+                  className={cn(
+                    "cursor-pointer rounded-lg py-3 px-4 font-semibold",
+                    conditionFilter === "Mới trồng" && "bg-cyan-100 text-cyan-700"
+                  )}
+                >
+                  <div className="size-2 rounded-full bg-cyan-500 mr-2" />
+                  Mới trồng
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={() => setConditionFilter("Cần cắt tỉa")}
+                  className={cn(
+                    "cursor-pointer rounded-lg py-3 px-4 font-semibold",
+                    conditionFilter === "Cần cắt tỉa" && "bg-orange-100 text-orange-700"
+                  )}
+                >
+                  <div className="size-2 rounded-full bg-orange-500 mr-2" />
+                  Cần cắt tỉa
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={() => setConditionFilter("Yếu")}
+                  className={cn(
+                    "cursor-pointer rounded-lg py-3 px-4 font-semibold",
+                    conditionFilter === "Yếu" && "bg-red-100 text-red-700"
+                  )}
+                >
+                  <div className="size-2 rounded-full bg-red-500 mr-2" />
+                  Yếu
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={() => setConditionFilter("Cần thay thế")}
+                  className={cn(
+                    "cursor-pointer rounded-lg py-3 px-4 font-semibold",
+                    conditionFilter === "Cần thay thế" && "bg-rose-100 text-rose-700"
+                  )}
+                >
+                  <div className="size-2 rounded-full bg-rose-500 mr-2" />
+                  Cần thay thế
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
 
@@ -521,9 +624,14 @@ export default function TreesPage() {
                     <td className="px-6 py-5">
                       <Badge variant="outline" className={cn(
                         "text-[10px] font-black px-2.5 py-1 rounded-full border-none shadow-sm",
-                        tree.condition === "Tốt" || tree.condition === "Bình thường" 
-                          ? "bg-green-100 text-green-700" 
-                          : "bg-amber-100 text-amber-700 animate-pulse"
+                        tree.condition === "Tốt" && "bg-green-100 text-green-700",
+                        tree.condition === "Bình thường" && "bg-blue-100 text-blue-700",
+                        tree.condition === "Sắp bệnh" && "bg-amber-100 text-amber-700 animate-pulse",
+                        tree.condition === "Mới trồng" && "bg-cyan-100 text-cyan-700",
+                        tree.condition === "Cần cắt tỉa" && "bg-orange-100 text-orange-700",
+                        tree.condition === "Yếu" && "bg-red-100 text-red-700",
+                        tree.condition === "Cần thay thế" && "bg-rose-100 text-rose-700 animate-pulse",
+                        !tree.condition && "bg-slate-100 text-slate-500"
                       )}>
                         {tree.condition?.toUpperCase() || "KHÔNG RÕ"}
                       </Badge>
@@ -675,8 +783,11 @@ export default function TreesPage() {
                       <SelectValue placeholder="Tình trạng" />
                     </SelectTrigger>
                     <SelectContent className="rounded-2xl border-none shadow-xl">
+                      <SelectItem value="Tốt">Tốt</SelectItem>
                       <SelectItem value="Bình thường">Bình thường</SelectItem>
-                      <SelectItem value="Tốt">Phát triển tốt</SelectItem>
+                      <SelectItem value="Sắp bệnh">Sắp bệnh</SelectItem>
+                      <SelectItem value="Mới trồng">Mới trồng</SelectItem>
+                      <SelectItem value="Cần cắt tỉa">Cần cắt tỉa</SelectItem>
                       <SelectItem value="Yếu">Yếu/Sâu bệnh</SelectItem>
                       <SelectItem value="Cần thay thế">Cần thay thế</SelectItem>
                     </SelectContent>

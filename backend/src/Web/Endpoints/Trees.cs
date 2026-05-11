@@ -43,8 +43,9 @@ public class Trees : EndpointGroupBase
         ISender sender, 
         [FromQuery] int? pageNumber = 1, 
         [FromQuery] int? pageSize = 10, 
-        [FromQuery] string? searchTerm = null)
-        => await sender.Send(new GetTreesQuery { PageNumber = pageNumber ?? 1, PageSize = pageSize ?? 10, SearchTerm = searchTerm });
+        [FromQuery] string? searchTerm = null,
+        [FromQuery] string? condition = null)
+        => await sender.Send(new GetTreesQuery { PageNumber = pageNumber ?? 1, PageSize = pageSize ?? 10, SearchTerm = searchTerm, Condition = condition });
 
     public async Task<Ok<TreeMapVm>> GetTreeMap(ISender sender)
         => TypedResults.Ok(await sender.Send(new GetTreeMapQuery()));
