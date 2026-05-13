@@ -26,7 +26,7 @@ export function NavUser({ user }: { user: { name: string; email: string; avatar:
           <DropdownMenuTrigger asChild>
             <SidebarMenuButton size="lg" className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground">
               <Avatar className="h-8 w-8 rounded-lg grayscale">
-                <AvatarImage src={user.avatar} alt={user.name} />
+                {user.avatar ? <AvatarImage src={user.avatar} alt={user.name} /> : null}
                 <AvatarFallback className="rounded-lg">{user.name.slice(0, 2).toUpperCase()}</AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-start text-sm leading-tight">
@@ -43,7 +43,7 @@ export function NavUser({ user }: { user: { name: string; email: string; avatar:
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-1 py-1.5 text-start text-sm">
                 <Avatar className="h-8 w-8 rounded-lg">
-                  <AvatarImage src={user.avatar} alt={user.name} />
+                  {user.avatar ? <AvatarImage src={user.avatar} alt={user.name} /> : null}
                   <AvatarFallback className="rounded-lg">{user.name.slice(0, 2).toUpperCase()}</AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-start text-sm leading-tight">

@@ -22,7 +22,7 @@ export function UserNav({ user }: { user: { name: string; email: string; avatar:
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-8 w-8 rounded-full">
           <Avatar className="h-8 w-8">
-            <AvatarImage src={user.avatar} alt={user.name} />
+            {user.avatar ? <AvatarImage src={user.avatar} alt={user.name} /> : null}
             <AvatarFallback>{user.name.slice(0, 2).toUpperCase()}</AvatarFallback>
           </Avatar>
         </Button>
