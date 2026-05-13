@@ -31,7 +31,7 @@ import { type Plan } from "../data/schema"
 import { useAuth } from "@/hooks/use-auth"
 import { ROLES } from "@/lib/roles"
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000"
+const BASE_URL = typeof window !== "undefined" ? "" : (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000")
 
 export function DataTable({ data: initialData }: { data: Plan[] }) {
   const { user } = useAuth()

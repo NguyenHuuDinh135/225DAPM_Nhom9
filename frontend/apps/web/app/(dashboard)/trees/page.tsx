@@ -1,19 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { TreePineIcon, PlusIcon, SearchIcon, FilterIcon, ChevronRightIcon, Trash2, Edit2, Loader2, ChevronLeft, ChevronRight, FileDownIcon, ChevronDownIcon } from "lucide-react"
-import { Button } from "@workspace/ui/components/button"
-import { Input } from "@workspace/ui/components/input"
-import { Badge } from "@workspace/ui/components/badge"
 import { Card } from "@workspace/ui/components/card"
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogDescription, 
-  DialogFooter, 
-  DialogHeader, 
-  DialogTitle
-} from "@workspace/ui/components/dialog"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,118 +12,92 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@workspace/ui/components/alert-dialog"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@workspace/ui/components/dropdown-menu"
-import { Label } from "@workspace/ui/components/label"
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
-} from "@workspace/ui/components/select"
 import { useAuth } from "@/hooks/use-auth"
 import { ROLES } from "@/lib/roles"
 import { apiClient } from "@/lib/api-client"
 import { toast } from "@workspace/ui/components/sonner"
-import { cn } from "@workspace/ui/lib/utils"
-import Link from "next/link"
-import { LocationPicker } from "./components/location-picker"
+import { type RowSelectionState } from "@tanstack/react-table"
 
-interface TreeDto {
-  id: number;
-  name: string | null;
-  treeTypeId: number;
-  treeTypeName: string | null;
-  condition: string | null;
-  latitude: number | null;
-  longitude: number | null;
-}
+import { type TreeRow, makeColumns } from "./components/columns"
+import { TreeDataTable } from "./components/tree-data-table"
+import { TreeToolbarHeader, TreeFilterBar } from "./components/tree-toolbar"
+import { TreeFormDialog, type TreeFormData } from "./components/tree-form-dialog"
 
-interface PaginatedList<T> {
-  items: T[];
-  pageNumber: number;
-  totalPages: number;
-  totalCount: number;
-  hasPreviousPage: boolean;
-  hasNextPage: boolean;
+const DEFAULT_FORM: TreeFormData = {
+  name: "",
+  treeTypeId: 1,
+  condition: "Bình thường",
+  latitude: 16.047,
+  longitude: 108.206,
 }
 
 export default function TreesPage() {
   const { user } = useAuth()
-  const isAdmin = user && (user.role === ROLES.DoiTruong || user.role === ROLES.GiamDoc);
-  
-  const [trees, setTrees] = React.useState<TreeDto[]>([])
+  const isAdmin = !!(user && (user.role === ROLES.DoiTruong || user.role === ROLES.GiamDoc))
+
+  const [trees, setTrees] = React.useState<TreeRow[]>([])
   const [loading, setLoading] = React.useState(true)
   const [search, setSearch] = React.useState("")
-  const [conditionFilter, setConditionFilter] = React.useState<string>("")
+  const [conditionFilter, setConditionFilter] = React.useState("")
   const [page, setPage] = React.useState(1)
   const [pageSize] = React.useState(10)
   const [pagination, setPagination] = React.useState({
     totalPages: 0,
     totalCount: 0,
     hasNextPage: false,
-    hasPreviousPage: false
+    hasPreviousPage: false,
   })
-  const [selectedTrees, setSelectedTrees] = React.useState<number[]>([])
+  const [rowSelection, setRowSelection] = React.useState<RowSelectionState>({})
   const [isExporting, setIsExporting] = React.useState(false)
-  
-  // State for Add/Edit Dialog
-  const [isDialogOpen, setIsDialogOpen] = React.useState(false)
-  const [editingTree, setEditingTree] = React.useState<TreeDto | null>(null)
-  const [formData, setFormData] = React.useState({
-    name: "",
-    treeTypeId: 1,
-    condition: "Bình thường",
-    latitude: 16.047,
-    longitude: 108.206
-  })
 
-  const loadTrees = async () => {
+  // Dialog state
+  const [isDialogOpen, setIsDialogOpen] = React.useState(false)
+  const [editingTree, setEditingTree] = React.useState<TreeRow | null>(null)
+  const [formData, setFormData] = React.useState<TreeFormData>(DEFAULT_FORM)
+
+  // Delete state
+  const [treeToDelete, setTreeToDelete] = React.useState<number | null>(null)
+  const [isDeleting, setIsDeleting] = React.useState(false)
+
+  const selectedTreeIds = React.useMemo(
+    () => Object.keys(rowSelection).filter((k) => rowSelection[k]).map((idx) => trees[parseInt(idx)]?.id).filter(Boolean),
+    [rowSelection, trees]
+  )
+
+  const loadTrees = React.useCallback(async () => {
     setLoading(true)
     try {
       const queryParams = new URLSearchParams({
         pageNumber: page.toString(),
         pageSize: pageSize.toString(),
-        searchTerm: search
+        searchTerm: search,
       })
-      
       if (conditionFilter) {
         queryParams.append("condition", conditionFilter)
       }
-      
-      const data = await apiClient.get<any>(`/api/trees?${queryParams.toString()}`)
-      
-      console.log("Trees API Response:", data)
 
-      // Linh hoạt xử lý cả PaginatedList và mảng thường
-      const items = data?.items || (Array.isArray(data) ? data : [])
-      const totalCount = data?.totalCount || items.length
-      const totalPages = data?.totalPages || Math.ceil(totalCount / pageSize)
+      const data = await apiClient.get<Record<string, unknown>>(`/api/trees?${queryParams.toString()}`)
+      const items = (data?.items as TreeRow[]) || (Array.isArray(data) ? (data as TreeRow[]) : [])
+      const totalCount = (data?.totalCount as number) || items.length
+      const totalPages = (data?.totalPages as number) || Math.ceil(totalCount / pageSize)
 
       setTrees(items)
       setPagination({
-        totalPages: totalPages,
-        totalCount: totalCount,
-        hasNextPage: data?.hasNextPage ?? (page < totalPages),
-        hasPreviousPage: data?.hasPreviousPage ?? (page > 1)
+        totalPages,
+        totalCount,
+        hasNextPage: (data?.hasNextPage as boolean) ?? page < totalPages,
+        hasPreviousPage: (data?.hasPreviousPage as boolean) ?? page > 1,
       })
-    } catch (err) {
-      console.error("Load trees error:", err)
+    } catch {
       setTrees([])
-      toast.error("Lỗi kết nối", { 
-        description: "Không thể kết nối đến máy chủ. Vui lòng kiểm tra Backend đang chạy tại cổng 5000." 
+      toast.error("Lỗi kết nối", {
+        description: "Không thể kết nối đến máy chủ. Vui lòng kiểm tra Backend đang chạy.",
       })
     } finally {
       setLoading(false)
     }
-  }
+  }, [page, pageSize, search, conditionFilter])
 
-  // Debounced search
   React.useEffect(() => {
     const timer = setTimeout(() => {
       setPage(1)
@@ -144,40 +106,43 @@ export default function TreesPage() {
     return () => clearTimeout(timer)
   }, [search, conditionFilter])
 
-  // Load when page changes
   React.useEffect(() => {
     loadTrees()
   }, [page])
 
   const handleOpenAdd = () => {
     setEditingTree(null)
-    setFormData({
-      name: "",
-      treeTypeId: 1,
-      condition: "Bình thường",
-      latitude: 16.047,
-      longitude: 108.206
-    })
+    setFormData(DEFAULT_FORM)
     setIsDialogOpen(true)
   }
 
-  const [treeToDelete, setTreeToDelete] = React.useState<number | null>(null)
-  const [isDeleting, setIsDeleting] = React.useState(false)
-
-  const handleOpenEdit = (tree: TreeDto) => {
+  const handleOpenEdit = (tree: TreeRow) => {
     setEditingTree(tree)
     setFormData({
       name: tree.name ?? "",
       treeTypeId: tree.treeTypeId,
       condition: tree.condition ?? "Bình thường",
       latitude: tree.latitude ?? 16.047,
-      longitude: tree.longitude ?? 108.206
+      longitude: tree.longitude ?? 108.206,
     })
     setIsDialogOpen(true)
   }
 
-  const handleDelete = (id: number) => {
-    setTreeToDelete(id)
+  const handleSubmit = async () => {
+    try {
+      if (editingTree) {
+        await apiClient.put(`/api/trees/${editingTree.id}`, { ...formData, id: editingTree.id })
+        toast.success("Thành công", { description: "Đã cập nhật thông tin cây xanh." })
+      } else {
+        await apiClient.post("/api/trees", formData)
+        toast.success("Thành công", { description: "Đã thêm cây xanh mới vào hệ thống." })
+      }
+      setIsDialogOpen(false)
+      loadTrees()
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Không thể lưu thông tin cây xanh."
+      toast.error("Lỗi", { description: message })
+    }
   }
 
   const confirmDelete = async () => {
@@ -188,139 +153,93 @@ export default function TreesPage() {
       toast.success("Đã xóa", { description: "Cây xanh đã được loại bỏ khỏi hệ thống." })
       loadTrees()
       setTreeToDelete(null)
-    } catch (err: any) {
-      toast.error("Lỗi xóa", { 
-        description: err.message || "Không thể xóa cây xanh này. Có thể cây đang có dữ liệu liên quan." 
-      })
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Không thể xóa cây xanh này."
+      toast.error("Lỗi xóa", { description: message })
     } finally {
       setIsDeleting(false)
-    }
-  }
-
-  const handleSubmit = async () => {
-    try {
-      if (editingTree) {
-        await apiClient.put(`/api/trees/${editingTree.id}`, {
-          ...formData,
-          id: editingTree.id
-        })
-        toast.success("Thành công", { description: "Đã cập nhật thông tin cây xanh." })
-      } else {
-        await apiClient.post("/api/trees", formData)
-        toast.success("Thành công", { description: "Đã thêm cây xanh mới vào hệ thống." })
-      }
-      setIsDialogOpen(false)
-      loadTrees()
-    } catch (err: any) {
-      toast.error("Lỗi", { description: err.message || "Không thể lưu thông tin cây xanh." })
     }
   }
 
   const handleExportAll = async () => {
     setIsExporting(true)
     try {
-      // Tạo query params với filter hiện tại
       const queryParams = new URLSearchParams()
-      if (conditionFilter) {
-        queryParams.append("condition", conditionFilter)
-      }
-      if (search) {
-        queryParams.append("searchTerm", search)
-      }
-      
-      const url = `http://localhost:5000/api/trees/export?${queryParams.toString()}`
-      
-      const response = await fetch(url, {
+      if (conditionFilter) queryParams.append("condition", conditionFilter)
+      if (search) queryParams.append("searchTerm", search)
+
+      const response = await fetch(`/api/trees/export?${queryParams.toString()}`, {
         method: "GET",
-        headers: {
-          "Authorization": `Bearer ${localStorage.getItem("access_token")}`
-        }
+        headers: { Authorization: `Bearer ${localStorage.getItem("access_token")}` },
       })
-      
       if (!response.ok) throw new Error("Không thể xuất file")
-      
+
       const blob = await response.blob()
       const downloadUrl = window.URL.createObjectURL(blob)
       const a = document.createElement("a")
       a.href = downloadUrl
-      
-      // Tạo tên file mô tả filter
       let filterDesc = ""
       if (conditionFilter) filterDesc += `_${conditionFilter}`
       if (search) filterDesc += `_TimKiem`
-      a.download = `DanhSachCayXanh${filterDesc}_${new Date().toISOString().slice(0,10)}.xlsx`
-      
+      a.download = `DanhSachCayXanh${filterDesc}_${new Date().toISOString().slice(0, 10)}.xlsx`
       document.body.appendChild(a)
       a.click()
       window.URL.revokeObjectURL(downloadUrl)
       document.body.removeChild(a)
-      
-      const filterMsg = (conditionFilter || search) 
-        ? ` theo bộ lọc${conditionFilter ? ` (${conditionFilter})` : ""}` 
+
+      const filterMsg = conditionFilter || search
+        ? ` theo bộ lọc${conditionFilter ? ` (${conditionFilter})` : ""}`
         : ""
       toast.success("Thành công", { description: `Đã xuất danh sách cây xanh${filterMsg} ra file Excel.` })
-    } catch (err: any) {
-      toast.error("Lỗi", { description: err.message || "Không thể xuất file Excel." })
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Không thể xuất file Excel."
+      toast.error("Lỗi", { description: message })
     } finally {
       setIsExporting(false)
     }
   }
 
   const handleExportSelected = async () => {
-    if (selectedTrees.length === 0) {
+    if (selectedTreeIds.length === 0) {
       toast.error("Chưa chọn cây", { description: "Vui lòng chọn ít nhất một cây để xuất." })
       return
     }
-
     setIsExporting(true)
     try {
-      const response = await fetch("http://localhost:5000/api/trees/export", {
+      const response = await fetch("/api/trees/export", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${localStorage.getItem("access_token")}`
+          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
         },
-        body: JSON.stringify({
-          treeIds: selectedTrees,
-          condition: null,
-          searchTerm: null
-        })
+        body: JSON.stringify({ treeIds: selectedTreeIds, condition: null, searchTerm: null }),
       })
-      
       if (!response.ok) throw new Error("Không thể xuất file")
-      
+
       const blob = await response.blob()
       const url = window.URL.createObjectURL(blob)
       const a = document.createElement("a")
       a.href = url
-      a.download = `DanhSachCayXanh_${selectedTrees.length}cay_${new Date().toISOString().slice(0,10)}.xlsx`
+      a.download = `DanhSachCayXanh_${selectedTreeIds.length}cay_${new Date().toISOString().slice(0, 10)}.xlsx`
       document.body.appendChild(a)
       a.click()
       window.URL.revokeObjectURL(url)
       document.body.removeChild(a)
-      
-      toast.success("Thành công", { description: `Đã xuất ${selectedTrees.length} cây đã chọn ra file Excel.` })
-      setSelectedTrees([])
-    } catch (err: any) {
-      toast.error("Lỗi", { description: err.message || "Không thể xuất file Excel." })
+
+      toast.success("Thành công", { description: `Đã xuất ${selectedTreeIds.length} cây đã chọn ra file Excel.` })
+      setRowSelection({})
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Không thể xuất file Excel."
+      toast.error("Lỗi", { description: message })
     } finally {
       setIsExporting(false)
     }
   }
 
-  const toggleSelectTree = (id: number) => {
-    setSelectedTrees(prev => 
-      prev.includes(id) ? prev.filter(tId => tId !== id) : [...prev, id]
-    )
-  }
-
-  const toggleSelectAll = () => {
-    if (selectedTrees.length === trees.length) {
-      setSelectedTrees([])
-    } else {
-      setSelectedTrees(trees.map(t => t.id))
-    }
-  }
+  const columns = React.useMemo(
+    () => makeColumns({ isAdmin, onEdit: handleOpenEdit, onDelete: setTreeToDelete }),
+    [isAdmin]
+  )
 
   return (
     <div className="p-6 space-y-6">
@@ -329,503 +248,47 @@ export default function TreesPage() {
           <h1 className="text-2xl font-black text-slate-800 tracking-tight">Hệ thống Cây xanh</h1>
           <p className="text-sm text-slate-500 font-medium italic">Quản lý tài sản xanh và theo dõi hiện trạng sinh trưởng.</p>
         </div>
-        
-        <div className="flex gap-2">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button 
-                disabled={isExporting}
-                variant="outline"
-                className={cn(
-                  "h-11 px-6 rounded-2xl font-bold gap-2 border-blue-600 text-blue-600 hover:bg-blue-50",
-                  (conditionFilter || search || selectedTrees.length > 0) && "bg-blue-50"
-                )}
-              >
-                <FileDownIcon className="size-5" />
-                {isExporting ? "ĐANG XUẤT..." : "XUẤT EXCEL"}
-                {selectedTrees.length > 0 && (
-                  <Badge className="ml-1 bg-blue-600 text-white text-[10px] px-1.5 py-0">
-                    {selectedTrees.length}
-                  </Badge>
-                )}
-                {(conditionFilter || search) && selectedTrees.length === 0 && (
-                  <Badge className="ml-1 bg-blue-600 text-white text-[10px] px-1.5 py-0">
-                    LỌC
-                  </Badge>
-                )}
-                <ChevronDownIcon className="size-4 ml-1" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-72 rounded-xl border-none shadow-xl">
-              <DropdownMenuItem 
-                onClick={handleExportAll}
-                disabled={isExporting}
-                className="cursor-pointer rounded-lg py-3 px-4 font-semibold"
-              >
-                <FileDownIcon className="size-4 mr-2" />
-                <div className="flex flex-col items-start">
-                  <span>Xuất tất cả</span>
-                  {(conditionFilter || search) && (
-                    <span className="text-[10px] text-slate-500 font-normal">
-                      Áp dụng bộ lọc hiện tại
-                    </span>
-                  )}
-                </div>
-              </DropdownMenuItem>
-              <DropdownMenuItem 
-                onClick={handleExportSelected}
-                disabled={isExporting || selectedTrees.length === 0}
-                className="cursor-pointer rounded-lg py-3 px-4 font-semibold"
-              >
-                <FileDownIcon className="size-4 mr-2" />
-                <div className="flex flex-col items-start">
-                  <span>Xuất cây đã chọn</span>
-                  <span className="text-[10px] text-slate-500 font-normal">
-                    {selectedTrees.length > 0 
-                      ? `${selectedTrees.length} cây được chọn` 
-                      : "Chưa chọn cây nào"}
-                  </span>
-                </div>
-              </DropdownMenuItem>
-              {(conditionFilter || search) && (
-                <div className="px-4 py-2 text-xs text-slate-500 border-t mt-1">
-                  <div className="font-semibold mb-1">Bộ lọc đang áp dụng:</div>
-                  {conditionFilter && (
-                    <div className="flex items-center gap-1">
-                      <FilterIcon className="size-3" />
-                      Tình trạng: <span className="font-bold">{conditionFilter}</span>
-                    </div>
-                  )}
-                  {search && (
-                    <div className="flex items-center gap-1">
-                      <SearchIcon className="size-3" />
-                      Tìm kiếm: <span className="font-bold">{search}</span>
-                    </div>
-                  )}
-                </div>
-              )}
-            </DropdownMenuContent>
-          </DropdownMenu>
-
-          {isAdmin && (
-            <Button 
-              onClick={handleOpenAdd}
-              className="bg-green-600 hover:bg-green-700 h-11 px-6 rounded-2xl shadow-lg shadow-green-600/20 font-bold gap-2 transition-all hover:scale-105 active:scale-95"
-            >
-              <PlusIcon className="size-5" /> THÊM CÂY MỚI
-            </Button>
-          )}
-        </div>
+        <TreeToolbarHeader
+          selectedCount={selectedTreeIds.length}
+          isExporting={isExporting}
+          isAdmin={isAdmin}
+          conditionFilter={conditionFilter}
+          search={search}
+          onExportAll={handleExportAll}
+          onExportSelected={handleExportSelected}
+          onAdd={handleOpenAdd}
+        />
       </div>
 
       <Card className="border-none shadow-2xl shadow-slate-200/50 rounded-[2rem] overflow-hidden bg-white/80 backdrop-blur-xl">
-        <div className="p-6 border-b border-slate-50 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white/40">
-          <div className="flex items-center gap-2">
-            <div className="size-8 rounded-lg bg-green-600 flex items-center justify-center text-white shadow-lg shadow-green-600/30">
-                <TreePineIcon className="size-4" />
-            </div>
-            <h3 className="text-sm font-black uppercase text-slate-600 tracking-widest">Danh mục ({pagination.totalCount})</h3>
-          </div>
-          <div className="flex gap-2 w-full md:w-auto">
-            <div className="relative flex-1 md:w-80">
-              <SearchIcon className="absolute left-3 top-2.5 size-4 text-slate-400" />
-              <Input 
-                className="pl-9 bg-slate-100/50 border-none h-10 rounded-xl focus-visible:ring-green-500" 
-                placeholder="Tìm mã số, tên hoặc loài cây..." 
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-            </div>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button 
-                  variant="outline" 
-                  className={cn(
-                    "h-10 px-4 border-slate-200 rounded-xl hover:bg-slate-50 gap-2 font-semibold",
-                    conditionFilter && "bg-green-50 border-green-200 text-green-700"
-                  )}
-                >
-                  <FilterIcon className="size-4" />
-                  {conditionFilter || "Lọc"}
-                  {conditionFilter && (
-                    <span className="ml-1 size-5 rounded-full bg-green-600 text-white text-[10px] flex items-center justify-center font-bold">
-                      1
-                    </span>
-                  )}
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56 rounded-xl border-none shadow-xl">
-                <DropdownMenuItem 
-                  onClick={() => setConditionFilter("")}
-                  className={cn(
-                    "cursor-pointer rounded-lg py-3 px-4 font-semibold",
-                    !conditionFilter && "bg-slate-100"
-                  )}
-                >
-                  Tất cả tình trạng
-                </DropdownMenuItem>
-                <DropdownMenuItem 
-                  onClick={() => setConditionFilter("Tốt")}
-                  className={cn(
-                    "cursor-pointer rounded-lg py-3 px-4 font-semibold",
-                    conditionFilter === "Tốt" && "bg-green-100 text-green-700"
-                  )}
-                >
-                  <div className="size-2 rounded-full bg-green-500 mr-2" />
-                  Tốt
-                </DropdownMenuItem>
-                <DropdownMenuItem 
-                  onClick={() => setConditionFilter("Bình thường")}
-                  className={cn(
-                    "cursor-pointer rounded-lg py-3 px-4 font-semibold",
-                    conditionFilter === "Bình thường" && "bg-blue-100 text-blue-700"
-                  )}
-                >
-                  <div className="size-2 rounded-full bg-blue-500 mr-2" />
-                  Bình thường
-                </DropdownMenuItem>
-                <DropdownMenuItem 
-                  onClick={() => setConditionFilter("Sắp bệnh")}
-                  className={cn(
-                    "cursor-pointer rounded-lg py-3 px-4 font-semibold",
-                    conditionFilter === "Sắp bệnh" && "bg-amber-100 text-amber-700"
-                  )}
-                >
-                  <div className="size-2 rounded-full bg-amber-500 mr-2" />
-                  Sắp bệnh
-                </DropdownMenuItem>
-                <DropdownMenuItem 
-                  onClick={() => setConditionFilter("Mới trồng")}
-                  className={cn(
-                    "cursor-pointer rounded-lg py-3 px-4 font-semibold",
-                    conditionFilter === "Mới trồng" && "bg-cyan-100 text-cyan-700"
-                  )}
-                >
-                  <div className="size-2 rounded-full bg-cyan-500 mr-2" />
-                  Mới trồng
-                </DropdownMenuItem>
-                <DropdownMenuItem 
-                  onClick={() => setConditionFilter("Cần cắt tỉa")}
-                  className={cn(
-                    "cursor-pointer rounded-lg py-3 px-4 font-semibold",
-                    conditionFilter === "Cần cắt tỉa" && "bg-orange-100 text-orange-700"
-                  )}
-                >
-                  <div className="size-2 rounded-full bg-orange-500 mr-2" />
-                  Cần cắt tỉa
-                </DropdownMenuItem>
-                <DropdownMenuItem 
-                  onClick={() => setConditionFilter("Yếu")}
-                  className={cn(
-                    "cursor-pointer rounded-lg py-3 px-4 font-semibold",
-                    conditionFilter === "Yếu" && "bg-red-100 text-red-700"
-                  )}
-                >
-                  <div className="size-2 rounded-full bg-red-500 mr-2" />
-                  Yếu
-                </DropdownMenuItem>
-                <DropdownMenuItem 
-                  onClick={() => setConditionFilter("Cần thay thế")}
-                  className={cn(
-                    "cursor-pointer rounded-lg py-3 px-4 font-semibold",
-                    conditionFilter === "Cần thay thế" && "bg-rose-100 text-rose-700"
-                  )}
-                >
-                  <div className="size-2 rounded-full bg-rose-500 mr-2" />
-                  Cần thay thế
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        </div>
+        <TreeFilterBar
+          search={search}
+          onSearchChange={setSearch}
+          conditionFilter={conditionFilter}
+          onConditionFilterChange={setConditionFilter}
+          totalCount={pagination.totalCount}
+        />
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left">
-            <thead>
-              <tr className="bg-slate-50/50">
-                <th className="px-6 py-4 text-[10px] font-black uppercase text-slate-400 tracking-widest w-12">
-                  <input 
-                    type="checkbox" 
-                    checked={trees.length > 0 && selectedTrees.length === trees.length}
-                    onChange={toggleSelectAll}
-                    className="size-4 rounded border-slate-300"
-                  />
-                </th>
-                <th className="px-6 py-4 text-[10px] font-black uppercase text-slate-400 tracking-widest">Cây xanh</th>
-                <th className="px-6 py-4 text-[10px] font-black uppercase text-slate-400 tracking-widest">Thông tin loại</th>
-                <th className="px-6 py-4 text-[10px] font-black uppercase text-slate-400 tracking-widest">Vị trí</th>
-                <th className="px-6 py-4 text-[10px] font-black uppercase text-slate-400 tracking-widest">Tình trạng</th>
-                <th className="px-6 py-4 text-[10px] font-black uppercase text-slate-400 tracking-widest text-right">Thao tác</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-50">
-              {loading ? (
-                <tr>
-                  <td colSpan={6} className="px-6 py-12 text-center">
-                    <div className="flex flex-col items-center gap-3">
-                        <Loader2 className="size-10 animate-spin text-green-600" />
-                        <p className="text-xs font-bold text-slate-400 animate-pulse">ĐANG TẢI DỮ LIỆU...</p>
-                    </div>
-                  </td>
-                </tr>
-              ) : (trees && trees.length > 0) ? (
-                trees.map(tree => (
-                  <tr key={tree.id} className="hover:bg-green-50/30 transition-all cursor-pointer group">
-                    <td className="px-6 py-5" onClick={(e) => e.stopPropagation()}>
-                      <input 
-                        type="checkbox" 
-                        checked={selectedTrees.includes(tree.id)}
-                        onChange={() => toggleSelectTree(tree.id)}
-                        className="size-4 rounded border-slate-300"
-                      />
-                    </td>
-                    <td className="px-6 py-5" onClick={() => window.location.href = `/trees/${tree.id}`}>
-                      <div className="flex items-center gap-3">
-                        <div className="size-12 rounded-2xl bg-white shadow-sm border border-slate-100 text-green-600 flex items-center justify-center group-hover:bg-green-600 group-hover:text-white transition-all duration-300">
-                          <TreePineIcon className="size-6" />
-                        </div>
-                        <div>
-                          <p className="text-sm font-black text-slate-800 tracking-tight group-hover:text-green-700">#{tree.id} • {tree.name || "Cây chưa đặt tên"}</p>
-                          <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Mã tài sản: TREE-{tree.id.toString().padStart(4, '0')}</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-5">
-                      <div className="space-y-1">
-                        <p className="text-xs font-bold text-slate-700">{tree.treeTypeName || "Chưa phân loại"}</p>
-                        <p className="text-[10px] text-slate-400 font-medium">Loài bản địa</p>
-                      </div>
-                    </td>
-                    <td className="px-6 py-5">
-                      <div className="flex items-center gap-1.5 text-slate-500">
-                        <span className="text-[11px] font-mono bg-slate-100 px-1.5 py-0.5 rounded text-slate-600">
-                            {tree.latitude?.toFixed(4)}, {tree.longitude?.toFixed(4)}
-                        </span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-5">
-                      <Badge variant="outline" className={cn(
-                        "text-[10px] font-black px-2.5 py-1 rounded-full border-none shadow-sm",
-                        tree.condition === "Tốt" && "bg-green-100 text-green-700",
-                        tree.condition === "Bình thường" && "bg-blue-100 text-blue-700",
-                        tree.condition === "Sắp bệnh" && "bg-amber-100 text-amber-700 animate-pulse",
-                        tree.condition === "Mới trồng" && "bg-cyan-100 text-cyan-700",
-                        tree.condition === "Cần cắt tỉa" && "bg-orange-100 text-orange-700",
-                        tree.condition === "Yếu" && "bg-red-100 text-red-700",
-                        tree.condition === "Cần thay thế" && "bg-rose-100 text-rose-700 animate-pulse",
-                        !tree.condition && "bg-slate-100 text-slate-500"
-                      )}>
-                        {tree.condition?.toUpperCase() || "KHÔNG RÕ"}
-                      </Badge>
-                    </td>
-                    <td className="px-6 py-5 text-right">
-                      <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        {isAdmin && (
-                          <>
-                            <Button 
-                                variant="ghost" 
-                                size="icon" 
-                                className="size-9 rounded-xl text-blue-600 hover:bg-blue-50"
-                                onClick={(e) => { e.stopPropagation(); handleOpenEdit(tree); }}
-                            >
-                              <Edit2 className="size-4" />
-                            </Button>
-                            <Button 
-                                variant="ghost" 
-                                size="icon" 
-                                className="size-9 rounded-xl text-red-600 hover:bg-red-50"
-                                onClick={(e) => { e.stopPropagation(); handleDelete(tree.id); }}
-                            >
-                              <Trash2 className="size-4" />
-                            </Button>
-                          </>
-                        )}
-                        <Button variant="ghost" size="icon" className="size-9 rounded-xl text-slate-400" asChild>
-                          <Link href={`/trees/${tree.id}`}>
-                            <ChevronRightIcon className="size-4" />
-                          </Link>
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan={6} className="px-6 py-20 text-center">
-                    <div className="flex flex-col items-center gap-2 opacity-20">
-                        <TreePineIcon className="size-16" />
-                        <p className="font-black text-xl italic uppercase tracking-tighter">Không có dữ liệu</p>
-                    </div>
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Pagination */}
-        {pagination.totalPages > 1 && (
-          <div className="p-6 border-t border-slate-50 flex items-center justify-between">
-            <p className="text-xs font-bold text-slate-400">
-              Hiển thị <span className="text-slate-700">{trees.length}</span> trên <span className="text-slate-700">{pagination.totalCount}</span> cây xanh
-            </p>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="icon"
-                className="size-9 rounded-xl"
-                disabled={!pagination.hasPreviousPage}
-                onClick={() => setPage(p => p - 1)}
-              >
-                <ChevronLeft className="size-4" />
-              </Button>
-              <div className="flex items-center gap-1">
-                {Array.from({ length: pagination.totalPages }, (_, i) => i + 1).map(p => (
-                  <Button
-                    key={p}
-                    variant={page === p ? "default" : "ghost"}
-                    className={cn(
-                        "size-9 rounded-xl font-bold text-xs",
-                        page === p ? "bg-green-600 shadow-lg shadow-green-600/20" : "text-slate-400"
-                    )}
-                    onClick={() => setPage(p)}
-                  >
-                    {p}
-                  </Button>
-                ))}
-              </div>
-              <Button
-                variant="outline"
-                size="icon"
-                className="size-9 rounded-xl"
-                disabled={!pagination.hasNextPage}
-                onClick={() => setPage(p => p + 1)}
-              >
-                <ChevronRight className="size-4" />
-              </Button>
-            </div>
-          </div>
-        )}
+        <TreeDataTable
+          columns={columns}
+          data={trees}
+          loading={loading}
+          rowSelection={rowSelection}
+          onRowSelectionChange={setRowSelection}
+          pagination={pagination}
+          page={page}
+          onPageChange={setPage}
+        />
       </Card>
 
-      {/* Add/Edit Dialog */}
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="sm:max-w-[700px] rounded-[2.5rem] p-0 overflow-hidden border-none shadow-2xl">
-          <div className="bg-green-600 p-8 text-white relative">
-            <TreePineIcon className="absolute top-6 right-8 size-16 opacity-10 rotate-12" />
-            <DialogHeader>
-              <DialogTitle className="text-2xl font-black italic uppercase tracking-tighter">
-                {editingTree ? "Cập nhật thông tin" : "Thêm cây xanh mới"}
-              </DialogTitle>
-              <DialogDescription className="text-green-100 font-medium">
-                Cung cấp dữ liệu chính xác để hệ thống quản lý và dự báo sinh trưởng tốt hơn.
-              </DialogDescription>
-            </DialogHeader>
-          </div>
-          
-          <div className="p-8 space-y-6 bg-white overflow-y-auto max-h-[80vh]">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="name" className="text-xs font-black uppercase text-slate-400 px-1">Tên cây (Tùy chọn)</Label>
-                  <Input 
-                    id="name" 
-                    placeholder="Ví dụ: Cây Sưa 01" 
-                    className="rounded-2xl border-slate-100 bg-slate-50 focus-visible:ring-green-500 h-12"
-                    value={formData.name}
-                    onChange={(e) => setFormData({...formData, name: e.target.value})}
-                  />
-                </div>
-
-                <div className="grid gap-2">
-                  <Label className="text-xs font-black uppercase text-slate-400 px-1">Loại cây</Label>
-                  <Select 
-                    value={formData.treeTypeId.toString()} 
-                    onValueChange={(val) => setFormData({...formData, treeTypeId: parseInt(val)})}
-                  >
-                    <SelectTrigger className="rounded-2xl border-slate-100 bg-slate-50 h-12">
-                      <SelectValue placeholder="Chọn loại cây" />
-                    </SelectTrigger>
-                    <SelectContent className="rounded-2xl border-none shadow-xl">
-                      <SelectItem value="1">Cây bóng mát</SelectItem>
-                      <SelectItem value="2">Cây cảnh/Hoa</SelectItem>
-                      <SelectItem value="3">Cây cổ thụ</SelectItem>
-                      <SelectItem value="4">Cây ăn quả</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="grid gap-2">
-                  <Label className="text-xs font-black uppercase text-slate-400 px-1">Tình trạng</Label>
-                  <Select 
-                    value={formData.condition} 
-                    onValueChange={(val) => setFormData({...formData, condition: val})}
-                  >
-                    <SelectTrigger className="rounded-2xl border-slate-100 bg-slate-50 h-12">
-                      <SelectValue placeholder="Tình trạng" />
-                    </SelectTrigger>
-                    <SelectContent className="rounded-2xl border-none shadow-xl">
-                      <SelectItem value="Tốt">Tốt</SelectItem>
-                      <SelectItem value="Bình thường">Bình thường</SelectItem>
-                      <SelectItem value="Sắp bệnh">Sắp bệnh</SelectItem>
-                      <SelectItem value="Mới trồng">Mới trồng</SelectItem>
-                      <SelectItem value="Cần cắt tỉa">Cần cắt tỉa</SelectItem>
-                      <SelectItem value="Yếu">Yếu/Sâu bệnh</SelectItem>
-                      <SelectItem value="Cần thay thế">Cần thay thế</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="grid gap-2">
-                    <Label className="text-xs font-black uppercase text-slate-400 px-1">Vĩ độ</Label>
-                    <Input 
-                      type="number" 
-                      className="rounded-2xl border-slate-100 bg-slate-50 h-10 font-mono text-[11px]"
-                      value={formData.latitude}
-                      onChange={(e) => setFormData({...formData, latitude: parseFloat(e.target.value)})}
-                    />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label className="text-xs font-black uppercase text-slate-400 px-1">Kinh độ</Label>
-                    <Input 
-                      type="number" 
-                      className="rounded-2xl border-slate-100 bg-slate-50 h-10 font-mono text-[11px]"
-                      value={formData.longitude}
-                      onChange={(e) => setFormData({...formData, longitude: parseFloat(e.target.value)})}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label className="text-xs font-black uppercase text-slate-400 px-1">Chọn vị trí trên bản đồ</Label>
-                <LocationPicker 
-                  latitude={formData.latitude} 
-                  longitude={formData.longitude} 
-                  onChange={(lat, lng) => setFormData({...formData, latitude: lat, longitude: lng})}
-                />
-              </div>
-            </div>
-
-            <DialogFooter className="gap-3 sm:justify-between pt-4">
-              <Button 
-                variant="ghost" 
-                onClick={() => setIsDialogOpen(false)}
-                className="rounded-2xl h-12 px-6 font-bold text-slate-400"
-              >
-                HỦY BỎ
-              </Button>
-              <Button 
-                onClick={handleSubmit}
-                className="rounded-2xl h-12 px-8 bg-green-600 hover:bg-green-700 font-bold shadow-lg shadow-green-600/30 min-w-[140px]"
-              >
-                {editingTree ? "CẬP NHẬT" : "LƯU DỮ LIỆU"}
-              </Button>
-            </DialogFooter>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <TreeFormDialog
+        open={isDialogOpen}
+        onOpenChange={setIsDialogOpen}
+        editingTree={editingTree}
+        formData={formData}
+        onFormDataChange={setFormData}
+        onSubmit={handleSubmit}
+      />
 
       <AlertDialog open={treeToDelete !== null} onOpenChange={(open) => !open && setTreeToDelete(null)}>
         <AlertDialogContent>

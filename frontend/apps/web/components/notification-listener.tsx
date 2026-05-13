@@ -4,7 +4,7 @@ import { useEffect } from "react"
 import { HubConnectionBuilder, LogLevel, HttpTransportType } from "@microsoft/signalr"
 import { toast } from "@workspace/ui/components/sonner"
 
-const BASE_URL = "http://localhost:5000"
+const BASE_URL = typeof window !== "undefined" ? "" : (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000")
 
 export function NotificationListener() {
   useEffect(() => {
