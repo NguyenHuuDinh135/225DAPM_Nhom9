@@ -13,7 +13,7 @@ export const metadata: Metadata = { title: "Chi tiết kế hoạch" }
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000"
 
-interface PlanWorkItem { id: number; workTypeName: string | null; startDate: string | null; endDate: string | null; status: string }
+interface PlanWorkItem { id: number; workTypeName: string | null; startDate: string | null; endDate: string | null; status: string; treeNames?: string[]; assignedUserNames?: string[] }
 interface PlanDetail {
   id: number; name: string | null; status: string | null; statusName: string | null
   rejectionReason: string | null;
@@ -87,6 +87,8 @@ export default async function PlanDetailPage({ params }: { params: Promise<{ id:
               <TableRow>
                 <TableHead>Mã</TableHead>
                 <TableHead>Loại công tác</TableHead>
+                <TableHead>Cây xanh</TableHead>
+                <TableHead>Nhân viên</TableHead>
                 <TableHead>Thời gian</TableHead>
                 <TableHead>Trạng thái</TableHead>
                 <TableHead className="w-10" />
@@ -94,11 +96,21 @@ export default async function PlanDetailPage({ params }: { params: Promise<{ id:
             </TableHeader>
             <TableBody>
               {plan.works.length === 0 ? (
-                <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground py-8">Chưa có công tác nào.</TableCell></TableRow>
+                <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground py-8">Chưa có công tác nào.</TableCell></TableRow>
               ) : plan.works.map((w) => (
                 <TableRow key={w.id}>
                   <TableCell className="font-mono">#{w.id}</TableCell>
                   <TableCell>{w.workTypeName ?? "—"}</TableCell>
+                  <TableCell className="text-sm">
+                    {w.treeNames && w.treeNames.length > 0
+                      ? w.treeNames.join(", ")
+                      : <span className="text-muted-foreground">—</span>}
+                  </TableCell>
+                  <TableCell className="text-sm text-muted-foreground">
+                    {w.assignedUserNames && w.assignedUserNames.length > 0
+                      ? w.assignedUserNames.join(", ")
+                      : <span className="text-muted-foreground">—</span>}
+                  </TableCell>
                   <TableCell className="text-sm text-muted-foreground whitespace-nowrap">
                     {w.startDate ? new Date(w.startDate).toLocaleDateString("vi-VN") : "—"}
                     {" → "}
@@ -106,7 +118,7 @@ export default async function PlanDetailPage({ params }: { params: Promise<{ id:
                   </TableCell>
                   <TableCell><Badge variant="outline">{STATUS_LABEL[w.status] ?? w.status}</Badge></TableCell>
                   <TableCell>
-                    <Link href={`/works/${w.id}`} className="text-xs text-primary hover:underline">Chi tiết</Link>
+                    <Link href={`/works/${w.id}/progress`} className="text-xs text-primary hover:underline">Chi tiết</Link>
                   </TableCell>
                 </TableRow>
               ))}

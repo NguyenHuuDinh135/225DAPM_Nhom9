@@ -4,6 +4,7 @@ using backend.Infrastructure.Data;
 using backend.Web.Hubs;
 using backend.Web.Services;
 using Microsoft.AspNetCore.Mvc;
+using System.Text.Json.Serialization;
 
 using NSwag;
 using NSwag.Generation.Processors.Security;
@@ -15,6 +16,12 @@ public static class DependencyInjection
     public static void AddWebServices(this IHostApplicationBuilder builder)
     {
         builder.Services.AddDatabaseDeveloperPageExceptionFilter();
+
+        // Serialize enums as strings globally
+        builder.Services.ConfigureHttpJsonOptions(options =>
+        {
+            options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
+        });
 
         builder.Services.AddCors(options =>
         {

@@ -38,23 +38,28 @@ public class AssignWorkCommandHandler : IRequestHandler<AssignWorkCommand, Resul
 
     public async Task<Result> Handle(AssignWorkCommand request, CancellationToken cancellationToken)
     {
-        Console.WriteLine($"[AssignWork] Handling command: WorkType={request.WorkTypeId}, Plan={request.PlanId}, Creator={request.CreatorId}");
+        Console.WriteLine($"[AssignWork] WorkType={request.WorkTypeId}, Plan={request.PlanId}, Creator={request.CreatorId}");
         Console.WriteLine($"[AssignWork] Trees: {string.Join(",", request.TreeIds)}");
         Console.WriteLine($"[AssignWork] Users: {string.Join(",", request.UserIds)}");
 
         try
         {
-            var work = Work.Create(
-                request.WorkTypeId,
-                request.PlanId,
-                request.CreatorId,
-                request.StartDate,
-                request.EndDate);
+            // Mỗi cây tạo 1 Work item riêng biệt để theo dõi tiến độ độc lập
+            var treeIds = request.TreeIds != null && request.TreeIds.Any()
+                ? request.TreeIds
+                : new List<int> { 0 }; // Không có cây → tạo 1 work item không gắn cây
 
-            // Add WorkDetails for each tree
-            if (request.TreeIds != null && request.TreeIds.Any())
+            foreach (var treeId in treeIds)
             {
-                foreach (var treeId in request.TreeIds)
+                var work = Work.Create(
+                    request.WorkTypeId,
+                    request.PlanId,
+                    request.CreatorId,
+                    request.StartDate,
+                    request.EndDate);
+
+                // Mỗi work item chỉ gắn với 1 cây
+                if (treeId > 0)
                 {
                     work.WorkDetails.Add(new WorkDetail
                     {
@@ -62,25 +67,27 @@ public class AssignWorkCommandHandler : IRequestHandler<AssignWorkCommand, Resul
                         Status = "New"
                     });
                 }
-            }
 
-            // Add WorkUsers for each user assigned
-            if (request.UserIds != null && request.UserIds.Any())
-            {
-                foreach (var userId in request.UserIds)
+                // Tất cả work item trong cùng lần tạo đều gắn cùng danh sách nhân viên
+                if (request.UserIds != null && request.UserIds.Any())
                 {
-                    work.WorkUsers.Add(new WorkUser
+                    foreach (var userId in request.UserIds)
                     {
-                        UserId = userId,
-                        Role = "NhanVien",
-                        Status = "Assigned"
-                    });
+                        work.WorkUsers.Add(new WorkUser
+                        {
+                            UserId = userId,
+                            Role = "NhanVien",
+                            Status = "Assigned"
+                        });
+                    }
                 }
+
+                _context.Works.Add(work);
             }
 
-            _context.Works.Add(work);
             await _context.SaveChangesAsync(cancellationToken);
 
+            Console.WriteLine($"[AssignWork] Created {treeIds.Count} work item(s).");
             return Result.Success();
         }
         catch (DbUpdateException dbEx)

@@ -38,21 +38,40 @@ export function WorkerDashboard() {
       const allWorks = res?.workItems || []
 
       // Lọc công việc được gán cho nhân viên hiện tại
-      const myTasks = allWorks
+      // Mỗi work item có thể có nhiều cây → flatten thành nhiều task card
+      const myTasks: Task[] = []
+      allWorks
         .filter((w: any) =>
           Array.isArray(w.assignedUsers) &&
           w.assignedUsers.some((au: any) => au.userId === user.id)
         )
-        .map((w: any) => ({
-          id: w.id,
-          workTypeName: w.workTypeName,
-          treeName: w.treeLocations?.[0]?.treeName || `Cây #${w.treeLocations?.[0]?.treeId || "?"}`,
-          location: w.treeLocations?.[0]?.latitude != null
-            ? `Lat: ${w.treeLocations[0].latitude.toFixed(4)}, Lng: ${w.treeLocations[0].longitude.toFixed(4)}`
-            : "Chưa có vị trí",
-          status: w.statusName,
-          endDate: w.endDate
-        }))
+        .forEach((w: any) => {
+          const trees: any[] = w.treeLocations ?? []
+          if (trees.length === 0) {
+            myTasks.push({
+              id: w.id,
+              workTypeName: w.workTypeName,
+              treeName: "Chưa có cây",
+              location: "Chưa có vị trí",
+              status: w.statusName,
+              endDate: w.endDate,
+            })
+          } else {
+            trees.forEach((tree) => {
+              myTasks.push({
+                id: w.id,
+                workTypeName: w.workTypeName,
+                treeName: tree.treeName || `Cây #${tree.treeId ?? "?"}`,
+                location:
+                  tree.latitude != null
+                    ? `Lat: ${tree.latitude.toFixed(4)}, Lng: ${tree.longitude.toFixed(4)}`
+                    : "Chưa có vị trí",
+                status: w.statusName,
+                endDate: w.endDate,
+              })
+            })
+          }
+        })
 
       setTasks(myTasks)
     } catch (err) {
@@ -107,8 +126,8 @@ export function WorkerDashboard() {
             </div>
         ) : (
             <div className="grid gap-5">
-                {tasks.map((task) => (
-                <Card key={task.id} className="group overflow-hidden rounded-[2.5rem] border-none shadow-2xl shadow-primary/5 bg-card/50 backdrop-blur-xl hover:bg-card transition-all duration-500 hover:-translate-y-1">
+                {tasks.map((task, idx) => (
+                <Card key={`${task.id}-${task.treeName}-${idx}`} className="group overflow-hidden rounded-[2.5rem] border-none shadow-2xl shadow-primary/5 bg-card/50 backdrop-blur-xl hover:bg-card transition-all duration-500 hover:-translate-y-1">
                     <CardContent className="p-0">
                     <div className="flex flex-col md:flex-row">
                         {/* Status Accent */}
