@@ -25,6 +25,8 @@ interface PlanDetail {
 const STATUS_LABEL: Record<string, string> = {
   New: "Mới", InProgress: "Đang thực hiện", WaitingForApproval: "Chờ duyệt",
   Completed: "Hoàn thành", Cancelled: "Đã hủy",
+  "0": "Mới", "1": "Đang thực hiện", "2": "Chờ duyệt",
+  "3": "Hoàn thành", "4": "Đã hủy",
 }
 
 async function fetchPlan(id: string): Promise<PlanDetail | null> {

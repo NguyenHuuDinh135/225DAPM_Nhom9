@@ -12,12 +12,18 @@ export const metadata: Metadata = { title: "Thay thế cây" }
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000"
 
 const STATUS_LABEL: Record<string, string> = {
+  // String enum values
   New: "Mới", InProgress: "Đang thực hiện", WaitingForApproval: "Chờ duyệt",
   Completed: "Hoàn thành", Cancelled: "Đã hủy",
+  // Numeric enum fallbacks (in case backend returns numbers)
+  "0": "Mới", "1": "Đang thực hiện", "2": "Chờ duyệt",
+  "3": "Hoàn thành", "4": "Đã hủy",
 }
 const STATUS_VARIANT: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
   New: "outline", InProgress: "secondary", WaitingForApproval: "secondary",
   Completed: "default", Cancelled: "destructive",
+  "0": "outline", "1": "secondary", "2": "secondary",
+  "3": "default", "4": "destructive",
 }
 
 async function fetchReplacements(): Promise<WorkItem[]> {
@@ -73,7 +79,7 @@ export default async function ReplacementsPage() {
                 </TableCell>
                 <TableCell>
                   <Badge variant={STATUS_VARIANT[w.status] ?? "outline"}>
-                    {STATUS_LABEL[w.status] ?? w.status}
+                    {w.statusName ?? STATUS_LABEL[w.status] ?? w.status}
                   </Badge>
                 </TableCell>
                 <TableCell>

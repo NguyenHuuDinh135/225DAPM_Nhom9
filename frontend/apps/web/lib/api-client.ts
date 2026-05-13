@@ -1,5 +1,6 @@
 // lib/api-client.ts
-const BASE_URL = typeof window !== "undefined" ? "" : (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000");
+// Always use absolute URL to avoid hydration mismatch between server and client
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000";
 
 export interface ApiError {
   status: number;

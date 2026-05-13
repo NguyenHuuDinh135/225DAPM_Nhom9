@@ -34,7 +34,7 @@ export function WorksClient({ initialWorks }: { initialWorks: WorkItem[] }) {
   const [sheetOpen, setSheetOpen] = useState(false)
   const [selectedWork, setSelectedWork] = useState<WorkItem | undefined>()
 
-  const BASE_URL = typeof window !== "undefined" ? "" : (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000")
+  const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000"
 
   async function refresh() {
     const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null
