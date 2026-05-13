@@ -384,10 +384,17 @@ curl -X POST http://localhost:5000/api/ai/chat \
 
 | Vai tro | Quyen han |
 |---------|-----------|
-| **Giam Doc** | Duyet ke hoach, xem bao cao tong hop, quan ly nhan su |
-| **Doi Truong** | Quan ly cay, tao ke hoach, phan cong cong viec, xu ly su co |
-| **Nhan Vien** | Bao cao tien do, cap nhat tinh trang cay, bao su co |
+| **Giam Doc** | Duyet ke hoach, xem bao cao tong hop, quan ly nhan su, phan tich he thong |
+| **Doi Truong** | Quan ly cay, tao ke hoach, phan cong cong viec, xu ly su co, phan tich he thong |
+| **Nhan Vien** | Bao cao tien do, cap nhat tinh trang cay, bao su co, xem tuyen cong viec tren ban do |
 | **Cong Dan** | Bao su co qua trang cong dong (khong can dang nhap) |
+
+### Tinh nang ban do theo vai tro
+
+| Vai tro | Tinh nang ban do |
+|---------|-----------------|
+| **Giam Doc / Doi Truong** | Them cay, di doi cay, duyet cong viec, xoa cay, ve vung, toi uu tuyen |
+| **Nhan Vien** | "Tuyen toi" (tu dong dinh tuyen cong viec), loc "Viec cua toi", bao su co tu ban do, bao cao tien do |
 
 ---
 

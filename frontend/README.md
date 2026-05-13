@@ -1,21 +1,39 @@
-# shadcn/ui monorepo template
+# Frontend — Quan Ly Cay Xanh
 
-This is a Next.js monorepo template with shadcn/ui.
+Next.js 16 + Bun + Turborepo monorepo with shadcn/ui.
 
-## Adding components
+## Scripts
 
-To add components to your app, run the following command at the root of your `web` app:
+<!-- AUTO-GENERATED -->
+| Command | Description |
+|---------|-------------|
+| `bun install` | Install all workspace dependencies |
+| `bun turbo dev` | Run all workspaces in dev mode |
+| `bun run dev` (from `apps/web`) | Web app only (Turbopack, port 3000) |
+| `bun run lint` | ESLint across monorepo |
+| `bun run typecheck` | TypeScript check (`tsc --noEmit`) across monorepo |
+| `bun run build` | Production build (all workspaces) |
+| `bun run test:e2e` (from `apps/web`) | Playwright E2E tests |
+<!-- END AUTO-GENERATED -->
+
+## Adding UI Components
 
 ```bash
-pnpm dlx shadcn@latest add button -c apps/web
+bunx shadcn@latest add button -c apps/web
 ```
 
-This will place the ui components in the `packages/ui/src/components` directory.
+Components are placed in `packages/ui/src/components/`.
 
-## Using components
-
-To use the components in your app, import them from the `ui` package.
+## Using Components
 
 ```tsx
 import { Button } from "@workspace/ui/components/button";
 ```
+
+## Workspaces
+
+| Package | Path | Purpose |
+|---------|------|---------|
+| `web` | `apps/web/` | Main Next.js 16 application |
+| `mobile` | `apps/mobile/` | Expo (React Native) — skeleton |
+| `@workspace/ui` | `packages/ui/` | Shared component library (shadcn/ui + MapLibre) |

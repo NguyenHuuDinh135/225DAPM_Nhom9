@@ -127,6 +127,9 @@ Frontend never calls backend directly — always through the Next.js rewrite pro
   - **Polygon draw + stats** — draw area, compute tree stats inside (uses @turf)
   - **Route optimizer** — select trees, TSP solver + OSRM routing
   - **Timeline slider** — filter trees by recorded date with play/pause animation
+- Role-based map actions (`full-dashboard-map.tsx`):
+  - **Admin (DoiTruong/GiamDoc)**: Add tree, relocate, approve/reject work items, delete trees
+  - **NhanVien**: "Tuyến tôi" (auto-routes to assigned pending tasks), "Việc của tôi" layer filter, "Báo sự cố" from tree popup, "Báo cáo tiến độ" from assigned work item popup
 
 ### AI / LLM (Ollama)
 
