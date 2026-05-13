@@ -135,7 +135,7 @@ export default function ProgressPage({ params }: { params: Promise<{ id: string 
         </div>
         <h3 className="text-xl font-black text-foreground">Không tìm thấy công tác</h3>
         <Button variant="link" asChild className="mt-2 text-primary">
-            <Link href="/worker">Quay lại Dashboard</Link>
+            <Link href="/nhanvien">Quay lại Dashboard</Link>
         </Button>
     </div>
   )
@@ -154,7 +154,7 @@ export default function ProgressPage({ params }: { params: Promise<{ id: string 
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
         <div className="flex items-center gap-4">
             <Button variant="outline" size="icon" className="size-12 rounded-2xl border-none bg-muted/50 hover:bg-muted shrink-0 transition-all" asChild>
-                <Link href="/worker">
+                <Link href="/nhanvien">
                     <ChevronLeft className="size-6 text-foreground" />
                 </Link>
             </Button>

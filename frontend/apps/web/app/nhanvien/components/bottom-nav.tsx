@@ -1,11 +1,10 @@
 "use client"
 
 import { usePathname } from "next/navigation"
-import { 
-  HomeIcon, 
-  ClipboardListIcon, 
-  MapPinIcon, 
-  BellIcon,
+import {
+  HomeIcon,
+  ClipboardListIcon,
+  MapPinIcon,
   UserCircleIcon,
   CameraIcon
 } from "lucide-react"
@@ -16,7 +15,6 @@ const navItems = [
   { label: "Trang chủ", icon: HomeIcon, href: "/nhanvien" },
   { label: "Công việc", icon: ClipboardListIcon, href: "/nhanvien/tasks" },
   { label: "Bản đồ", icon: MapPinIcon, href: "/map" },
-  { label: "Thông báo", icon: BellIcon, href: "/nhanvien/notifications" },
 ]
 
 export function BottomNav() {
