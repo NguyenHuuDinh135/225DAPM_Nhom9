@@ -100,7 +100,7 @@ export default function RootLayout({
                 <AuthProvider>
                   <TooltipProvider delayDuration={0}>
                     {children}
-                    <Toaster position="top-center" />
+                    <Toaster position="bottom-right" richColors expand={true} closeButton />
                   </TooltipProvider>
                 </AuthProvider>
               </NuqsAdapter>
