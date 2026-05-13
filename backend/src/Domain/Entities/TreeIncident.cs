@@ -1,4 +1,5 @@
 using backend.Domain.Enums;
+using backend.Domain.Events;
 
 namespace backend.Domain.Entities;
 
@@ -21,8 +22,9 @@ public class TreeIncident : BaseAuditableEntity
     private TreeIncident() { }
 
     public static TreeIncident Create(int treeId, string? reporterId, string? content,
-        string? reporterName = null, string? reporterPhone = null, string? severity = "Bình thường") =>
-        new TreeIncident
+        string? reporterName = null, string? reporterPhone = null, string? severity = "Bình thường")
+    {
+        var incident = new TreeIncident
         {
             TreeId = treeId,
             ReporterId = reporterId,
@@ -33,6 +35,9 @@ public class TreeIncident : BaseAuditableEntity
             Severity = severity,
             ReportedDate = DateTime.UtcNow
         };
+        incident.AddDomainEvent(new IncidentCreatedEvent(incident));
+        return incident;
+    }
 
     public void AddImage(TreeIncidentImage image) => Images.Add(image);
 

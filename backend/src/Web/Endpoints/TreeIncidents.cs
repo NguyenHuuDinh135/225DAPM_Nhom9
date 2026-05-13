@@ -3,6 +3,7 @@ using backend.Application.TreeIncidents.Commands.CreateIncident;
 using backend.Application.TreeIncidents.Commands.ReportIncident;
 using backend.Application.TreeIncidents.Commands.SendIncidentFeedback;
 using backend.Application.TreeIncidents.Commands.UpdateTreeIncidentStatus;
+using backend.Application.TreeIncidents.Queries.GetIncidentsByLocation;
 using backend.Application.TreeIncidents.Queries.GetTreeIncidentDetail;
 using backend.Application.TreeIncidents.Queries.GetTreeIncidents;
 using backend.Domain.Constants;
@@ -24,6 +25,7 @@ public class TreeIncidents : EndpointGroupBase
         app.MapPut("{id}/status", UpdateIncidentStatus).RequireAuthorization(new AuthorizeAttribute { Roles = $"{Roles.GiamDoc},{Roles.DoiTruong},{Roles.NhanVien}" });
         app.MapPut("{id}/approve", ApproveIncident).RequireAuthorization(new AuthorizeAttribute { Roles = $"{Roles.GiamDoc},{Roles.DoiTruong}" });
         app.MapPost("{id}/feedback", SendFeedback).RequireAuthorization(new AuthorizeAttribute { Roles = $"{Roles.GiamDoc},{Roles.DoiTruong},{Roles.NhanVien}" });
+        app.MapGet("by-location/{locationId:int}", GetIncidentsByLocation).AllowAnonymous();
     }
 
     public async Task<IResult> CreateIncident(ISender sender, [FromBody] CreateIncidentCommand command)
@@ -62,4 +64,7 @@ public class TreeIncidents : EndpointGroupBase
         var result = await sender.Send(command with { Id = id });
         return result.Succeeded ? Results.NoContent() : Results.BadRequest(result.Errors);
     }
+
+    public async Task<List<TreeIncidentDto>> GetIncidentsByLocation(ISender sender, int locationId)
+        => await sender.Send(new GetIncidentsByLocationQuery { LocationId = locationId });
 }
