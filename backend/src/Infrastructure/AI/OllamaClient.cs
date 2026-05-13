@@ -1,4 +1,5 @@
 using System.Net.Http.Json;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using backend.Application.Common.Interfaces;
@@ -70,6 +71,100 @@ public class OllamaClient
 
         var result = await response.Content.ReadFromJsonAsync<OllamaChatResponse>();
         return result?.Message?.Content?.Trim() ?? string.Empty;
+    }
+
+    public async IAsyncEnumerable<string> GenerateStreamAsync(
+        string model,
+        string prompt,
+        float temperature = 0.7f,
+        int maxTokens = 0,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        var numPredict = maxTokens > 0 ? maxTokens : _options.MaxTokens;
+
+        var request = new
+        {
+            model,
+            prompt,
+            stream = true,
+            options = new
+            {
+                temperature,
+                num_predict = numPredict
+            }
+        };
+
+        using var httpRequest = new HttpRequestMessage(HttpMethod.Post, "/api/generate")
+        {
+            Content = JsonContent.Create(request)
+        };
+
+        using var response = await _httpClient.SendAsync(httpRequest, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
+        response.EnsureSuccessStatusCode();
+
+        await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
+        using var reader = new StreamReader(stream);
+
+        while (!reader.EndOfStream)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var line = await reader.ReadLineAsync(cancellationToken);
+            if (string.IsNullOrWhiteSpace(line)) continue;
+
+            var chunk = JsonSerializer.Deserialize<OllamaGenerateResponse>(line);
+            if (!string.IsNullOrEmpty(chunk?.Response))
+            {
+                yield return chunk.Response;
+            }
+        }
+    }
+
+    public async IAsyncEnumerable<string> ChatStreamAsync(
+        string model,
+        List<ChatMessage> messages,
+        float temperature = 0.7f,
+        int maxTokens = 0,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        var numPredict = maxTokens > 0 ? maxTokens : _options.MaxTokens;
+
+        var ollamaMessages = messages.Select(m => new { role = m.Role, content = m.Content }).ToList();
+
+        var request = new
+        {
+            model,
+            messages = ollamaMessages,
+            stream = true,
+            options = new
+            {
+                temperature,
+                num_predict = numPredict
+            }
+        };
+
+        using var httpRequest = new HttpRequestMessage(HttpMethod.Post, "/api/chat")
+        {
+            Content = JsonContent.Create(request)
+        };
+
+        using var response = await _httpClient.SendAsync(httpRequest, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
+        response.EnsureSuccessStatusCode();
+
+        await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
+        using var reader = new StreamReader(stream);
+
+        while (!reader.EndOfStream)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var line = await reader.ReadLineAsync(cancellationToken);
+            if (string.IsNullOrWhiteSpace(line)) continue;
+
+            var chunk = JsonSerializer.Deserialize<OllamaChatResponse>(line);
+            if (!string.IsNullOrEmpty(chunk?.Message?.Content))
+            {
+                yield return chunk.Message.Content;
+            }
+        }
     }
 
     public async Task<float[]> EmbedAsync(string text)

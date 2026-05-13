@@ -12,6 +12,7 @@ public interface IAIService
     Task<bool> VerifyWorkCompletionAsync(string workType, string imagePath);
     Task<string> SuggestMaintenancePlanAsync(List<string> overdueTreeNames);
     Task<string> ChatAsync(string userMessage, List<ChatMessage>? history = null);
+    IAsyncEnumerable<string> ChatStreamAsync(string userMessage, List<ChatMessage>? history = null, CancellationToken cancellationToken = default);
     Task<string> GenerateReportAsync(string reportType, object data);
     Task<List<int>> DetectAnomaliesAsync(List<TreeHealthData> treeData);
     Task<List<MaintenancePrediction>> PredictMaintenanceAsync(List<TreeHealthData> trees);

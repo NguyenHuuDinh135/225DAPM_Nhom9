@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 using backend.Application.Common.Interfaces;
 using Microsoft.Extensions.Logging;
@@ -143,6 +144,42 @@ public class AIService : IAIService
         {
             _logger.LogWarning(ex, "Ollama chat failed");
             return "AI đang offline. Vui lòng kiểm tra kết nối Ollama và thử lại.";
+        }
+    }
+
+    public async IAsyncEnumerable<string> ChatStreamAsync(
+        string userMessage,
+        List<ChatMessage>? history = null,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        var messages = new List<ChatMessage>
+        {
+            new("system", """
+                Bạn là trợ lý AI quản lý cây xanh đô thị Đà Nẵng. Bạn hỗ trợ:
+                - Quản lý và theo dõi sức khỏe cây xanh
+                - Lập kế hoạch bảo trì, cắt tỉa, phun thuốc
+                - Xử lý và báo cáo sự cố
+                - Phân tích dữ liệu và xu hướng
+                - Tư vấn về các loài cây phù hợp với khí hậu Đà Nẵng
+                Trả lời ngắn gọn, chuyên nghiệp, bằng tiếng Việt. Tối đa 200 từ.
+                """)
+        };
+
+        if (history != null)
+            messages.AddRange(history);
+
+        messages.Add(new("user", userMessage));
+
+        var hasYielded = false;
+        await foreach (var chunk in _ollama.ChatStreamAsync(_options.DefaultModel, messages, temperature: 0.7f, maxTokens: 512, cancellationToken: cancellationToken))
+        {
+            hasYielded = true;
+            yield return chunk;
+        }
+
+        if (!hasYielded)
+        {
+            yield return "Xin lỗi, tôi không thể xử lý yêu cầu này. Vui lòng thử lại.";
         }
     }
 

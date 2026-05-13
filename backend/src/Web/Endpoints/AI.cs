@@ -16,6 +16,7 @@ public class AI : EndpointGroupBase
     public override void Map(RouteGroupBuilder groupBuilder)
     {
         groupBuilder.MapPost(Chat, "chat").RequireAuthorization();
+        groupBuilder.MapPost(ChatStream, "chat/stream").RequireAuthorization();
         groupBuilder.MapGet(DetectAnomalies, "anomalies").RequireAuthorization(new AuthorizeAttribute { Roles = $"{Roles.GiamDoc},{Roles.DoiTruong}" });
         groupBuilder.MapGet(GenerateReport, "report/{type}").RequireAuthorization(new AuthorizeAttribute { Roles = $"{Roles.GiamDoc},{Roles.DoiTruong}" });
         groupBuilder.MapGet(PredictMaintenance, "predictions").RequireAuthorization(new AuthorizeAttribute { Roles = $"{Roles.GiamDoc},{Roles.DoiTruong}" });
@@ -34,6 +35,40 @@ public class AI : EndpointGroupBase
         });
 
         return TypedResults.Ok(new ChatResponse(result));
+    }
+
+    public async Task ChatStream(HttpContext httpContext, IAIService aiService, ChatRequest request)
+    {
+        httpContext.Response.ContentType = "text/event-stream";
+        httpContext.Response.Headers.CacheControl = "no-cache";
+        httpContext.Response.Headers.Connection = "keep-alive";
+
+        var cancellationToken = httpContext.RequestAborted;
+
+        var history = request.History?
+            .Select(h => new ChatMessage(h.Role, h.Content))
+            .ToList();
+
+        try
+        {
+            await foreach (var chunk in aiService.ChatStreamAsync(request.Message, history, cancellationToken))
+            {
+                await httpContext.Response.WriteAsync($"data: {chunk}\n\n", cancellationToken);
+                await httpContext.Response.Body.FlushAsync(cancellationToken);
+            }
+
+            await httpContext.Response.WriteAsync("data: [DONE]\n\n", cancellationToken);
+            await httpContext.Response.Body.FlushAsync(cancellationToken);
+        }
+        catch (OperationCanceledException)
+        {
+            // Client disconnected, no action needed
+        }
+        catch (Exception)
+        {
+            await httpContext.Response.WriteAsync("data: [ERROR]\n\n", CancellationToken.None);
+            await httpContext.Response.Body.FlushAsync(CancellationToken.None);
+        }
     }
 
     public async Task<Ok<List<int>>> DetectAnomalies(ISender sender)
