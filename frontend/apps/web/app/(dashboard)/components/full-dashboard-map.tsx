@@ -6,12 +6,17 @@ import { Map, MapMarker, MarkerContent, MapPopup, MapControls, type MapRef } fro
 import { Badge } from "@workspace/ui/components/badge";
 import { Button } from "@workspace/ui/components/button";
 import { Input } from "@workspace/ui/components/input";
-import { 
-  TreePine, Wrench, AlertCircle, Search, 
-  MapPin, Maximize2, Minimize2, 
+import {
+  TreePine, Wrench, AlertCircle, Search,
+  MapPin, Maximize2, Minimize2,
   Move, Activity, User, Trash2, Check, X,
-  Briefcase, ShieldCheck, RefreshCw, Sparkles
+  Briefcase, ShieldCheck, RefreshCw, Sparkles,
+  Hexagon, Route, Clock
 } from "lucide-react";
+import { MapHeatmapLayer } from "./map-features/map-heatmap-layer";
+import { MapPolygonDraw } from "./map-features/map-polygon-draw";
+import { MapRouteOptimizer } from "./map-features/map-route-optimizer";
+import { MapTimelineSlider } from "./map-features/map-timeline-slider";
 import { 
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue 
 } from "@workspace/ui/components/select";
@@ -93,13 +98,16 @@ export function FullDashboardMap() {
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
   
   const [searchQuery, setSearchQuery] = React.useState("");
-  const [activeMode, setActiveMode] = React.useState<"view" | "add-tree" | "relocate">("view");
+  const [activeMode, setActiveMode] = React.useState<"view" | "add-tree" | "relocate" | "draw-polygon" | "select-route">("view");
 
   const [showTrees, setShowTrees] = React.useState(true);
   const [showIncidents, setShowIncidents] = React.useState(true);
   const [showWorkItems, setShowWorkItems] = React.useState(true);
   const [showAiLayer, setShowAiLayer] = React.useState(false);
   const [aiSuggestions, setAiSuggestions] = React.useState<number[]>([]);
+  const [showHeatmap, setShowHeatmap] = React.useState(false);
+  const [showTimeline, setShowTimeline] = React.useState(false);
+  const [timelineVisibleIds, setTimelineVisibleIds] = React.useState<Set<number> | null>(null);
 
   const stats = React.useMemo(() => ({
     totalTrees: trees.length,
@@ -237,6 +245,7 @@ export function FullDashboardMap() {
   };
 
   const handleMapClick = (e: any) => {
+    if (activeMode === "draw-polygon" || activeMode === "select-route") return;
     if (activeMode !== "add-tree") return;
     const { lng, lat } = e.lngLat;
     toast("Xác nhận thêm cây mới?", {
@@ -289,7 +298,11 @@ export function FullDashboardMap() {
     } catch (err) {}
   };
 
-  const filteredTrees = trees.filter(t => !searchQuery || t.name?.toLowerCase().includes(searchQuery.toLowerCase()) || t.id.toString() === searchQuery);
+  const filteredTrees = trees.filter(t => {
+    if (searchQuery && !t.name?.toLowerCase().includes(searchQuery.toLowerCase()) && t.id.toString() !== searchQuery) return false;
+    if (timelineVisibleIds && !timelineVisibleIds.has(t.id)) return false;
+    return true;
+  });
 
   return (
     <div className={cn(
@@ -323,6 +336,8 @@ export function FullDashboardMap() {
                     <ModeButton label="Di dời" active={activeMode === "relocate"} onClick={() => setActiveMode("relocate")} icon={Move} color="text-blue-600" />
                 </>
             )}
+            <ModeButton label="Vùng" active={activeMode === "draw-polygon"} onClick={() => setActiveMode(activeMode === "draw-polygon" ? "view" : "draw-polygon")} icon={Hexagon} color="text-violet-600" />
+            <ModeButton label="Tuyến" active={activeMode === "select-route"} onClick={() => setActiveMode(activeMode === "select-route" ? "view" : "select-route")} icon={Route} color="text-emerald-600" />
             <Button variant={showAiLayer ? "secondary" : "ghost"} size="sm" className={cn("rounded-xl h-9 px-4 font-black text-[10px] uppercase tracking-wider transition-all", showAiLayer && "text-primary bg-primary/10 shadow-inner")} onClick={loadAiSuggestions}>
                 <Sparkles className="size-3.5 mr-1.5" /> AI
             </Button>
@@ -339,6 +354,8 @@ export function FullDashboardMap() {
             <LayerItem label="Cây xanh" checked={showTrees} onCheck={setShowTrees} color="bg-primary" />
             <LayerItem label="Sự cố" checked={showIncidents} onCheck={setShowIncidents} color="bg-destructive" />
             <LayerItem label="Thi công" checked={showWorkItems} onCheck={setShowWorkItems} color="bg-blue-600" />
+            <LayerItem label="Mật độ" checked={showHeatmap} onCheck={setShowHeatmap} color="bg-orange-500" />
+            <LayerItem label="Dòng thời gian" checked={showTimeline} onCheck={(v) => { setShowTimeline(v); if (!v) setTimelineVisibleIds(null); }} color="bg-violet-500" />
         </div>
       </div>
 
@@ -530,7 +547,14 @@ export function FullDashboardMap() {
                 </div>
             </MapPopup>
           )}
+          <MapHeatmapLayer trees={filteredTrees} visible={showHeatmap} />
+          <MapPolygonDraw trees={trees} active={activeMode === "draw-polygon"} onClose={() => setActiveMode("view")} />
+          <MapRouteOptimizer trees={trees} active={activeMode === "select-route"} onClose={() => setActiveMode("view")} />
         </Map>
+
+        {showTimeline && (
+          <MapTimelineSlider trees={trees} onFilterChange={setTimelineVisibleIds} />
+        )}
       </div>
 
       {/* Analytics HUD */}

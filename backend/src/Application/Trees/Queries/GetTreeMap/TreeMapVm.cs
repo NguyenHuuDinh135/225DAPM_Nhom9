@@ -13,4 +13,5 @@ public class TreeMapDto
     public string? TreeTypeName { get; init; }
     public double? Latitude { get; init; }
     public double? Longitude { get; init; }
+    public DateTime? RecordedDate { get; init; }
 }
