@@ -18,6 +18,7 @@ import Link from "next/link"
 import { apiClient } from "@/lib/api-client"
 import { useEffect, useState } from "react"
 import { AutoPlanDialog } from "../plans/components/auto-plan-dialog"
+import { AiInsightsCard } from "./ai-insights-card"
 import { toast } from "@workspace/ui/components/sonner"
 import { cn } from "@workspace/ui/lib/utils"
 
@@ -433,6 +434,9 @@ export function CaptainDashboard({ stats, onRefresh }: CaptainDashboardProps) {
                </Button>
             </CardContent>
           </Card>
+
+          {/* ── AI Insights ── */}
+          <AiInsightsCard />
 
           {/* ── Trạng thái nhân sự ── */}
           <StaffStatusWidget />

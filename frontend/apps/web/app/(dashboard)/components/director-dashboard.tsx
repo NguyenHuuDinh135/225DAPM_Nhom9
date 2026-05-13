@@ -12,6 +12,7 @@ import { useAuth } from "@/hooks/use-auth"
 import { toast } from "@workspace/ui/components/sonner"
 import Link from "next/link"
 import { PlanDetailSheet } from "../plans/components/plan-detail-sheet"
+import { AiInsightsCard } from "./ai-insights-card"
 import { 
     Sheet, 
     SheetContent, 
@@ -383,7 +384,9 @@ export function DirectorDashboard({ stats, onRefresh }: DirectorDashboardProps) 
         </Card>
       </div>
 
-      {/* TODO: wire to real metrics API when a dedicated endpoint exists */}
+      {/* AI Insights */}
+      <AiInsightsCard />
+
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           <StatusMiniCard icon={TrendingUp} label="Tổng cây quản lý" value={`${stats.totalTrees ?? stats.TotalTrees ?? 0}`} color="blue" />
           <StatusMiniCard icon={CheckCircle2} label="Hoàn thành tháng" value={`${stats.completedWorksThisMonth ?? stats.CompletedWorksThisMonth ?? 0}`} color="purple" />
