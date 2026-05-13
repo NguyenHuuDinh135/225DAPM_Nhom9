@@ -29,18 +29,18 @@ interface NavItem {
 }
 
 // 1. Menu Chính (Dành cho mọi người hoặc các vai trò quản lý)
-const NAV_MAIN: (dashboardUrl: string) => NavItem[] = (dashboardUrl) => [
-  { 
-    title: "Bàn làm việc", 
-    url: dashboardUrl, 
-    icon: <LayoutDashboardIcon className="size-4" /> 
+const NAV_MAIN: (dashboardUrl: string, role: Role) => NavItem[] = (dashboardUrl, role) => [
+  {
+    title: "Bàn làm việc",
+    url: dashboardUrl,
+    icon: <LayoutDashboardIcon className="size-4" />
   },
   {
     title: "Bản đồ cây xanh", url: "/map", icon: <MapIcon className="size-4" />,
   },
   {
-    title: "Quản lý công việc", 
-    url: "/nhanvien/tasks", 
+    title: role === ROLES.NhanVien ? "Việc của tôi" : "Quản lý công việc",
+    url: "/nhanvien/tasks",
     icon: <ClipboardListIcon className="size-4" />,
     roles: [ROLES.NhanVien, ROLES.DoiTruong],
   },
@@ -77,11 +77,11 @@ const NAV_STRATEGIC: NavItem[] = [
     icon: <FileTextIcon className="size-4" />, 
     roles: [ROLES.GiamDoc] 
   },
-  { 
-    title: "Phân tích hệ thống", 
-    url: "/analytics", 
-    icon: <BarChart3Icon className="size-4" />, 
-    roles: [ROLES.DoiTruong] 
+  {
+    title: "Phân tích hệ thống",
+    url: "/analytics",
+    icon: <BarChart3Icon className="size-4" />,
+    roles: [ROLES.DoiTruong, ROLES.GiamDoc]
   },
 ]
 
@@ -145,7 +145,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
 
       <SidebarContent className="gap-0 py-4">
-        <NavGroup label="Hệ thống" items={NAV_MAIN(dashboardUrl)} role={role} pathname={pathname} />
+        <NavGroup label="Hệ thống" items={NAV_MAIN(dashboardUrl, role)} role={role} pathname={pathname} />
         <NavGroup label="Nghiệp vụ" items={NAV_MANAGEMENT} role={role} pathname={pathname} />
         <NavGroup label="Chiến lược" items={NAV_STRATEGIC} role={role} pathname={pathname} />
         <NavGroup label="Cá nhân" items={NAV_SETTINGS} role={role} pathname={pathname} />
