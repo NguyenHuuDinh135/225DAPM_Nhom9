@@ -61,11 +61,7 @@ public class AssignWorkCommandHandler : IRequestHandler<AssignWorkCommand, Resul
                 // Mỗi work item chỉ gắn với 1 cây
                 if (treeId > 0)
                 {
-                    work.WorkDetails.Add(new WorkDetail
-                    {
-                        TreeId = treeId,
-                        Status = "New"
-                    });
+                    work.WorkDetails.Add(WorkDetail.Create(0, treeId, "New"));
                 }
 
                 // Tất cả work item trong cùng lần tạo đều gắn cùng danh sách nhân viên

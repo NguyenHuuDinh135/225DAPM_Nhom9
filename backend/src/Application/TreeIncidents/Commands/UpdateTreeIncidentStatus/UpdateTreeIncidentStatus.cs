@@ -1,11 +1,12 @@
 using backend.Application.Common.Interfaces;
+using backend.Domain.Enums;
 
 namespace backend.Application.TreeIncidents.Commands.UpdateTreeIncidentStatus;
 
 public record UpdateTreeIncidentStatusCommand : IRequest
 {
     public int Id { get; init; }
-    public string Status { get; init; } = null!;
+    public IncidentStatus Status { get; init; }
 }
 
 public class UpdateTreeIncidentStatusCommandHandler : IRequestHandler<UpdateTreeIncidentStatusCommand>

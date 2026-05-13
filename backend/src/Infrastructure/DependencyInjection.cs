@@ -50,7 +50,7 @@ public static class DependencyInjection
         })
         .AddJwtBearer("Jwt", options =>
         {
-            var key = builder.Configuration["Jwt:Key"] ?? "YourSuperSecretKeyWithAtLeast32Characters!";
+            var key = builder.Configuration["Jwt:Key"] ?? throw new InvalidOperationException("Jwt:Key must be configured.");
             options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
             {
                 ValidateIssuer = false,

@@ -288,13 +288,8 @@ public class ApplicationDbContextInitialiser
                     });
 
                     var tree = trees[rand.Next(trees.Count)];
-                    _context.WorkDetails.Add(new WorkDetail
-                    {
-                        WorkId  = work.Id,
-                        TreeId  = tree.Id,
-                        Content = $"{wt.Name} cho {tree.Name}",
-                        Status  = (work.Status == WorkStatus.Completed) ? "Completed" : "Pending"
-                    });
+                    var detailStatus = (work.Status == WorkStatus.Completed) ? "Completed" : "Pending";
+                    _context.WorkDetails.Add(WorkDetail.Create(work.Id, tree.Id, $"{wt.Name} cho {tree.Name}", detailStatus));
                 }
             }
             await _context.SaveChangesAsync();
@@ -323,7 +318,7 @@ public class ApplicationDbContextInitialiser
                 "https://images.unsplash.com/photo-1638202993928-7267aad84c31?auto=format&fit=crop&q=80&w=800",
                 "https://images.unsplash.com/photo-1621944190310-e3cca1564bd7?auto=format&fit=crop&q=80&w=800"
             };
-            var statuses = new[] { "Pending", "InProgress", "Resolved" };
+            var statuses = new[] { IncidentStatus.Pending, IncidentStatus.InProgress, IncidentStatus.Resolved };
 
             for (int i = 0; i < 150; i++)
             {
@@ -347,7 +342,7 @@ public class ApplicationDbContextInitialiser
 
                 var status = statuses[rand.Next(statuses.Length)];
                 incident.UpdateStatus(status);
-                if (status != "Pending")
+                if (status != IncidentStatus.Pending)
                     incident.Approve(doiTruong.Id);
                     
                 _context.TreeIncidents.Add(incident);

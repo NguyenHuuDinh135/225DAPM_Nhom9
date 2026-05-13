@@ -1,5 +1,6 @@
 using backend.Application.Common.Interfaces;
 using backend.Application.Common.Models;
+using backend.Domain.Enums;
 
 namespace backend.Application.TreeIncidents.Commands.SendIncidentFeedback;
 
@@ -43,7 +44,7 @@ public class SendIncidentFeedbackCommandHandler : IRequestHandler<SendIncidentFe
         if (request.IsResolved)
             incident.Approve(request.ApproverId);
         else
-            incident.UpdateStatus("InProgress");
+            incident.UpdateStatus(IncidentStatus.InProgress);
 
         await _context.SaveChangesAsync(cancellationToken);
 

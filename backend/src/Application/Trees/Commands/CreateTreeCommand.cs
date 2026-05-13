@@ -1,10 +1,11 @@
 using backend.Application.Common.Interfaces;
+using backend.Application.Common.Models;
 using backend.Domain.Entities;
 using MediatR;
 
 namespace backend.Application.Trees.Commands
 {
-    public class CreateTreeCommand : IRequest<int>
+    public class CreateTreeCommand : IRequest<Result<int>>
     {
         public string? Name { get; set; }
         public int TreeTypeId { get; set; }
@@ -16,7 +17,7 @@ namespace backend.Application.Trees.Commands
         public decimal? TrunkDiameter { get; set; }
     }
 
-    public class CreateTreeCommandHandler : IRequestHandler<CreateTreeCommand, int>
+    public class CreateTreeCommandHandler : IRequestHandler<CreateTreeCommand, Result<int>>
     {
         private readonly IApplicationDbContext _context;
 
@@ -25,7 +26,7 @@ namespace backend.Application.Trees.Commands
             _context = context;
         }
 
-        public async Task<int> Handle(CreateTreeCommand request, CancellationToken cancellationToken)
+        public async Task<Result<int>> Handle(CreateTreeCommand request, CancellationToken cancellationToken)
         {
             var tree = new Tree
             {
@@ -43,7 +44,7 @@ namespace backend.Application.Trees.Commands
             _context.Trees.Add(tree);
             await _context.SaveChangesAsync(cancellationToken);
 
-            return tree.Id;
+            return Result<int>.Success(tree.Id);
         }
     }
 }

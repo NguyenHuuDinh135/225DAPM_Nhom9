@@ -31,7 +31,7 @@ public class GetDashboardStatisticsQueryHandler : IRequestHandler<GetDashboardSt
         var totalWards = await _context.Wards.AsNoTracking().CountAsync(cancellationToken);
 
         var pendingIncidents = await _context.TreeIncidents.AsNoTracking()
-            .CountAsync(i => i.Status == "Pending", cancellationToken);
+            .CountAsync(i => i.Status == IncidentStatus.Pending, cancellationToken);
 
         var completedThisMonth = await _context.Works.AsNoTracking()
             .CountAsync(w => w.Status == WorkStatus.Completed && w.EndDate >= startOfMonth && w.EndDate < now, cancellationToken);

@@ -1,3 +1,5 @@
+using backend.Domain.Enums;
+
 namespace backend.Domain.Entities;
 
 public class TreeIncident : BaseAuditableEntity
@@ -9,7 +11,7 @@ public class TreeIncident : BaseAuditableEntity
     public string? ApproverId { get; private set; }
     public string? AssignedTeamId { get; private set; }
     public string? Content { get; private set; }
-    public string? Status { get; private set; }
+    public IncidentStatus Status { get; private set; }
     public string? Severity { get; private set; }
     public DateTime? ReportedDate { get; private set; }
 
@@ -27,19 +29,19 @@ public class TreeIncident : BaseAuditableEntity
             ReporterName = reporterName,
             ReporterPhone = reporterPhone,
             Content = content,
-            Status = "Pending",
+            Status = IncidentStatus.Pending,
             Severity = severity,
             ReportedDate = DateTime.UtcNow
         };
 
     public void AddImage(TreeIncidentImage image) => Images.Add(image);
 
-    public void UpdateStatus(string status) => Status = status;
+    public void UpdateStatus(IncidentStatus status) => Status = status;
 
     public void Approve(string approverId, string? teamId = null)
     {
         ApproverId = approverId;
         AssignedTeamId = teamId;
-        Status = "Approved";
+        Status = IncidentStatus.Approved;
     }
 }

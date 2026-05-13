@@ -8,13 +8,21 @@ namespace backend.Domain.Entities;
 /// </summary>
 public class WorkProgress : BaseAuditableEntity
 {
-    public int WorkId { get;  set; }
-    public string UpdaterId { get;  set; } = null!;
+    public int WorkId { get; private set; }
+    public string UpdaterId { get; private set; } = null!;
 
-    public int? Percentage { get;  set; }
-    public string? Note { get;  set; }
-    public DateTime? UpdatedDate { get;  set; }
+    public int? Percentage { get; private set; }
+    public string? Note { get; private set; }
+    public DateTime? UpdatedDate { get; private set; }
 
-    public Work Work { get;  set; } = null!;
-    public ICollection<WorkProgressImage> Images { get; set; } = new List<WorkProgressImage>();
+    public Work Work { get; private set; } = null!;
+    public ICollection<WorkProgressImage> Images { get; private set; } = new List<WorkProgressImage>();
+
+    private WorkProgress() { }
+
+    public static WorkProgress Create(int workId, string? note, int? percentage) =>
+        new() { WorkId = workId, Note = note, Percentage = percentage };
+
+    public static WorkProgress Create(int workId, string updaterId, string? note, int? percentage) =>
+        new() { WorkId = workId, UpdaterId = updaterId, Note = note, Percentage = percentage, UpdatedDate = DateTime.UtcNow };
 }
