@@ -94,6 +94,8 @@ public static class DependencyInjection
         builder.Services.AddScoped<IMaintenanceJobService, MaintenanceJobService>();
         builder.Services.AddScoped<IAutoAssignmentService, AutoAssignmentService>();
         builder.Services.AddScoped<IFileService, FileService>();
+        builder.Services.Configure<OllamaOptions>(builder.Configuration.GetSection(OllamaOptions.SectionName));
+        builder.Services.AddSingleton<OllamaClient>();
         builder.Services.AddTransient<IAIService, AIService>();
 
         // Hangfire — only configure when connection string is available
