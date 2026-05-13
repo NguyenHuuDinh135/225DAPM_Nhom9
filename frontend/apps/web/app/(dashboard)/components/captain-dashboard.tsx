@@ -272,6 +272,58 @@ function PendingApprovalSection({ onApproved }: { onApproved: () => void }) {
   )
 }
 
+// ─── Staff Status Widget (fetches real data) ─────────────────────────────────
+
+function StaffStatusWidget() {
+  const [staffList, setStaffList] = useState<{ id: string; fullName: string | null; userName: string; status: number }[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    async function load() {
+      try {
+        const res = await apiClient.get<any>("/api/employees")
+        const employees = (res?.employees || []).filter((e: any) => e.role === "NhanVien")
+        setStaffList(employees.slice(0, 5))
+      } catch {
+        setStaffList([])
+      } finally {
+        setLoading(false)
+      }
+    }
+    load()
+  }, [])
+
+  return (
+    <Card className="glass-card border-border/40 shadow-xl overflow-hidden">
+      <CardHeader className="bg-muted/30 border-b border-border/40 py-4">
+        <CardTitle className="text-sm font-black text-primary/70 uppercase tracking-widest">Trạng thái nhân sự</CardTitle>
+      </CardHeader>
+      <CardContent className="flex flex-col gap-4 p-5">
+        {loading ? (
+          <div className="flex justify-center py-6"><Loader2 className="size-5 animate-spin text-muted-foreground" /></div>
+        ) : staffList.length === 0 ? (
+          <p className="text-xs text-muted-foreground italic text-center py-4">Không có nhân viên</p>
+        ) : (
+          staffList.map((emp) => (
+            <div key={emp.id} className="flex items-center justify-between text-sm p-2 rounded-xl hover:bg-muted/50 transition-colors">
+              <div className="flex items-center gap-3">
+                <div className={cn("size-2.5 rounded-full shadow-xs animate-pulse", emp.status === 1 ? "bg-green-500" : "bg-red-500")} />
+                <span className="font-bold text-foreground/80">{emp.fullName || emp.userName}</span>
+              </div>
+              <span className="text-[9px] font-black uppercase tracking-tighter opacity-70">
+                {emp.status === 1 ? "Sẵn sàng" : "Nghỉ"}
+              </span>
+            </div>
+          ))
+        )}
+        <Button variant="ghost" size="sm" className="w-full h-9 rounded-xl text-xs font-bold mt-2 hover:bg-primary/5 hover:text-primary" asChild>
+          <Link href="/staff">Xem tất cả</Link>
+        </Button>
+      </CardContent>
+    </Card>
+  )
+}
+
 export function CaptainDashboard({ stats, onRefresh }: CaptainDashboardProps) {
   const [aiSuggestion, setAiSuggestion] = useState<AISuggestion | null>(null)
   const [aiLoading, setAiLoading] = useState(false)
@@ -383,28 +435,7 @@ export function CaptainDashboard({ stats, onRefresh }: CaptainDashboardProps) {
           </Card>
 
           {/* ── Trạng thái nhân sự ── */}
-          <Card className="glass-card border-border/40 shadow-xl overflow-hidden">
-            <CardHeader className="bg-muted/30 border-b border-border/40 py-4">
-              <CardTitle className="text-sm font-black text-primary/70 uppercase tracking-widest">Trình trạng nhân sự</CardTitle>
-            </CardHeader>
-            <CardContent className="flex flex-col gap-4 p-5">
-               {[
-                 { name: "Lê Văn Nhân Viên", status: "Bận", cls: "bg-amber-500" },
-                 { name: "Phạm Thị Công Nhân", status: "Sẵn sàng", cls: "bg-green-500" },
-                 { name: "Nguyễn Thị Hoa", status: "Nghỉ", cls: "bg-red-500" },
-                 { name: "Trần Văn Bình", status: "Bận", cls: "bg-amber-500" },
-               ].map((emp) => (
-                 <div key={emp.name} className="flex items-center justify-between text-sm p-2 rounded-xl hover:bg-muted/50 transition-colors">
-                    <div className="flex items-center gap-3">
-                        <div className={`size-2.5 rounded-full shadow-xs ${emp.cls} animate-pulse`} />
-                        <span className="font-bold text-foreground/80">{emp.name}</span>
-                    </div>
-                    <span className={`text-[9px] font-black uppercase tracking-tighter opacity-70`}>{emp.status}</span>
-                 </div>
-               ))}
-               <Button variant="ghost" size="sm" className="w-full h-9 rounded-xl text-xs font-bold mt-2 hover:bg-primary/5 hover:text-primary">Xem tất cả</Button>
-            </CardContent>
-          </Card>
+          <StaffStatusWidget />
 
           {/* ── Kế hoạch gần đây ── */}
           <Card className="glass-card border-border/40 shadow-xl overflow-hidden">
