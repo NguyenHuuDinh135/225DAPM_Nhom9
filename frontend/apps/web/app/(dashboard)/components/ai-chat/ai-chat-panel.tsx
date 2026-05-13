@@ -22,8 +22,8 @@ export function AiChatPanel() {
 
   const checkHealth = useCallback(async () => {
     try {
-      const result = await apiClient.get<boolean>("/api/ai/health")
-      setIsOnline(result === true)
+      const result = await apiClient.get<{ available: boolean }>("/api/ai/health")
+      setIsOnline(result?.available === true)
     } catch {
       setIsOnline(false)
     }

@@ -16,14 +16,9 @@ interface Prediction {
   suggestedAction: string
 }
 
-interface PredictionsResponse {
-  predictions: Prediction[]
-}
+type PredictionsResponse = Prediction[]
 
-interface AnomaliesResponse {
-  anomalyIds: number[]
-  count: number
-}
+type AnomaliesResponse = number[]
 
 export function AiInsightsCard() {
   const [predictions, setPredictions] = useState<Prediction[]>([])
@@ -42,8 +37,8 @@ export function AiInsightsCard() {
         apiClient.get<AnomaliesResponse>("/api/ai/anomalies"),
       ])
 
-      setPredictions(predictionsData.predictions)
-      setAnomalyCount(anomaliesData.count)
+      setPredictions(predictionsData ?? [])
+      setAnomalyCount(anomaliesData?.length ?? 0)
     } catch {
       setIsOffline(true)
     } finally {
