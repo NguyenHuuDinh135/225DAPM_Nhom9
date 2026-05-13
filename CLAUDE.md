@@ -65,15 +65,15 @@ HTTP → Minimal API Endpoint (Web/) → ISender.Send(Command/Query)
   → Returns Result<T> (commands) or DTO (queries)
 ```
 
-Endpoints inherit `EndpointGroupBase` and are auto-discovered. Each maps to a feature area (Trees, Plans, Works, Users, Incidents).
+Endpoints inherit `EndpointGroupBase` and are auto-discovered. Each maps to a feature area (Trees, Plans, Works, Users, Incidents, AI).
 
 ### Backend — Layer Responsibilities
 
 | Layer | Path | Rule |
 |-------|------|------|
 | Domain | `backend/src/Domain/` | Pure entities with behaviour methods (`Tree.Relocate()`, `Plan.Approve()`). Factory via `static Create()`. Zero dependencies. |
-| Application | `backend/src/Application/` | Feature folders (Trees, Planning, WorkItems, TreeIncidents, Employees, Identity, Locations, Lookups, Maintenance, Reports) with colocated Command + Validator + Handler. Returns `Result<T>` for mutations. |
-| Infrastructure | `backend/src/Infrastructure/` | EF Core context, Identity, Redis cache, file storage, AI stub, Hangfire. |
+| Application | `backend/src/Application/` | Feature folders (Trees, Planning, WorkItems, TreeIncidents, Employees, Identity, Locations, Lookups, Maintenance, Reports, AI) with colocated Command + Validator + Handler. Returns `Result<T>` for mutations. |
+| Infrastructure | `backend/src/Infrastructure/` | EF Core context, Identity, Redis cache, file storage, Ollama AI integration, Hangfire. |
 | Web | `backend/src/Web/` | Minimal API endpoints, CORS, JWT config, SignalR hub, NSwag OpenAPI. |
 
 ### Frontend — Structure
@@ -122,6 +122,22 @@ Frontend never calls backend directly — always through the Next.js rewrite pro
 - Component library: `@workspace/ui/components/ui/map` — use `Map`, `MapMarker`, `MapPopup`, `MapControls`, `MapRoute`, `MapClusterLayer`
 - Default center: Da Nang `[108.2149, 16.0644]`
 - Tree data: `GET /api/trees/map` returns `TreeMapVm`
+- Advanced features in `app/(dashboard)/components/map-features/`:
+  - **Heatmap layer** — density visualization using MapLibre native heatmap
+  - **Polygon draw + stats** — draw area, compute tree stats inside (uses @turf)
+  - **Route optimizer** — select trees, TSP solver + OSRM routing
+  - **Timeline slider** — filter trees by recorded date with play/pause animation
+
+### AI / LLM (Ollama)
+
+- Engine: **Ollama** running locally at `http://localhost:11434`
+- Models: `qwen2.5:7b` (reasoning), `qwen2.5-coder:0.5b` (fast classification), `nomic-embed-text` (embeddings)
+- Configuration: `appsettings.json` → `Ollama` section (`OllamaOptions.cs`)
+- Client: `Infrastructure/AI/OllamaClient.cs` — singleton HTTP client with generate/chat/embed methods
+- Service: `Infrastructure/AI/AIService.cs` implements `IAIService` with graceful fallback to keyword matching if Ollama offline
+- Endpoints: `POST /api/ai/chat`, `GET /api/ai/health`, `GET /api/ai/anomalies`, `GET /api/ai/predictions`, `GET /api/ai/report/{type}`
+- Frontend: `AiChatPanel` (floating chat on all dashboard pages), `AiInsightsCard` (predictions + anomalies), `AiHealthBadge`
+- All AI calls are non-blocking with try-catch — system works without Ollama running
 
 ## Domain Model (Key Entities)
 
@@ -147,6 +163,8 @@ Frontend never calls backend directly — always through the Next.js rewrite pro
 - **Caching**: Use `ICacheService` interface (Redis in prod, NullCache locally)
 - **Excel**: Use `IExcelService` (ClosedXML) for import/export features
 - **Pagination**: Use `PaginatedList<T>` from `Application/Common/Models`
+- **AI service**: Use `IAIService` interface — never call Ollama HTTP directly from handlers
+- **AI prompts**: Vietnamese language prompts, responses parsed with fallback defaults
 
 ## CI/CD
 
@@ -170,6 +188,7 @@ Frontend never calls backend directly — always through the Next.js rewrite pro
 
 - No refresh token — sessions expire after 7 days with no renewal
 - CORS is `SetIsOriginAllowed(_ => true)` — lock down before production
-- `AIService` is a keyword-matching stub, not a real ML integration
+- AI requires Ollama running locally — no cloud fallback; qwen2.5:7b takes 10-50s on CPU-only hardware
+- AI image verification (`VerifyWorkCompletionAsync`) analyzes metadata only — no vision model (no GPU)
 - `NotificationListener` hardcodes `BASE_URL = "http://localhost:5000"` — needs env var for production
 - Hangfire recurring job (`tree-maintenance`) is commented out in `Program.cs`
