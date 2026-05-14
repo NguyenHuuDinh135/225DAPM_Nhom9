@@ -14,9 +14,11 @@ applications:
             - bun run build
         postBuild:
           commands:
-            - ln -sf ../../node_modules node_modules
+            - cp -r ../../node_modules .next/standalone/frontend/apps/web/node_modules || true
+            - cp -r .next/static .next/standalone/frontend/apps/web/.next/static || true
+            - cp -r public .next/standalone/frontend/apps/web/public || true
       artifacts:
-        baseDirectory: .next
+        baseDirectory: .next/standalone/frontend/apps/web
         files:
           - '**/*'
       cache:
