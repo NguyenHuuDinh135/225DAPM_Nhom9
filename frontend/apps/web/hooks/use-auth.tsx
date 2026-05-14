@@ -54,7 +54,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   async function login(email: string, password: string) {
-    const res = await apiClient.post<LoginResponse>("/api/Users/login", {
+    const res = await apiClient.post<LoginResponse>("/api/users/login", {
       email,
       password,
     });
@@ -65,7 +65,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     document.cookie = `access_token=${res.accessToken}; path=/; expires=${expires}; SameSite=Lax`;
     setToken(res.accessToken);
 
-    const userInfo = await apiClient.get<User>("/api/Users/me");
+    const userInfo = await apiClient.get<User>("/api/users/me");
     
     // Always override role with decoded role from token for consistency
     // Fallback to userInfo.role (from /me) if decoding fails

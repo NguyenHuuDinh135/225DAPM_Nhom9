@@ -299,10 +299,10 @@
         ]
       }
     },
-    "/api/Lookups/tree-types": {
+    "/api/lookups/tree-types": {
       "get": {
         "tags": [
-          "Lookups"
+          "lookups"
         ],
         "operationId": "GetApiLookupsTreeTypes",
         "responses": {
@@ -322,10 +322,10 @@
         }
       }
     },
-    "/api/Lookups/work-types": {
+    "/api/lookups/work-types": {
       "get": {
         "tags": [
-          "Lookups"
+          "lookups"
         ],
         "operationId": "GetApiLookupsWorkTypes",
         "responses": {
@@ -345,10 +345,10 @@
         }
       }
     },
-    "/api/Lookups/wards": {
+    "/api/lookups/wards": {
       "get": {
         "tags": [
-          "Lookups"
+          "lookups"
         ],
         "operationId": "GetApiLookupsWards",
         "responses": {
@@ -373,10 +373,10 @@
         ]
       }
     },
-    "/api/Lookups/streets": {
+    "/api/lookups/streets": {
       "get": {
         "tags": [
-          "Lookups"
+          "lookups"
         ],
         "operationId": "GetApiLookupsStreets",
         "parameters": [
@@ -2190,15 +2190,15 @@
         }
       },
       "UserStatus": {
-        "type": "integer",
+        "type": "string",
         "description": "",
         "x-enumNames": [
           "Inactive",
           "Active"
         ],
         "enum": [
-          0,
-          1
+          "Inactive",
+          "Active"
         ]
       },
       "CreateEmployeeCommand": {
@@ -3362,7 +3362,7 @@
         }
       },
       "WorkStatus": {
-        "type": "integer",
+        "type": "string",
         "description": "",
         "x-enumNames": [
           "New",
@@ -3372,11 +3372,11 @@
           "Cancelled"
         ],
         "enum": [
-          0,
-          1,
-          2,
-          3,
-          4
+          "New",
+          "InProgress",
+          "WaitingForApproval",
+          "Completed",
+          "Cancelled"
         ]
       },
       "WorkTreeLocationDto": {

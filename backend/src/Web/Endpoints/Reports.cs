@@ -15,7 +15,7 @@ public class Reports : EndpointGroupBase
     {
         app.MapGet("dashboard-stats", GetDashboardStats).AllowAnonymous();
         app.MapGet("monthly-stats", GetMonthlyStats).AllowAnonymous();
-        app.MapGet("export", ExportDashboardStats).RequireAuthorization(new AuthorizeAttribute { Roles = $"{Roles.GiamDoc},{Roles.DoiTruong}" });
+        app.MapGet("export-dashboard-stats", ExportDashboardStats).RequireAuthorization(new AuthorizeAttribute { Roles = $"{Roles.GiamDoc},{Roles.DoiTruong}" });
     }
 
     public async Task<Ok<DashboardStatsVm>> GetDashboardStats(ISender sender)

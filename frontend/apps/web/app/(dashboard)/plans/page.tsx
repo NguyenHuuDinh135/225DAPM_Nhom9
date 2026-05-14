@@ -105,7 +105,7 @@ export default function PlansPage() {
   // Fetch lookup data
   const loadLookups = async () => {
     // Load Work Types
-    apiClient.get<any[]>("/api/Lookups/work-types")
+    apiClient.get<any[]>("/api/lookups/work-types")
       .then(setWorkTypes)
       .catch(err => console.error("Load work types error:", err));
 
@@ -138,7 +138,7 @@ export default function PlansPage() {
   const loadPlans = async () => {
     setLoading(true)
     try {
-      const data = await apiClient.get<PlanDto[]>("/api/Planning")
+      const data = await apiClient.get<PlanDto[]>("/api/planning")
       setPlans(data || [])
     } catch (err) {
       console.error("Load plans error:", err)
@@ -152,7 +152,7 @@ export default function PlansPage() {
     setIsSheetOpen(true)
     setSelectedPlan({ ...plan, loading: true })
     try {
-      const detail = await apiClient.get<any>(`/api/Planning/${plan.id}`)
+      const detail = await apiClient.get<any>(`/api/planning/${plan.id}`)
       setSelectedPlan(detail)
     } catch (err) {
       toast.error("Lỗi", { description: "Không thể tải chi tiết kế hoạch." })
@@ -210,8 +210,8 @@ export default function PlansPage() {
   }, [])
 
   React.useEffect(() => {
-    if (isSheetOpen) loadLookups()
-  }, [isSheetOpen])
+    if (isSheetOpen || isCreateDialogOpen) loadLookups()
+  }, [isSheetOpen, isCreateDialogOpen])
 
   const handleCreatePlan = async () => {
     if (!newPlanName) {
@@ -219,7 +219,7 @@ export default function PlansPage() {
       return
     }
     try {
-      await apiClient.post("/api/Planning", {
+      await apiClient.post("/api/planning", {
         name: newPlanName,
         creatorId: user?.id || localStorage.getItem("user_id") || "",
         startDate: newPlanDates.start ? new Date(newPlanDates.start).toISOString() : new Date().toISOString(),
@@ -245,7 +245,7 @@ export default function PlansPage() {
 
   const handleSubmit = async (id: number) => {
     try {
-      await apiClient.put(`/api/Planning/${id}/submit`, {})
+      await apiClient.put(`/api/planning/${id}/submit`, {})
       toast.success("Thành công", { description: "Đã gửi kế hoạch chờ duyệt." })
       setIsSheetOpen(false)
       loadPlans()
@@ -261,7 +261,7 @@ export default function PlansPage() {
 
   const handleApprove = async (id: number) => {
     try {
-      await apiClient.put(`/api/Planning/${id}/approve`, {
+      await apiClient.put(`/api/planning/${id}/approve`, {
         id,
         approverId: user?.id || ""
       })
@@ -281,10 +281,10 @@ export default function PlansPage() {
     const id = selectedPlan.id
     try {
         if (reasonAction === "reject") {
-            await apiClient.put(`/api/Planning/${id}/reject`, { id, reason: reasonText })
+            await apiClient.put(`/api/planning/${id}/reject`, { id, reason: reasonText })
             toast.success("Đã từ chối kế hoạch")
         } else {
-            await apiClient.put(`/api/Planning/${id}/request-revision`, { id, reason: reasonText })
+            await apiClient.put(`/api/planning/${id}/request-revision`, { id, reason: reasonText })
             toast.success("Đã yêu cầu chỉnh sửa")
         }
         setIsReasonDialogOpen(false)
@@ -968,3 +968,4 @@ function StatusBadge({ status }: { status: string }) {
     </Badge>
   )
 }
+

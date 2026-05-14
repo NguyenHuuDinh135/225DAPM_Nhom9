@@ -1,6 +1,15 @@
 // lib/api-client.ts
-// Always use absolute URL to avoid hydration mismatch between server and client
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000";
+
+function buildUrl(path: string): string {
+  if (path.startsWith("http")) return path
+  // Server-side: use absolute URL to backend
+  // Client-side: use relative path, Next.js rewrites handle forwarding to backend
+  if (typeof window !== "undefined") {
+    return path
+  }
+  return `${BASE_URL}${path}`
+}
 
 export interface ApiError {
   status: number;
@@ -38,7 +47,7 @@ async function request<T>(
   }
 
   try {
-    const url = path.startsWith("http") ? path : `${BASE_URL}${path}`;
+    const url = buildUrl(path);
     const res = await fetch(url, { ...init, headers });
 
     if (!res.ok) {
