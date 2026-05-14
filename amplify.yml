@@ -12,6 +12,9 @@ applications:
           commands:
             - export PATH="$HOME/.bun/bin:$PATH"
             - bun run build
+        postBuild:
+          commands:
+            - ln -sf ../../node_modules node_modules
       artifacts:
         baseDirectory: .next
         files:
