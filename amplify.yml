@@ -11,7 +11,7 @@ applications:
         build:
           commands:
             - export PATH="$HOME/.bun/bin:$PATH"
-            - cd ../../ && bun run build --filter=web
+            - cd ../../ && npx turbo build --filter=web
       artifacts:
         baseDirectory: .next/standalone
         files:
