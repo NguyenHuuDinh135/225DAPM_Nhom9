@@ -93,7 +93,7 @@ function isVisible(item: NavItem, role: Role) {
   return !item.roles || item.roles.includes(role)
 }
 
-function NavGroup({ label, items, role, pathname }: { label: string; items: NavItem[]; role: Role; pathname: string }) {
+function NavGroup({ label, items, role, pathname, dashboardUrl }: { label: string; items: NavItem[]; role: Role; pathname: string; dashboardUrl: string }) {
   const visible = items.filter((item) => isVisible(item, role))
   if (visible.length === 0) return null
 
@@ -102,7 +102,7 @@ function NavGroup({ label, items, role, pathname }: { label: string; items: NavI
       <SidebarGroupLabel className="px-2 text-[10px] font-black uppercase text-slate-400 tracking-[0.15em]">{label}</SidebarGroupLabel>
       <SidebarMenu>
         {visible.map((item) => {
-          const isActive = pathname === item.url || (item.url !== "/dashboard" && pathname.startsWith(item.url))
+          const isActive = pathname === item.url || (item.url !== "/dashboard" && item.url !== dashboardUrl && pathname.startsWith(item.url))
 
           return (
             <SidebarMenuItem key={item.title}>
@@ -145,10 +145,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
 
       <SidebarContent className="gap-0 py-4">
-        <NavGroup label="Hệ thống" items={NAV_MAIN(dashboardUrl, role)} role={role} pathname={pathname} />
-        <NavGroup label="Nghiệp vụ" items={NAV_MANAGEMENT} role={role} pathname={pathname} />
-        <NavGroup label="Chiến lược" items={NAV_STRATEGIC} role={role} pathname={pathname} />
-        <NavGroup label="Cá nhân" items={NAV_SETTINGS} role={role} pathname={pathname} />
+        <NavGroup label="Hệ thống" items={NAV_MAIN(dashboardUrl, role)} role={role} pathname={pathname} dashboardUrl={dashboardUrl} />
+        <NavGroup label="Nghiệp vụ" items={NAV_MANAGEMENT} role={role} pathname={pathname} dashboardUrl={dashboardUrl} />
+        <NavGroup label="Chiến lược" items={NAV_STRATEGIC} role={role} pathname={pathname} dashboardUrl={dashboardUrl} />
+        <NavGroup label="Cá nhân" items={NAV_SETTINGS} role={role} pathname={pathname} dashboardUrl={dashboardUrl} />
       </SidebarContent>
 
       <SidebarFooter className="border-t border-slate-50 p-4">

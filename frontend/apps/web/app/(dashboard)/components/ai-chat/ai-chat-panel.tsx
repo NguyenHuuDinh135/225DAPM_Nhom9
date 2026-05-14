@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback } from "react"
 import { Sparkles, X, Trash2 } from "lucide-react"
 import { Button } from "@workspace/ui/components/button"
 import { Badge } from "@workspace/ui/components/badge"
-import { apiClient } from "@/lib/api-client"
 import { useAiChat } from "./use-ai-chat"
 import { AiChatMessages } from "./ai-chat-messages"
 import { AiChatInput } from "./ai-chat-input"
@@ -22,7 +21,9 @@ export function AiChatPanel() {
 
   const checkHealth = useCallback(async () => {
     try {
-      const result = await apiClient.get<{ available: boolean }>("/api/ai/health")
+      const res = await fetch("/api/ai/health")
+      if (!res.ok) { setIsOnline(false); return }
+      const result = await res.json() as { available: boolean }
       setIsOnline(result?.available === true)
     } catch {
       setIsOnline(false)

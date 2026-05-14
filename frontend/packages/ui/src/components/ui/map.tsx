@@ -107,6 +107,7 @@ function useResolvedTheme(themeProp?: "light" | "dark"): Theme {
 type MapContextValue = {
   map: MapLibreGL.Map | null;
   isLoaded: boolean;
+  isDestroyed: React.MutableRefObject<boolean>;
 };
 
 const MapContext = createContext<MapContextValue | null>(null);
@@ -215,6 +216,7 @@ const Map = forwardRef<MapRef, MapProps>(function Map(
   const currentStyleRef = useRef<MapStyleOption | null>(null);
   const styleTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const internalUpdateRef = useRef(false);
+  const isDestroyedRef = useRef(false);
   const resolvedTheme = useResolvedTheme(themeProp);
 
   const isControlled = viewport !== undefined && onViewportChange !== undefined;
@@ -299,10 +301,13 @@ const Map = forwardRef<MapRef, MapProps>(function Map(
       map.off("styledata", styleDataHandler);
       map.off("move", handleMove);
       map.off("click", handleClick);
-      map.remove();
+      // Mark as destroyed BEFORE map.remove() so children cleanup
+      // can check this ref and skip layer operations on destroyed map
+      isDestroyedRef.current = true;
       setIsLoaded(false);
       setIsStyleLoaded(false);
       setMapInstance(null);
+      map.remove();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -361,6 +366,7 @@ const Map = forwardRef<MapRef, MapProps>(function Map(
     () => ({
       map: mapInstance,
       isLoaded: isLoaded && isStyleLoaded,
+      isDestroyed: isDestroyedRef,
     }),
     [mapInstance, isLoaded, isStyleLoaded],
   );

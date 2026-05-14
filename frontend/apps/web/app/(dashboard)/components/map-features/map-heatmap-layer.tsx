@@ -14,7 +14,7 @@ interface MapHeatmapLayerProps {
 }
 
 export function MapHeatmapLayer({ trees, visible }: MapHeatmapLayerProps) {
-  const { map, isLoaded } = useMap();
+  const { map, isLoaded, isDestroyed } = useMap();
   const addedRef = useRef(false);
 
   useEffect(() => {
@@ -63,12 +63,12 @@ export function MapHeatmapLayer({ trees, visible }: MapHeatmapLayerProps) {
 
   useEffect(() => {
     return () => {
-      if (map) {
+      if (map && !isDestroyed.current) {
         removeLayer(map);
         addedRef.current = false;
       }
     };
-  }, [map]);
+  }, [map, isDestroyed]);
 
   return null;
 }
