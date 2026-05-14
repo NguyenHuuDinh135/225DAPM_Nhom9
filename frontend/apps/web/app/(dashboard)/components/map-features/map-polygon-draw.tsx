@@ -43,12 +43,16 @@ export function MapPolygonDraw({ trees, active, onClose }: MapPolygonDrawProps) 
 
   const cleanupLayers = useCallback(() => {
     if (!map) return;
-    if (map.getLayer(LAYER_FILL)) map.removeLayer(LAYER_FILL);
-    if (map.getLayer(LAYER_LINE)) map.removeLayer(LAYER_LINE);
-    if (map.getLayer(LAYER_VERTICES)) map.removeLayer(LAYER_VERTICES);
-    if (map.getSource(SOURCE_FILL)) map.removeSource(SOURCE_FILL);
-    if (map.getSource(SOURCE_LINE)) map.removeSource(SOURCE_LINE);
-    if (map.getSource(SOURCE_VERTICES)) map.removeSource(SOURCE_VERTICES);
+    try {
+      if (map.getLayer(LAYER_FILL)) map.removeLayer(LAYER_FILL);
+      if (map.getLayer(LAYER_LINE)) map.removeLayer(LAYER_LINE);
+      if (map.getLayer(LAYER_VERTICES)) map.removeLayer(LAYER_VERTICES);
+      if (map.getSource(SOURCE_FILL)) map.removeSource(SOURCE_FILL);
+      if (map.getSource(SOURCE_LINE)) map.removeSource(SOURCE_LINE);
+      if (map.getSource(SOURCE_VERTICES)) map.removeSource(SOURCE_VERTICES);
+    } catch {
+      // Map may have been destroyed already, ignore cleanup errors
+    }
   }, [map]);
 
   const resetState = useCallback(() => {

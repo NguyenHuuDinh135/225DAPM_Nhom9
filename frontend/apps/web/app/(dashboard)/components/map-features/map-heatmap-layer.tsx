@@ -73,11 +73,16 @@ export function MapHeatmapLayer({ trees, visible }: MapHeatmapLayerProps) {
   return null;
 }
 
-function removeLayer(map: { getLayer: (id: string) => unknown; removeLayer: (id: string) => void; getSource: (id: string) => unknown; removeSource: (id: string) => void }): void {
-  if (map.getLayer(LAYER_ID)) {
-    map.removeLayer(LAYER_ID);
-  }
-  if (map.getSource(SOURCE_ID)) {
-    map.removeSource(SOURCE_ID);
+function removeLayer(map: { getLayer: (id: string) => unknown; removeLayer: (id: string) => void; getSource: (id: string) => unknown; removeSource: (id: string) => void } | null | undefined): void {
+  if (!map) return;
+  try {
+    if (map.getLayer(LAYER_ID)) {
+      map.removeLayer(LAYER_ID);
+    }
+    if (map.getSource(SOURCE_ID)) {
+      map.removeSource(SOURCE_ID);
+    }
+  } catch {
+    // Map may have been destroyed already, ignore cleanup errors
   }
 }
