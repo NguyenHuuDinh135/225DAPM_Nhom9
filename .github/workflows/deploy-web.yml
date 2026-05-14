@@ -7,16 +7,9 @@ on:
     paths:
       - "frontend/**"
 
-env:
-  AWS_REGION: us-west-2
-
 jobs:
-  deploy:
+  build-check:
     runs-on: ubuntu-latest
-    permissions:
-      id-token: write
-      contents: read
-
     steps:
       - uses: actions/checkout@v4
 
@@ -30,17 +23,6 @@ jobs:
           key: ${{ runner.os }}-bun-${{ hashFiles('frontend/**/bun.lock') }}
           restore-keys: ${{ runner.os }}-bun-
 
-      - uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
-          aws-region: ${{ env.AWS_REGION }}
-
-      - name: Get API URL from SSM
-        id: api_url
-        run: |
-          ALB=$(aws ssm get-parameter --name /qlcayxanh/prod/alb_dns_name --query Parameter.Value --output text 2>/dev/null || echo "qlcayxanh-api-1569494241.us-west-2.elb.amazonaws.com")
-          echo "url=http://$ALB" >> $GITHUB_OUTPUT
-
       - name: Install Dependencies
         working-directory: frontend
         run: bun install --frozen-lockfile
@@ -49,7 +31,7 @@ jobs:
         working-directory: frontend
         run: bun run build --filter=web
         env:
-          NEXT_PUBLIC_API_URL: ${{ steps.api_url.outputs.url }}
+          NEXT_PUBLIC_API_URL: http://placeholder.example.com
 
-      - name: Sync to S3
-        run: aws s3 sync frontend/apps/web/out s3://qlcayxanh-web-prod --delete
+  # Amplify auto-deploys from GitHub — no manual deploy step needed.
+  # This workflow just validates the build passes before Amplify picks it up.

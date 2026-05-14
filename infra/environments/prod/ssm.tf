@@ -25,3 +25,14 @@ resource "aws_ssm_parameter" "alb_dns_name" {
   type  = "String"
   value = aws_lb.api.dns_name
 }
+
+resource "random_password" "jwt_key" {
+  length  = 64
+  special = false
+}
+
+resource "aws_ssm_parameter" "jwt_key" {
+  name  = "/qlcayxanh/prod/jwt_key"
+  type  = "SecureString"
+  value = random_password.jwt_key.result
+}
