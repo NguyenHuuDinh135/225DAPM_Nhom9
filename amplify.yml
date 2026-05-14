@@ -11,7 +11,7 @@ applications:
         build:
           commands:
             - export PATH="$HOME/.bun/bin:$PATH"
-            - ./node_modules/.bin/next build
+            - bun run build
         postBuild:
           commands:
             - echo "=== Restructuring monorepo standalone output ==="
