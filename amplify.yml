@@ -17,7 +17,7 @@ applications:
             - cp -r .next/static .next/standalone/frontend/apps/web/.next/static 2>/dev/null || true
             - cp -r public .next/standalone/frontend/apps/web/public 2>/dev/null || true
       artifacts:
-        baseDirectory: .next/standalone/frontend/apps/web
+        baseDirectory: .next/standalone
         files:
           - '**/*'
       cache:
