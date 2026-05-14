@@ -14,15 +14,12 @@ applications:
             - bun run build
         postBuild:
           commands:
-            - npm init -y 2>/dev/null || true
-            - npm install next@16.1.6 react react-dom --legacy-peer-deps 2>/dev/null || true
+            - cp -r .next/static .next/standalone/frontend/apps/web/.next/static 2>/dev/null || true
+            - cp -r public .next/standalone/frontend/apps/web/public 2>/dev/null || true
       artifacts:
-        baseDirectory: .
+        baseDirectory: .next/standalone/frontend/apps/web
         files:
-          - .next/**/*
-          - node_modules/**/*
-          - package.json
-          - next.config.mjs
+          - '**/*'
       cache:
         paths:
           - ../../node_modules/**/*
