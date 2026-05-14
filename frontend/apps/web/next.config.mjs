@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  output: process.env.AMPLIFY_MONOREPO_APP_ROOT ? 'standalone' : undefined,
   transpilePackages: ["@workspace/ui"],
   async rewrites() {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';

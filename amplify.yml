@@ -13,7 +13,7 @@ applications:
             - export PATH="$HOME/.bun/bin:$PATH"
             - bun run build
       artifacts:
-        baseDirectory: .next/standalone
+        baseDirectory: .next
         files:
           - '**/*'
       cache:
