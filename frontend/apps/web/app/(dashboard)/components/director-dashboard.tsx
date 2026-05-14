@@ -12,6 +12,7 @@ import { useAuth } from "@/hooks/use-auth"
 import { toast } from "@workspace/ui/components/sonner"
 import Link from "next/link"
 import { PlanDetailSheet } from "../plans/components/plan-detail-sheet"
+import { AiInsightsCard } from "./ai-insights-card"
 import { 
     Sheet, 
     SheetContent, 
@@ -383,11 +384,14 @@ export function DirectorDashboard({ stats, onRefresh }: DirectorDashboardProps) 
         </Card>
       </div>
 
+      {/* AI Insights */}
+      <AiInsightsCard />
+
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-          <StatusMiniCard icon={TrendingUp} label="Mật độ bao phủ" value="24.5%" color="blue" />
-          <StatusMiniCard icon={CheckCircle2} label="KPI Hoàn thành" value="92%" color="purple" />
-          <StatusMiniCard icon={AlertTriangle} label="Rủi ro thiên tai" value="Thấp" color="orange" />
-          <StatusMiniCard icon={Zap} label="Công suất AI" value="Tối ưu" color="green" />
+          <StatusMiniCard icon={TrendingUp} label="Tổng cây quản lý" value={`${stats.totalTrees ?? stats.TotalTrees ?? 0}`} color="blue" />
+          <StatusMiniCard icon={CheckCircle2} label="Hoàn thành tháng" value={`${stats.completedWorksThisMonth ?? stats.CompletedWorksThisMonth ?? 0}`} color="purple" />
+          <StatusMiniCard icon={AlertTriangle} label="Sự cố chờ" value={`${stats.pendingIncidents ?? stats.PendingIncidents ?? 0}`} color="orange" />
+          <StatusMiniCard icon={Zap} label="Công việc đang chờ" value={`${stats.pendingWorksThisMonth ?? stats.PendingWorksThisMonth ?? 0}`} color="green" />
       </div>
     </div>
   )

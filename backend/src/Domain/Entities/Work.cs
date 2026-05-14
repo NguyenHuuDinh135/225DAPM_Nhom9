@@ -1,5 +1,6 @@
 using backend.Domain.Common;
 using backend.Domain.Enums;
+using backend.Domain.Events;
 
 namespace backend.Domain.Entities;
 
@@ -48,6 +49,7 @@ public class Work : BaseAuditableEntity
     {
         Status = WorkStatus.Completed;
         RejectionFeedback = null;
+        AddDomainEvent(new WorkCompletedEvent(this));
     }
 
     public void Reject(string feedback)

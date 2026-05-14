@@ -1,4 +1,5 @@
 using backend.Application.Common.Interfaces;
+using backend.Domain.Enums;
 
 namespace backend.Application.TreeIncidents.Queries.GetIncidentsByLocation;
 
@@ -22,7 +23,7 @@ public class GetIncidentsByLocationQueryHandler : IRequestHandler<GetIncidentsBy
             .AsNoTracking()
             .Include(i => i.Tree)
                 .ThenInclude(t => t.TreeLocationHistories)
-            .Where(i => i.Status != "Resolved"
+            .Where(i => i.Status != IncidentStatus.Resolved
                 && i.Tree.TreeLocationHistories.Any(h => h.LocationId == request.LocationId && h.ToDate == null))
             .Select(i => new TreeIncidentDto
             {

@@ -1,0 +1,1180 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hướng Dẫn Sử Dụng — Quản Lý Cây Xanh Đà Nẵng</title>
+    <style>
+        :root {
+            --green-50: #f0fdf4;
+            --green-100: #dcfce7;
+            --green-200: #bbf7d0;
+            --green-500: #22c55e;
+            --green-600: #16a34a;
+            --green-700: #15803d;
+            --green-800: #166534;
+            --green-900: #14532d;
+            --blue-50: #eff6ff;
+            --blue-500: #3b82f6;
+            --blue-600: #2563eb;
+            --amber-50: #fffbeb;
+            --amber-500: #f59e0b;
+            --amber-600: #d97706;
+            --red-50: #fef2f2;
+            --red-500: #ef4444;
+            --red-600: #dc2626;
+            --violet-50: #f5f3ff;
+            --violet-500: #8b5cf6;
+            --slate-50: #f8fafc;
+            --slate-100: #f1f5f9;
+            --slate-200: #e2e8f0;
+            --slate-300: #cbd5e1;
+            --slate-400: #94a3b8;
+            --slate-500: #64748b;
+            --slate-600: #475569;
+            --slate-700: #334155;
+            --slate-800: #1e293b;
+            --slate-900: #0f172a;
+            --radius: 1rem;
+            --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            line-height: 1.7;
+            color: var(--slate-800);
+            background: var(--slate-50);
+        }
+
+        /* Hero */
+        .hero {
+            background: linear-gradient(135deg, var(--green-800) 0%, var(--green-600) 50%, #059669 100%);
+            color: white;
+            padding: 5rem 2rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 80%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 70%);
+        }
+        .hero h1 {
+            font-size: clamp(2rem, 5vw, 3.5rem);
+            font-weight: 900;
+            letter-spacing: -0.02em;
+            margin-bottom: 0.5rem;
+        }
+        .hero p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .hero-badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(10px);
+            padding: 0.4rem 1.2rem;
+            border-radius: 2rem;
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 1.5rem;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        /* Navigation */
+        .nav-bar {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--slate-200);
+            padding: 0.8rem 2rem;
+            display: flex;
+            gap: 1rem;
+            overflow-x: auto;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .nav-bar a {
+            text-decoration: none;
+            color: var(--slate-600);
+            font-size: 0.82rem;
+            font-weight: 700;
+            padding: 0.5rem 1rem;
+            border-radius: 2rem;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+        .nav-bar a:hover {
+            background: var(--green-50);
+            color: var(--green-700);
+        }
+
+        /* Container */
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 3rem 1.5rem;
+        }
+
+        /* Sections */
+        section {
+            margin-bottom: 4rem;
+        }
+        .section-title {
+            font-size: 1.8rem;
+            font-weight: 900;
+            color: var(--slate-900);
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.02em;
+        }
+        .section-subtitle {
+            color: var(--slate-500);
+            font-size: 0.95rem;
+            margin-bottom: 2rem;
+        }
+
+        /* Score Card */
+        .score-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.2rem;
+            margin-bottom: 2rem;
+        }
+        .score-card {
+            background: white;
+            border-radius: var(--radius);
+            padding: 1.8rem;
+            border: 1px solid var(--slate-200);
+            box-shadow: var(--shadow);
+            text-align: center;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .score-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+        .score-number {
+            font-size: 2.5rem;
+            font-weight: 900;
+            line-height: 1;
+            margin-bottom: 0.3rem;
+        }
+        .score-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--slate-500);
+        }
+        .score-bar {
+            height: 6px;
+            background: var(--slate-100);
+            border-radius: 3px;
+            margin-top: 1rem;
+            overflow: hidden;
+        }
+        .score-bar-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.5s ease;
+        }
+        .score-green .score-number { color: var(--green-600); }
+        .score-green .score-bar-fill { background: var(--green-500); }
+        .score-blue .score-number { color: var(--blue-600); }
+        .score-blue .score-bar-fill { background: var(--blue-500); }
+        .score-amber .score-number { color: var(--amber-600); }
+        .score-amber .score-bar-fill { background: var(--amber-500); }
+        .score-violet .score-number { color: var(--violet-500); }
+        .score-violet .score-bar-fill { background: var(--violet-500); }
+
+        /* Total Score */
+        .total-score {
+            background: linear-gradient(135deg, var(--green-700), var(--green-600));
+            color: white;
+            border-radius: 1.5rem;
+            padding: 3rem;
+            text-align: center;
+            margin-bottom: 3rem;
+            box-shadow: var(--shadow-xl);
+        }
+        .total-score .score-big {
+            font-size: 5rem;
+            font-weight: 900;
+            line-height: 1;
+        }
+        .total-score .score-max {
+            font-size: 1.5rem;
+            opacity: 0.7;
+        }
+        .total-score .score-desc {
+            margin-top: 1rem;
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+
+        /* Cards */
+        .card {
+            background: white;
+            border-radius: var(--radius);
+            padding: 2rem;
+            border: 1px solid var(--slate-200);
+            box-shadow: var(--shadow);
+            margin-bottom: 1.5rem;
+        }
+        .card h3 {
+            font-size: 1.1rem;
+            font-weight: 800;
+            margin-bottom: 0.8rem;
+            color: var(--slate-800);
+        }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.88rem;
+        }
+        th, td {
+            padding: 0.8rem 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--slate-100);
+        }
+        th {
+            font-weight: 800;
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--slate-500);
+            background: var(--slate-50);
+        }
+        tr:hover td {
+            background: var(--green-50);
+        }
+
+        /* Code blocks */
+        pre {
+            background: var(--slate-900);
+            color: #e2e8f0;
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            overflow-x: auto;
+            font-size: 0.85rem;
+            line-height: 1.6;
+            margin: 1rem 0;
+        }
+        code {
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+        }
+        .inline-code {
+            background: var(--slate-100);
+            padding: 0.15rem 0.5rem;
+            border-radius: 0.3rem;
+            font-size: 0.82rem;
+            color: var(--green-700);
+            font-weight: 600;
+        }
+
+        /* Badge */
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 2rem;
+            font-size: 0.7rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .badge-green { background: var(--green-100); color: var(--green-700); }
+        .badge-blue { background: var(--blue-50); color: var(--blue-600); }
+        .badge-amber { background: var(--amber-50); color: var(--amber-600); }
+        .badge-red { background: var(--red-50); color: var(--red-600); }
+        .badge-violet { background: var(--violet-50); color: var(--violet-500); }
+
+        /* Steps */
+        .steps {
+            counter-reset: step;
+        }
+        .step {
+            position: relative;
+            padding-left: 3.5rem;
+            margin-bottom: 2rem;
+        }
+        .step::before {
+            counter-increment: step;
+            content: counter(step);
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 2.5rem;
+            height: 2.5rem;
+            background: var(--green-600);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            font-size: 0.9rem;
+        }
+        .step h4 {
+            font-size: 1rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+        }
+        .step p {
+            color: var(--slate-600);
+            font-size: 0.9rem;
+        }
+
+        /* Role tabs */
+        .role-tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+        .role-tab {
+            padding: 0.6rem 1.2rem;
+            border-radius: 2rem;
+            font-size: 0.8rem;
+            font-weight: 800;
+            cursor: pointer;
+            border: 2px solid var(--slate-200);
+            background: white;
+            transition: all 0.2s;
+        }
+        .role-tab:hover, .role-tab.active {
+            border-color: var(--green-500);
+            background: var(--green-50);
+            color: var(--green-700);
+        }
+
+        /* Feature list */
+        .feature-list {
+            list-style: none;
+            display: grid;
+            gap: 0.8rem;
+        }
+        .feature-list li {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.8rem;
+            padding: 0.8rem 1rem;
+            background: var(--slate-50);
+            border-radius: 0.75rem;
+            font-size: 0.88rem;
+        }
+        .feature-list li::before {
+            content: '✓';
+            color: var(--green-600);
+            font-weight: 900;
+            flex-shrink: 0;
+            width: 1.5rem;
+            height: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--green-100);
+            border-radius: 50%;
+            font-size: 0.7rem;
+        }
+
+        /* Alert */
+        .alert {
+            padding: 1.2rem 1.5rem;
+            border-radius: 0.75rem;
+            margin: 1rem 0;
+            font-size: 0.88rem;
+        }
+        .alert-info {
+            background: var(--blue-50);
+            border-left: 4px solid var(--blue-500);
+        }
+        .alert-warning {
+            background: var(--amber-50);
+            border-left: 4px solid var(--amber-500);
+        }
+        .alert-success {
+            background: var(--green-50);
+            border-left: 4px solid var(--green-500);
+        }
+
+        /* Footer */
+        footer {
+            background: var(--slate-900);
+            color: var(--slate-400);
+            padding: 3rem 2rem;
+            text-align: center;
+            font-size: 0.85rem;
+        }
+        footer a {
+            color: var(--green-500);
+            text-decoration: none;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero { padding: 3rem 1.5rem; }
+            .score-grid { grid-template-columns: repeat(2, 1fr); }
+            .total-score .score-big { font-size: 3.5rem; }
+            .nav-bar { justify-content: flex-start; }
+        }
+
+        /* Print */
+        @media print {
+            .nav-bar { display: none; }
+            .hero { padding: 2rem; }
+            section { page-break-inside: avoid; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Hero -->
+<div class="hero">
+    <div class="hero-badge">Nhom 9 — 225DAPM</div>
+    <h1>Quản Lý Cây Xanh Đà Nẵng</h1>
+    <p>Hệ thống quản lý cây xanh đô thị thông minh — Hướng dẫn cài đặt, sử dụng và đánh giá chất lượng</p>
+</div>
+
+<!-- Nav -->
+<nav class="nav-bar">
+    <a href="#diem">Chấm Điểm</a>
+    <a href="#caidat">Cài Đặt</a>
+    <a href="#dangnhap">Đăng Nhập</a>
+    <a href="#giamdoc">Giám Đốc</a>
+    <a href="#doitruong">Đội Trưởng</a>
+    <a href="#nhanvien">Nhân Viên</a>
+    <a href="#congdan">Công Dân</a>
+    <a href="#bando">Bản Đồ</a>
+    <a href="#ai">AI</a>
+    <a href="#api">API</a>
+</nav>
+
+<div class="container">
+
+<!-- ============ CHẤM ĐIỂM ============ -->
+<section id="diem">
+    <h2 class="section-title">Đánh Giá Tổng Thể</h2>
+    <p class="section-subtitle">Chấm điểm dựa trên kiến trúc, tính năng, chất lượng code, UX và bảo mật</p>
+
+    <div class="total-score">
+        <div class="score-big">8.5</div>
+        <div class="score-max">/ 10</div>
+        <div class="score-desc">Hệ thống hoàn chỉnh, sẵn sàng cho UAT/Staging</div>
+    </div>
+
+    <div class="score-grid">
+        <div class="score-card score-green">
+            <div class="score-number">9.0</div>
+            <div class="score-label">Kiến Trúc</div>
+            <div class="score-bar"><div class="score-bar-fill" style="width:90%"></div></div>
+        </div>
+        <div class="score-card score-blue">
+            <div class="score-number">9.0</div>
+            <div class="score-label">Tính Năng</div>
+            <div class="score-bar"><div class="score-bar-fill" style="width:90%"></div></div>
+        </div>
+        <div class="score-card score-violet">
+            <div class="score-number">8.5</div>
+            <div class="score-label">Chất Lượng Code</div>
+            <div class="score-bar"><div class="score-bar-fill" style="width:85%"></div></div>
+        </div>
+        <div class="score-card score-amber">
+            <div class="score-number">8.5</div>
+            <div class="score-label">UX / Giao Diện</div>
+            <div class="score-bar"><div class="score-bar-fill" style="width:85%"></div></div>
+        </div>
+        <div class="score-card score-green">
+            <div class="score-number">8.0</div>
+            <div class="score-label">Bảo Mật</div>
+            <div class="score-bar"><div class="score-bar-fill" style="width:80%"></div></div>
+        </div>
+        <div class="score-card score-blue">
+            <div class="score-number">8.5</div>
+            <div class="score-label">Testing</div>
+            <div class="score-bar"><div class="score-bar-fill" style="width:85%"></div></div>
+        </div>
+        <div class="score-card score-violet">
+            <div class="score-number">9.0</div>
+            <div class="score-label">GIS / Bản Đồ</div>
+            <div class="score-bar"><div class="score-bar-fill" style="width:90%"></div></div>
+        </div>
+        <div class="score-card score-amber">
+            <div class="score-number">8.5</div>
+            <div class="score-label">AI Tích Hợp</div>
+            <div class="score-bar"><div class="score-bar-fill" style="width:85%"></div></div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>Chi Tiết Đánh Giá</h3>
+        <table>
+            <thead>
+                <tr><th>Tiêu chí</th><th>Điểm</th><th>Nhận xét</th></tr>
+            </thead>
+            <tbody>
+                <tr><td><strong>Kiến trúc hệ thống</strong></td><td><span class="badge badge-green">9.0</span></td><td>Clean Architecture + CQRS/MediatR, Aspire orchestration, monorepo Turborepo — rất chuyên nghiệp</td></tr>
+                <tr><td><strong>Tính năng nghiệp vụ</strong></td><td><span class="badge badge-green">9.0</span></td><td>37 trang, 62 API endpoints, đầy đủ CRUD + workflow phê duyệt + real-time notification</td></tr>
+                <tr><td><strong>Chất lượng code</strong></td><td><span class="badge badge-blue">8.5</span></td><td>Result pattern, immutability, TypeScript strict. Trừ: một số file map >600 dòng</td></tr>
+                <tr><td><strong>Giao diện & UX</strong></td><td><span class="badge badge-blue">8.5</span></td><td>Shadcn/UI polish, loading states, toast notifications, responsive. Trừ: dark mode chưa hoàn thiện</td></tr>
+                <tr><td><strong>Bảo mật</strong></td><td><span class="badge badge-amber">8.0</span></td><td>JWT + RBAC middleware + validation. Trừ: CORS open, chưa có refresh token, chưa rate limit</td></tr>
+                <tr><td><strong>Testing</strong></td><td><span class="badge badge-blue">8.5</span></td><td>11 E2E Playwright + 29 backend test files. Trừ: unit test coverage ~40% (target 80%)</td></tr>
+                <tr><td><strong>Bản đồ GIS</strong></td><td><span class="badge badge-green">9.0</span></td><td>MapLibre + heatmap + polygon draw + TSP route optimizer + timeline — rất ấn tượng</td></tr>
+                <tr><td><strong>AI tích hợp</strong></td><td><span class="badge badge-blue">8.5</span></td><td>Ollama streaming chat + anomaly detection + predictions + caching. Trừ: chỉ chạy local</td></tr>
+                <tr><td><strong>DevOps / CI/CD</strong></td><td><span class="badge badge-blue">8.5</span></td><td>4 GitHub Actions workflows, Terraform IaC, Docker, AWS ECS. Trừ: chưa có staging env</td></tr>
+                <tr><td><strong>Tài liệu</strong></td><td><span class="badge badge-blue">8.5</span></td><td>CLAUDE.md chi tiết, hướng dẫn chạy tiếng Việt, README cho từng module</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="card">
+        <h3>Thống Kê Nhanh</h3>
+        <table>
+            <thead><tr><th>Metric</th><th>Số lượng</th></tr></thead>
+            <tbody>
+                <tr><td>Frontend Pages</td><td><strong>37</strong></td></tr>
+                <tr><td>API Endpoints</td><td><strong>62</strong></td></tr>
+                <tr><td>Domain Entities</td><td><strong>15</strong></td></tr>
+                <tr><td>Backend Test Files</td><td><strong>29</strong></td></tr>
+                <tr><td>E2E Test Files (Playwright)</td><td><strong>11</strong></td></tr>
+                <tr><td>Map Feature Components</td><td><strong>10</strong></td></tr>
+                <tr><td>AI Models (Ollama)</td><td><strong>3</strong></td></tr>
+                <tr><td>CI/CD Workflows</td><td><strong>4</strong></td></tr>
+                <tr><td>User Roles</td><td><strong>4</strong> (GiamDoc, DoiTruong, NhanVien, CongDan)</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="card">
+        <h3>Điểm Mạnh</h3>
+        <ul class="feature-list">
+            <li>Clean Architecture + CQRS phân tách rõ ràng, dễ mở rộng</li>
+            <li>Bản đồ GIS nâng cao: heatmap, vẽ vùng, tối ưu tuyến đường (TSP + OSRM)</li>
+            <li>AI streaming chat + dự đoán bảo trì + phát hiện bất thường</li>
+            <li>RBAC hoàn chỉnh 4 vai trò với middleware + sidebar phân quyền</li>
+            <li>Real-time notification qua SignalR với auto-reconnect</li>
+            <li>State machine cho Plan & Work (Draft → Approved → Completed)</li>
+            <li>DevOps hoàn chỉnh: Terraform, Docker, GitHub Actions CI/CD</li>
+            <li>E2E testing cho tất cả role và critical user flows</li>
+        </ul>
+    </div>
+
+    <div class="card">
+        <h3>Cần Cải Thiện (để đạt 9.5+)</h3>
+        <table>
+            <thead><tr><th>Vấn đề</th><th>Mức độ</th><th>Khuyến nghị</th></tr></thead>
+            <tbody>
+                <tr><td>CORS mở hoàn toàn</td><td><span class="badge badge-red">Cao</span></td><td>Lock down domain trước production</td></tr>
+                <tr><td>Chưa có refresh token</td><td><span class="badge badge-amber">Trung bình</span></td><td>Thêm /api/auth/refresh endpoint</td></tr>
+                <tr><td>Unit test coverage ~40%</td><td><span class="badge badge-amber">Trung bình</span></td><td>Bổ sung unit tests cho handlers</td></tr>
+                <tr><td>AI chỉ chạy local (Ollama)</td><td><span class="badge badge-amber">Trung bình</span></td><td>Thêm fallback cloud AI</td></tr>
+                <tr><td>Chưa rate limit API</td><td><span class="badge badge-amber">Trung bình</span></td><td>Thêm middleware rate limit</td></tr>
+                <tr><td>Hangfire job commented out</td><td><span class="badge badge-blue">Thấp</span></td><td>Uncomment và test</td></tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<!-- ============ CÀI ĐẶT ============ -->
+<section id="caidat">
+    <h2 class="section-title">Cài Đặt & Chạy Ứng Dụng</h2>
+    <p class="section-subtitle">Hướng dẫn từng bước để chạy hệ thống trên máy local</p>
+
+    <div class="card">
+        <h3>Yêu Cầu Hệ Thống</h3>
+        <table>
+            <thead><tr><th>Phần mềm</th><th>Phiên bản</th><th>Cách cài</th></tr></thead>
+            <tbody>
+                <tr><td>.NET SDK</td><td>10.0+</td><td><a href="https://dot.net/download">dot.net/download</a></td></tr>
+                <tr><td>Bun</td><td>1.1+</td><td><code class="inline-code">curl -fsSL https://bun.sh/install | bash</code></td></tr>
+                <tr><td>Docker</td><td>24+</td><td><a href="https://docs.docker.com/get-docker">docs.docker.com/get-docker</a></td></tr>
+                <tr><td>Ollama</td><td>0.23+</td><td><a href="https://ollama.com/download">ollama.com/download</a></td></tr>
+                <tr><td>Git</td><td>2.40+</td><td><code class="inline-code">sudo apt install git</code></td></tr>
+            </tbody>
+        </table>
+        <div class="alert alert-info" style="margin-top:1rem">
+            <strong>Phần cứng khuyến nghị:</strong> RAM 16GB+, CPU 4 nhân, ổ cứng trống 15GB (cho AI models + database)
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>Các Bước Cài Đặt</h3>
+        <div class="steps">
+            <div class="step">
+                <h4>Clone dự án</h4>
+                <pre><code>git clone https://github.com/NguyenHuuDinh135/225DAPM_Nhom9.git
+cd 225DAPM_Nhom9</code></pre>
+            </div>
+            <div class="step">
+                <h4>Cài đặt Ollama & tải AI models</h4>
+                <pre><code># Cài Ollama
+curl -fsSL https://ollama.com/install.sh | sh
+
+# Tải 3 models (tổng ~5GB)
+ollama pull qwen2.5:7b          # Model chính (suy luận)
+ollama pull qwen2.5-coder:0.5b  # Model nhanh (phân loại)
+ollama pull nomic-embed-text     # Model embedding
+
+# Kiểm tra
+curl http://localhost:11434/api/tags</code></pre>
+            </div>
+            <div class="step">
+                <h4>Chạy Backend (Aspire tự động khởi tạo PostgreSQL + Redis)</h4>
+                <pre><code># Cách 1: Script có sẵn (khuyến nghị)
+./run-apphost.sh
+
+# Cách 2: Trực tiếp
+cd backend/src/AppHost && dotnet run --no-launch-profile
+
+# Kiểm tra: http://localhost:5000/health → "Healthy"</code></pre>
+            </div>
+            <div class="step">
+                <h4>Chạy Frontend</h4>
+                <pre><code>cd frontend
+bun install
+bun turbo dev
+
+# Mở trình duyệt: http://localhost:3000</code></pre>
+            </div>
+            <div class="step">
+                <h4>Hoặc chạy tất cả bằng 1 lệnh</h4>
+                <pre><code>./dev.sh
+# Tự động: Backend (port 5000) + Frontend (port 3000)</code></pre>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>Kiểm Tra Hệ Thống</h3>
+        <pre><code># Backend health
+curl http://localhost:5000/health
+
+# AI health (cần Ollama đang chạy)
+curl http://localhost:5000/api/ai/health
+# → {"available": true}
+
+# Frontend
+# Mở http://localhost:3000 → Trang chủ cộng đồng</code></pre>
+    </div>
+</section>
+
+<!-- ============ ĐĂNG NHẬP ============ -->
+<section id="dangnhap">
+    <h2 class="section-title">Đăng Nhập & Tài Khoản</h2>
+    <p class="section-subtitle">Hệ thống có 3 tài khoản mặc định sau khi seed data</p>
+
+    <div class="card">
+        <h3>Tài Khoản Mặc Định</h3>
+        <table>
+            <thead><tr><th>Vai trò</th><th>Email</th><th>Mật khẩu</th><th>Trang chính</th></tr></thead>
+            <tbody>
+                <tr><td><span class="badge badge-red">Giám Đốc</span></td><td>giamdoc@test.com</td><td>Test@123</td><td>/giamdoc</td></tr>
+                <tr><td><span class="badge badge-blue">Đội Trưởng</span></td><td>doitruong@test.com</td><td>Test@123</td><td>/doitruong</td></tr>
+                <tr><td><span class="badge badge-green">Nhân Viên</span></td><td>nhanvien@test.com</td><td>Test@123</td><td>/nhanvien</td></tr>
+            </tbody>
+        </table>
+        <div class="alert alert-info" style="margin-top:1rem">
+            <strong>Luồng đăng nhập:</strong> Truy cập <code class="inline-code">http://localhost:3000/login</code> → Nhập email + mật khẩu → Hệ thống tự động chuyển hướng đến trang dashboard phù hợp với vai trò.
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>Phân Quyền Truy Cập (RBAC)</h3>
+        <table>
+            <thead><tr><th>Trang</th><th>Giám Đốc</th><th>Đội Trưởng</th><th>Nhân Viên</th><th>Công Dân</th></tr></thead>
+            <tbody>
+                <tr><td>Bàn làm việc (Hub)</td><td>✓</td><td>✓</td><td>✓</td><td>—</td></tr>
+                <tr><td>Bản đồ cây xanh</td><td>✓</td><td>✓</td><td>✓</td><td>✓ (công khai)</td></tr>
+                <tr><td>Danh mục cây</td><td>✓</td><td>✓</td><td>—</td><td>—</td></tr>
+                <tr><td>Quản lý công việc</td><td>—</td><td>✓</td><td>✓ (Việc của tôi)</td><td>—</td></tr>
+                <tr><td>Lập & Duyệt kế hoạch</td><td>✓ (Duyệt)</td><td>✓ (Tạo)</td><td>—</td><td>—</td></tr>
+                <tr><td>Nhân sự & Đội ngũ</td><td>✓</td><td>✓</td><td>—</td><td>—</td></tr>
+                <tr><td>Sự cố & Phản hồi</td><td>✓</td><td>✓</td><td>—</td><td>—</td></tr>
+                <tr><td>Báo cáo chiến lược</td><td>✓</td><td>—</td><td>—</td><td>—</td></tr>
+                <tr><td>Phân tích hệ thống</td><td>✓</td><td>✓</td><td>—</td><td>—</td></tr>
+                <tr><td>Báo sự cố (công dân)</td><td>—</td><td>—</td><td>—</td><td>✓</td></tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<!-- ============ GIÁM ĐỐC ============ -->
+<section id="giamdoc">
+    <h2 class="section-title">Vai Trò: Giám Đốc</h2>
+    <p class="section-subtitle">Phê duyệt kế hoạch, xem báo cáo chiến lược, quản lý nhân sự cấp cao</p>
+
+    <div class="card">
+        <h3>Dashboard (/giamdoc)</h3>
+        <ul class="feature-list">
+            <li>Xem tổng quan: số cây, sự cố chờ xử lý, công việc đang thực hiện</li>
+            <li>Biểu đồ thống kê tình trạng cây theo thời gian</li>
+            <li>Danh sách kế hoạch chờ phê duyệt (nút duyệt nhanh)</li>
+            <li>AI Insights: dự đoán bảo trì, cảnh báo bất thường</li>
+            <li>Real-time notifications khi có sự cố khẩn cấp</li>
+        </ul>
+    </div>
+
+    <div class="card">
+        <h3>Phê Duyệt Kế Hoạch (/plans)</h3>
+        <div class="alert alert-success">
+            <strong>Workflow:</strong> Đội Trưởng tạo kế hoạch → Submit → Giám Đốc Duyệt/Từ chối/Yêu cầu chỉnh sửa
+        </div>
+        <ul class="feature-list">
+            <li>Xem danh sách kế hoạch theo trạng thái (Chờ duyệt, Đã duyệt, Từ chối)</li>
+            <li>Click vào kế hoạch → Xem chi tiết (mô tả, cây liên quan, nhân sự phân công)</li>
+            <li>Nút <strong>PHÊ DUYỆT</strong> — chuyển trạng thái sang Approved</li>
+            <li>Nút <strong>TỪ CHỐI</strong> — nhập lý do → chuyển sang Rejected</li>
+            <li>Nút <strong>YÊU CẦU CHỈNH SỬA</strong> — trả lại Đội Trưởng với ghi chú</li>
+        </ul>
+    </div>
+
+    <div class="card">
+        <h3>Báo Cáo Chiến Lược (/reports)</h3>
+        <ul class="feature-list">
+            <li>Báo cáo tổng hợp tình trạng cây xanh toàn thành phố</li>
+            <li>Thống kê theo quận/phường, loại cây, tình trạng sức khỏe</li>
+            <li>Xuất Excel (export) với bộ lọc tùy chỉnh</li>
+            <li>AI tự động tạo báo cáo (nút "Tạo báo cáo AI")</li>
+        </ul>
+    </div>
+
+    <div class="card">
+        <h3>Phân Tích Hệ Thống (/analytics)</h3>
+        <ul class="feature-list">
+            <li>Biểu đồ xu hướng sự cố theo tháng</li>
+            <li>Phân bổ công việc theo đội/nhân viên</li>
+            <li>Hiệu suất hoàn thành kế hoạch</li>
+            <li>So sánh chi phí bảo trì theo khu vực</li>
+        </ul>
+    </div>
+
+    <div class="card">
+        <h3>Quản Lý Nhân Sự (/staff)</h3>
+        <ul class="feature-list">
+            <li>Xem danh sách nhân viên (tên, email, vai trò, đội)</li>
+            <li>Thêm nhân viên mới (form tạo tài khoản)</li>
+            <li>Phân quyền vai trò (GiamDoc/DoiTruong/NhanVien)</li>
+            <li>Xóa/vô hiệu hóa tài khoản</li>
+        </ul>
+    </div>
+</section>
+
+<!-- ============ ĐỘI TRƯỞNG ============ -->
+<section id="doitruong">
+    <h2 class="section-title">Vai Trò: Đội Trưởng</h2>
+    <p class="section-subtitle">Quản lý cây, tạo kế hoạch, phân công công việc, xử lý sự cố</p>
+
+    <div class="card">
+        <h3>Dashboard (/doitruong)</h3>
+        <ul class="feature-list">
+            <li>Tổng quan đội: số cây quản lý, công việc đang triển khai, sự cố chờ xử lý</li>
+            <li>Danh sách việc cần làm hôm nay</li>
+            <li>Biểu đồ tiến độ kế hoạch</li>
+            <li>Quick actions: tạo kế hoạch, phân công, xem bản đồ</li>
+        </ul>
+    </div>
+
+    <div class="card">
+        <h3>Quản Lý Cây (/trees)</h3>
+        <ul class="feature-list">
+            <li>Bảng dữ liệu cây: tìm kiếm, lọc theo loại/tình trạng/khu vực</li>
+            <li>Thêm cây mới (nhập thông tin + chọn vị trí trên bản đồ)</li>
+            <li>Sửa thông tin cây (tên, loại, tình trạng, hình ảnh)</li>
+            <li>Di dời cây (tối đa 3 lần, lưu lịch sử vị trí)</li>
+            <li>Import hàng loạt từ Excel</li>
+            <li>Export danh sách cây ra Excel (có bộ lọc)</li>
+            <li>Xem chi tiết lịch sử chăm sóc từng cây (/trees/[id])</li>
+        </ul>
+    </div>
+
+    <div class="card">
+        <h3>Lập Kế Hoạch (/plans)</h3>
+        <ul class="feature-list">
+            <li>Tạo kế hoạch mới: tên, mô tả, thời gian, danh sách cây</li>
+            <li>AI gợi ý kế hoạch (nút "AI Đề Xuất" — phân tích dữ liệu bảo trì)</li>
+            <li>Sửa/xóa kế hoạch ở trạng thái Draft</li>
+            <li>Submit kế hoạch cho Giám Đốc phê duyệt</li>
+            <li>Xem trạng thái: Draft → PendingApproval → Approved/Rejected</li>
+        </ul>
+    </div>
+
+    <div class="card">
+        <h3>Quản Lý Công Việc (/nhanvien/tasks)</h3>
+        <ul class="feature-list">
+            <li>Tạo công việc mới từ kế hoạch đã duyệt</li>
+            <li>Phân công nhân viên thực hiện (/works/[id]/assign)</li>
+            <li>Theo dõi tiến độ: xem báo cáo từ nhân viên (hình ảnh + %)</li>
+            <li>Duyệt/Từ chối công việc đã hoàn thành</li>
+            <li>Xem trên bản đồ: marker màu xanh (hoàn thành) / xanh dương (đang làm)</li>
+        </ul>
+    </div>
+
+    <div class="card">
+        <h3>Sự Cố & Phản Hồi (/incidents)</h3>
+        <ul class="feature-list">
+            <li>Xem danh sách sự cố (từ công dân báo + nhân viên phát hiện)</li>
+            <li>Phân loại mức độ: Bình thường / Cao / Khẩn cấp</li>
+            <li>Cập nhật trạng thái xử lý (Pending → InProgress → Resolved)</li>
+            <li>Duyệt xử lý tức thì (trên bản đồ)</li>
+            <li>Real-time alert khi có sự cố mới</li>
+        </ul>
+    </div>
+
+    <div class="card">
+        <h3>Bản Đồ — Quyền Admin</h3>
+        <ul class="feature-list">
+            <li>Thêm cây mới bằng click trên bản đồ (mode "+ Cây")</li>
+            <li>Kéo thả di dời cây (mode "Di dời")</li>
+            <li>Vẽ vùng polygon → xem thống kê cây trong vùng</li>
+            <li>Tối ưu tuyến đường giữa nhiều cây (TSP solver)</li>
+            <li>Popup cây: sửa tên, đổi tình trạng, xóa</li>
+            <li>Popup công việc: Chấp thuận / Từ chối với ghi chú</li>
+        </ul>
+    </div>
+</section>
+
+<!-- ============ NHÂN VIÊN ============ -->
+<section id="nhanvien">
+    <h2 class="section-title">Vai Trò: Nhân Viên</h2>
+    <p class="section-subtitle">Thực hiện công việc thực địa, báo cáo tiến độ, báo sự cố</p>
+
+    <div class="card">
+        <h3>Dashboard (/nhanvien)</h3>
+        <ul class="feature-list">
+            <li>Xem việc được phân công hôm nay</li>
+            <li>Quick stats: số việc chờ, đang làm, đã hoàn thành</li>
+            <li>Nút nhanh: Bản đồ, Việc của tôi, Báo sự cố</li>
+            <li>AI Chat: hỏi về cách chăm sóc cây, quy trình bảo trì</li>
+        </ul>
+    </div>
+
+    <div class="card">
+        <h3>Việc Của Tôi (/nhanvien/tasks)</h3>
+        <ul class="feature-list">
+            <li>Danh sách công việc được phân công (lọc theo trạng thái)</li>
+            <li>Click vào việc → xem chi tiết (loại công việc, cây liên quan, vị trí)</li>
+            <li>Nút <strong>BÁO CÁO TIẾN ĐỘ</strong>: nhập %, chụp ảnh, mô tả công việc đã làm</li>
+            <li>Gửi báo cáo → Đội Trưởng nhận thông báo để duyệt</li>
+        </ul>
+    </div>
+
+    <div class="card">
+        <h3>Bản Đồ — Tính Năng Nhân Viên</h3>
+        <div class="alert alert-success">
+            <strong>Mới:</strong> Nhân viên giờ có các công cụ thực địa trực tiếp trên bản đồ
+        </div>
+        <ul class="feature-list">
+            <li><strong>Nút "Tuyến tôi"</strong> — Tự động lọc công việc được phân công → Hiện tuyến đường tối ưu (TSP + OSRM)</li>
+            <li><strong>Layer "Việc của tôi"</strong> — Bật/tắt chỉ hiện việc được giao, highlight bằng vòng tròn amber nhấp nháy</li>
+            <li><strong>Popup cây → "BÁO SỰ CỐ"</strong> — Click cây bất kỳ → báo sự cố nhanh (link đến /report-incident?treeId=...)</li>
+            <li><strong>Popup việc → "BÁO CÁO TIẾN ĐỘ"</strong> — Click việc được giao → báo cáo tiến độ trực tiếp</li>
+        </ul>
+    </div>
+
+    <div class="card">
+        <h3>Báo Sự Cố (/report-incident)</h3>
+        <ul class="feature-list">
+            <li>Chọn cây trên bản đồ hoặc nhập ID cây</li>
+            <li>Mô tả sự cố (text)</li>
+            <li>Chọn mức độ nghiêm trọng: Bình thường / Cao / Khẩn cấp</li>
+            <li>Chụp/upload hình ảnh minh chứng</li>
+            <li>Gửi → Đội Trưởng nhận real-time notification</li>
+        </ul>
+    </div>
+</section>
+
+<!-- ============ CÔNG DÂN ============ -->
+<section id="congdan">
+    <h2 class="section-title">Vai Trò: Công Dân</h2>
+    <p class="section-subtitle">Truy cập công khai — không cần đăng nhập</p>
+
+    <div class="card">
+        <h3>Trang Chủ (http://localhost:3000)</h3>
+        <ul class="feature-list">
+            <li>Bản đồ tương tác hiển thị tất cả cây xanh Đà Nẵng</li>
+            <li>Thống kê tổng quan: tổng số cây, sự cố, tình trạng sức khỏe</li>
+            <li>Tìm kiếm cây theo tên, loại, khu vực</li>
+            <li>Click vào cây để xem thông tin chi tiết</li>
+        </ul>
+    </div>
+
+    <div class="card">
+        <h3>Báo Sự Cố (Ẩn danh)</h3>
+        <div class="alert alert-info">
+            Truy cập: <code class="inline-code">http://localhost:3000/report-incident</code> — Không cần đăng nhập
+        </div>
+        <ul class="feature-list">
+            <li>Chọn vị trí sự cố trên bản đồ</li>
+            <li>Mô tả vấn đề (cây gãy, sâu bệnh, nguy hiểm...)</li>
+            <li>Upload hình ảnh</li>
+            <li>Chọn mức độ khẩn cấp</li>
+            <li>Gửi → Hệ thống tự động thông báo cho Đội Trưởng</li>
+        </ul>
+    </div>
+
+    <div class="card">
+        <h3>Danh Mục Cây (/category)</h3>
+        <ul class="feature-list">
+            <li>Duyệt các loại cây xanh có trong hệ thống</li>
+            <li>Xem thông tin: tên khoa học, chu kỳ bảo trì, hình ảnh</li>
+        </ul>
+    </div>
+
+    <div class="card">
+        <h3>Thống Kê Công Khai (/statistics)</h3>
+        <ul class="feature-list">
+            <li>Biểu đồ tổng số cây theo loại</li>
+            <li>Phân bố tình trạng sức khỏe (tốt/bình thường/sâu bệnh)</li>
+            <li>Số sự cố theo tháng</li>
+        </ul>
+    </div>
+
+    <div class="card">
+        <h3>Gửi Phản Hồi (/feedback)</h3>
+        <ul class="feature-list">
+            <li>Form góp ý, khiếu nại cho ban quản lý</li>
+            <li>Không cần đăng nhập</li>
+        </ul>
+    </div>
+</section>
+
+<!-- ============ BẢN ĐỒ ============ -->
+<section id="bando">
+    <h2 class="section-title">Bản Đồ Cây Xanh (GIS)</h2>
+    <p class="section-subtitle">Tính năng bản đồ nâng cao — MapLibre GL + Turf.js + OSRM</p>
+
+    <div class="card">
+        <h3>Các Lớp Hiển Thị (Layers)</h3>
+        <table>
+            <thead><tr><th>Layer</th><th>Mô tả</th><th>Màu sắc</th></tr></thead>
+            <tbody>
+                <tr><td><strong>Cây xanh</strong></td><td>Marker tròn theo tình trạng (Tốt=xanh, Sâu bệnh=đỏ...)</td><td>Theo condition</td></tr>
+                <tr><td><strong>Sự cố</strong></td><td>Marker đỏ animation bounce, click để xem chi tiết</td><td>Đỏ</td></tr>
+                <tr><td><strong>Thi công</strong></td><td>Marker xanh dương (đang làm) / xanh lá (hoàn thành)</td><td>Xanh dương/lá</td></tr>
+                <tr><td><strong>Mật độ</strong></td><td>Heatmap hiển thị mật độ cây theo khu vực</td><td>Gradient cam→đỏ</td></tr>
+                <tr><td><strong>Dòng thời gian</strong></td><td>Slider lọc cây theo ngày trồng, play/pause animation</td><td>Tím</td></tr>
+                <tr><td><strong>Việc của tôi</strong></td><td>Chỉ hiện cho NhanVien — lọc việc được phân công</td><td>Amber nhấp nháy</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="card">
+        <h3>Các Chế Độ Tương Tác (Modes)</h3>
+        <table>
+            <thead><tr><th>Mode</th><th>Mô tả</th><th>Quyền</th></tr></thead>
+            <tbody>
+                <tr><td><strong>Duyệt</strong></td><td>Xem, click popup thông tin</td><td>Tất cả</td></tr>
+                <tr><td><strong>+ Cây</strong></td><td>Click bản đồ → thêm cây mới tại vị trí đó</td><td>Admin</td></tr>
+                <tr><td><strong>Di dời</strong></td><td>Kéo thả marker cây sang vị trí mới</td><td>Admin</td></tr>
+                <tr><td><strong>Vùng</strong></td><td>Vẽ polygon → thống kê cây trong vùng (Turf.js)</td><td>Tất cả</td></tr>
+                <tr><td><strong>Tuyến</strong></td><td>Chọn nhiều cây → tính đường đi ngắn nhất (TSP + OSRM)</td><td>Tất cả</td></tr>
+                <tr><td><strong>Tuyến tôi</strong></td><td>Tự động lọc + tạo tuyến cho việc đang được giao</td><td>Nhân viên</td></tr>
+                <tr><td><strong>AI</strong></td><td>Hiện cây cần chú ý (AI phân tích dữ liệu lịch sử)</td><td>Tất cả</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="card">
+        <h3>Popup Thao Tác</h3>
+        <table>
+            <thead><tr><th>Đối tượng</th><th>Admin (GĐ/ĐT)</th><th>Nhân Viên</th></tr></thead>
+            <tbody>
+                <tr><td><strong>Click cây</strong></td><td>Sửa tên, đổi tình trạng, xóa, xem lịch sử</td><td>Xem thông tin, Báo sự cố, Xem lịch sử</td></tr>
+                <tr><td><strong>Click sự cố</strong></td><td>Duyệt xử lý tức thì, cập nhật trạng thái</td><td>Xem thông tin</td></tr>
+                <tr><td><strong>Click công việc</strong></td><td>Chấp thuận/Từ chối (nhập lý do)</td><td>Báo cáo tiến độ (nếu là việc của mình)</td></tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<!-- ============ AI ============ -->
+<section id="ai">
+    <h2 class="section-title">Tính Năng AI</h2>
+    <p class="section-subtitle">Tích hợp Ollama local — Chat streaming, dự đoán, phát hiện bất thường</p>
+
+    <div class="card">
+        <h3>Chat AI (Tất cả vai trò)</h3>
+        <ul class="feature-list">
+            <li>Nút <strong>Sparkles ✨</strong> (góc dưới phải mọi trang dashboard)</li>
+            <li>Streaming response (từng ký tự hiển thị real-time)</li>
+            <li>Context-aware: AI biết dữ liệu cây, sự cố, lịch sử bảo trì</li>
+            <li>Gợi ý nhanh: "Cây nào cần bảo trì?", "Tổng hợp sự cố hôm nay"</li>
+            <li>Cache 30 phút cho predictions, 5 phút cho anomalies</li>
+        </ul>
+    </div>
+
+    <div class="card">
+        <h3>Dự Đoán Bảo Trì (GĐ/ĐT)</h3>
+        <ul class="feature-list">
+            <li>Phân tích tuổi cây + chu kỳ bảo trì theo loại + lịch sử chăm sóc</li>
+            <li>Liệt kê top cây cần bảo trì sắp tới</li>
+            <li>Gợi ý ưu tiên dựa trên tình trạng hiện tại</li>
+        </ul>
+    </div>
+
+    <div class="card">
+        <h3>Phát Hiện Bất Thường (GĐ/ĐT)</h3>
+        <ul class="feature-list">
+            <li>Phân tích dữ liệu tình trạng cây toàn hệ thống</li>
+            <li>Cảnh báo cây có chỉ số bất thường (sâu bệnh đột ngột, di dời nhiều lần)</li>
+            <li>Gợi ý hành động khắc phục</li>
+        </ul>
+    </div>
+
+    <div class="card">
+        <h3>Tạo Báo Cáo Tự Động (GĐ)</h3>
+        <ul class="feature-list">
+            <li>Endpoint: <code class="inline-code">GET /api/ai/report/{type}</code></li>
+            <li>Loại: monthly (hàng tháng), quarterly (quý), yearly (năm)</li>
+            <li>AI tổng hợp: số liệu, xu hướng, đề xuất chiến lược</li>
+        </ul>
+    </div>
+
+    <div class="card">
+        <h3>Kiểm Tra AI Health</h3>
+        <pre><code># Kiểm tra Ollama có đang chạy
+curl http://localhost:5000/api/ai/health
+# → {"available": true}
+
+# Nếu AI offline:
+ollama serve  # khởi động lại Ollama
+
+# Badge trên UI:
+# 🟢 "AI Online" = Ollama hoạt động
+# 🔴 "AI Offline" = Ollama chưa chạy (hệ thống vẫn hoạt động bình thường)</code></pre>
+    </div>
+</section>
+
+<!-- ============ API ============ -->
+<section id="api">
+    <h2 class="section-title">API Reference</h2>
+    <p class="section-subtitle">62 endpoints — RESTful, JWT authentication, JSON response</p>
+
+    <div class="card">
+        <h3>Authentication</h3>
+        <pre><code># Đăng nhập
+POST http://localhost:5000/api/Users/login
+Content-Type: application/json
+
+{"email": "doitruong@test.com", "password": "Test@123"}
+
+# Response: {"accessToken": "eyJhbGciOiJIUzI1NiIs..."}
+
+# Sử dụng token cho các request tiếp theo
+GET http://localhost:5000/api/trees
+Authorization: Bearer eyJhbGciOiJIUzI1NiIs...</code></pre>
+    </div>
+
+    <div class="card">
+        <h3>Danh Sách Endpoint Groups</h3>
+        <table>
+            <thead><tr><th>Group</th><th>Base Path</th><th>Endpoints</th><th>Mô tả</th></tr></thead>
+            <tbody>
+                <tr><td><strong>Trees</strong></td><td>/api/trees</td><td>12</td><td>CRUD cây, import/export Excel, map data, relocation</td></tr>
+                <tr><td><strong>Planning</strong></td><td>/api/planning</td><td>10</td><td>CRUD kế hoạch, workflow phê duyệt, AI suggestions</td></tr>
+                <tr><td><strong>Work Items</strong></td><td>/api/work-items</td><td>8</td><td>Công việc, phân công, báo cáo tiến độ, duyệt</td></tr>
+                <tr><td><strong>Tree Incidents</strong></td><td>/api/tree-incidents</td><td>8</td><td>Sự cố, báo cáo ẩn danh, phản hồi, xử lý</td></tr>
+                <tr><td><strong>AI</strong></td><td>/api/ai</td><td>6</td><td>Chat (sync + stream), anomalies, predictions, reports</td></tr>
+                <tr><td><strong>Employees</strong></td><td>/api/employees</td><td>5</td><td>Nhân sự CRUD, phân quyền</td></tr>
+                <tr><td><strong>Lookups</strong></td><td>/api/lookups</td><td>4</td><td>Loại cây, loại công việc, quận/phường, đường phố</td></tr>
+                <tr><td><strong>Reports</strong></td><td>/api/reports</td><td>3</td><td>Dashboard stats, monthly trends, export PDF</td></tr>
+                <tr><td><strong>Users</strong></td><td>/api/users</td><td>3</td><td>Login, profile, update profile</td></tr>
+                <tr><td><strong>Locations</strong></td><td>/api/locations</td><td>2</td><td>Khu vực/vùng quản lý</td></tr>
+                <tr><td><strong>Maintenance</strong></td><td>/api/maintenance</td><td>1</td><td>Trigger job bảo trì định kỳ</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="card">
+        <h3>Ví Dụ Gọi API</h3>
+        <pre><code># Lấy danh sách cây (có phân trang)
+GET /api/trees?pageNumber=1&pageSize=20&search=bàng
+
+# Lấy data bản đồ
+GET /api/trees/map
+
+# Tạo kế hoạch mới
+POST /api/planning
+{"name": "Bảo trì Q2-2026", "description": "Cắt tỉa cây tuyến Nguyễn Văn Linh"}
+
+# Báo sự cố (công dân, không cần token)
+POST /api/tree-incidents/report-incident
+{"treeId": 42, "description": "Cây gãy nhánh", "severity": "Cao"}
+
+# Chat AI (streaming)
+POST /api/ai/chat/stream
+{"message": "Cây nào cần bảo trì tuần này?"}
+# → Server-Sent Events (text/event-stream)</code></pre>
+    </div>
+
+    <div class="card">
+        <h3>Real-Time (SignalR)</h3>
+        <pre><code># Hub URL
+ws://localhost:5000/hubs/incidents
+
+# Events nhận được:
+- ReceiveIncidentNotification(message, incidentId)
+- ReceiveNotification(title, message, type)
+
+# Frontend tự động kết nối qua NotificationListener component
+# Auto-reconnect sau 5 giây nếu mất kết nối</code></pre>
+    </div>
+</section>
+
+<!-- ============ CẤU TRÚC DỰ ÁN ============ -->
+<section>
+    <h2 class="section-title">Cấu Trúc Dự Án</h2>
+    <p class="section-subtitle">Clean Architecture + Turborepo monorepo</p>
+
+    <div class="card">
+        <pre><code>225DAPM_Nhom9/
+├── backend/
+│   └── src/
+│       ├── AppHost/          # Aspire orchestrator (PostgreSQL + Redis + API)
+│       ├── Web/              # Minimal API endpoints, JWT, SignalR, CORS
+│       ├── Application/      # CQRS handlers (MediatR), validators, DTOs
+│       ├── Infrastructure/   # EF Core, AI (Ollama), Redis, file storage
+│       └── Domain/           # Entities, enums, value objects
+├── frontend/
+│   ├── apps/
+│   │   ├── web/              # Next.js 16 — main application
+│   │   └── mobile/           # Expo React Native (skeleton)
+│   └── packages/
+│       └── ui/               # Shared components (shadcn/ui + MapLibre)
+├── infra/                    # Terraform (AWS ECS + RDS + S3)
+├── docs/                     # Documentation
+├── .github/workflows/        # CI/CD (4 workflows)
+├── dev.sh                    # One-command full stack
+└── run-apphost.sh            # Backend only</code></pre>
+    </div>
+</section>
+
+</div>
+
+<!-- Footer -->
+<footer>
+    <p><strong>Quản Lý Cây Xanh Đà Nẵng</strong> — Nhóm 9, 225DAPM</p>
+    <p style="margin-top:0.5rem">
+        Repository: <a href="https://github.com/NguyenHuuDinh135/225DAPM_Nhom9">github.com/NguyenHuuDinh135/225DAPM_Nhom9</a>
+    </p>
+    <p style="margin-top:0.5rem; opacity:0.6">Tài liệu được tạo tự động — Cập nhật: Tháng 5/2026</p>
+</footer>
+
+</body>
+</html>

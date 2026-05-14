@@ -30,6 +30,15 @@ build/
 *.swp
 *.swo
 
+# Test artifacts
+test-results/
+playwright/.auth/
+playwright-report/
+blob-report/
+
+# Terraform plan files
+tfplan
+
 # OS
 .DS_Store
 Thumbs.db

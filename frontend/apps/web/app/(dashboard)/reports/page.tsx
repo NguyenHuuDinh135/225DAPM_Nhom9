@@ -112,12 +112,12 @@ export default function StrategicReportsPage() {
     "Chi phí ước tính (triệu VNĐ)": stat.completedWorks * 15 + stat.newIncidents * 5
   }))
 
-  const incidentTrend = monthlyStats.length >= 2 
-    ? ((monthlyStats[monthlyStats.length - 1].newIncidents - monthlyStats[monthlyStats.length - 2].newIncidents) / (monthlyStats[monthlyStats.length - 2].newIncidents || 1)) * 100
+  const incidentTrend = monthlyStats.length >= 2
+    ? ((monthlyStats[monthlyStats.length - 1]!.newIncidents - monthlyStats[monthlyStats.length - 2]!.newIncidents) / (monthlyStats[monthlyStats.length - 2]!.newIncidents || 1)) * 100
     : 0
 
   const workCompletionTrend = monthlyStats.length >= 2
-    ? ((monthlyStats[monthlyStats.length - 1].completedWorks - monthlyStats[monthlyStats.length - 2].completedWorks) / (monthlyStats[monthlyStats.length - 2].completedWorks || 1)) * 100
+    ? ((monthlyStats[monthlyStats.length - 1]!.completedWorks - monthlyStats[monthlyStats.length - 2]!.completedWorks) / (monthlyStats[monthlyStats.length - 2]!.completedWorks || 1)) * 100
     : 0
 
   return (
@@ -325,8 +325,8 @@ export default function StrategicReportsPage() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
-                  {costEstimateData.length > 0 
-                    ? Math.round(costEstimateData[costEstimateData.length - 1]["Chi phí ước tính (triệu VNĐ)"] * 1.1)
+                  {costEstimateData.length > 0
+                    ? Math.round(costEstimateData[costEstimateData.length - 1]!["Chi phí ước tính (triệu VNĐ)"] * 1.1)
                     : 0} triệu
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">Ước tính tăng 10%</p>
@@ -340,8 +340,8 @@ export default function StrategicReportsPage() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
-                  {costEstimateData.length > 0 
-                    ? Math.round(costEstimateData[costEstimateData.length - 1]["Chi phí ước tính (triệu VNĐ)"] * 1.25)
+                  {costEstimateData.length > 0
+                    ? Math.round(costEstimateData[costEstimateData.length - 1]!["Chi phí ước tính (triệu VNĐ)"] * 1.25)
                     : 0} triệu
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">Dự phòng 25%</p>

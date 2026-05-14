@@ -33,14 +33,7 @@ public class ReportWorkProgressCommandHandler(
 
         try
         {
-            var progress = new WorkProgress
-            {
-                WorkId = work.Id,
-                UpdaterId = request.UpdaterId,
-                Note = request.Note,
-                Percentage = request.Percentage,
-                UpdatedDate = DateTime.UtcNow
-            };
+            var progress = WorkProgress.Create(work.Id, request.UpdaterId, request.Note, request.Percentage);
 
             string lastPath = "";
             foreach (var file in request.Images)

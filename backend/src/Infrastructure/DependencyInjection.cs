@@ -1,3 +1,5 @@
+using Amazon;
+using Amazon.BedrockRuntime;
 using backend.Application.Common.Interfaces;
 using backend.Domain.Constants;
 using backend.Infrastructure.AI;
@@ -50,7 +52,7 @@ public static class DependencyInjection
         })
         .AddJwtBearer("Jwt", options =>
         {
-            var key = builder.Configuration["Jwt:Key"] ?? "YourSuperSecretKeyWithAtLeast32Characters!";
+            var key = builder.Configuration["Jwt:Key"] ?? throw new InvalidOperationException("Jwt:Key must be configured.");
             options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
             {
                 ValidateIssuer = false,
@@ -94,7 +96,20 @@ public static class DependencyInjection
         builder.Services.AddScoped<IMaintenanceJobService, MaintenanceJobService>();
         builder.Services.AddScoped<IAutoAssignmentService, AutoAssignmentService>();
         builder.Services.AddScoped<IFileService, FileService>();
-        builder.Services.AddTransient<IAIService, AIService>();
+        // AI Service — Ollama (local) or Bedrock (AWS) based on configuration
+        if (builder.Configuration.GetValue<bool>("Ollama:Enabled", true))
+        {
+            builder.Services.Configure<OllamaOptions>(builder.Configuration.GetSection(OllamaOptions.SectionName));
+            builder.Services.AddSingleton<OllamaClient>();
+            builder.Services.AddTransient<IAIService, AIService>();
+        }
+        else
+        {
+            builder.Services.Configure<BedrockOptions>(builder.Configuration.GetSection(BedrockOptions.SectionName));
+            var bedrockRegion = builder.Configuration.GetValue<string>("Bedrock:Region") ?? "us-west-2";
+            builder.Services.AddSingleton(new AmazonBedrockRuntimeClient(RegionEndpoint.GetBySystemName(bedrockRegion)));
+            builder.Services.AddTransient<IAIService, BedrockAIService>();
+        }
 
         // Hangfire — only configure when connection string is available
         if (!string.IsNullOrEmpty(connectionString))

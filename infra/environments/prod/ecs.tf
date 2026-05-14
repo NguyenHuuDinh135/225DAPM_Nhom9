@@ -99,12 +99,15 @@ resource "aws_ecs_task_definition" "api" {
       }
     }
     secrets = [
-      { name = "PGPASSWORD", valueFrom = aws_ssm_parameter.db_password.arn },
+      { name = "ConnectionStrings__QLCayXanhDb", valueFrom = "arn:aws:ssm:${var.aws_region}:${data.aws_caller_identity.current.account_id}:parameter/qlcayxanh/prod/dotnet_connection_string" },
+      { name = "Jwt__Key", valueFrom = aws_ssm_parameter.jwt_key.arn },
     ]
     environment = [
       { name = "ASPNETCORE_ENVIRONMENT", value = "Production" },
-      { name = "ConnectionStrings__QLCayXanhDb", value = "Host=${aws_db_instance.main.address};Port=5432;Database=qlcayxanh;Username=qlcayxanh" },
       { name = "AWS_REGION", value = var.aws_region },
+      { name = "Bedrock__Region", value = "us-west-2" },
+      { name = "Bedrock__ModelId", value = "anthropic.claude-3-haiku-20240307" },
+      { name = "Ollama__Enabled", value = "false" },
     ]
   }])
 }

@@ -70,13 +70,7 @@ public class CreatePlanCommandHandler : IRequestHandler<CreatePlanCommand, Resul
 
                     foreach (var treeId in item.TreeIds)
                     {
-                        var workDetail = new WorkDetail
-                        {
-                            Work = work,
-                            TreeId = treeId,
-                            Content = item.Content ?? $"Thực hiện {item.WorkTypeId} theo kế hoạch",
-                            Status = "New"
-                        };
+                        var workDetail = WorkDetail.CreateWithWork(work, treeId, item.Content ?? $"Thực hiện {item.WorkTypeId} theo kế hoạch", "New");
                         _context.WorkDetails.Add(workDetail);
                     }
 
@@ -105,13 +99,7 @@ public class CreatePlanCommandHandler : IRequestHandler<CreatePlanCommand, Resul
                     var work = Work.Create(workType?.Id ?? 1, plan.Id, request.CreatorId, request.StartDate, request.EndDate);
                     _context.Works.Add(work);
                     
-                    var workDetail = new WorkDetail
-                    {
-                        Work = work,
-                        TreeId = treeId,
-                        Content = $"Bảo trì định kỳ theo kế hoạch tự động",
-                        Status = "New"
-                    };
+                    var workDetail = WorkDetail.CreateWithWork(work, treeId, "Bảo trì định kỳ theo kế hoạch tự động", "New");
                     _context.WorkDetails.Add(workDetail);
                     workIds.Add(work.Id);
                 }

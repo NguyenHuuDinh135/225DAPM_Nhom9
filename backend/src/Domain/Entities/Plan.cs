@@ -1,5 +1,6 @@
 using backend.Domain.Common;
 using backend.Domain.Enums;
+using backend.Domain.Events;
 
 namespace backend.Domain.Entities;
 
@@ -68,6 +69,7 @@ public class Plan : BaseAuditableEntity
         Status = PlanStatus.Approved;
         ApprovedDate = DateTime.UtcNow;
         RejectionReason = null;
+        AddDomainEvent(new PlanApprovedEvent(this));
     }
 
     public void Reject(string reason)

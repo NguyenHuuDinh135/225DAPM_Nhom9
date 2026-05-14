@@ -4,6 +4,8 @@ using backend.Infrastructure.Data;
 using backend.Web.Hubs;
 using backend.Web.Services;
 using Microsoft.AspNetCore.Mvc;
+using System.Text.Json.Serialization;
+using System.Threading.RateLimiting;
 
 using NSwag;
 using NSwag.Generation.Processors.Security;
@@ -16,13 +18,35 @@ public static class DependencyInjection
     {
         builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
+        // Serialize enums as strings globally
+        builder.Services.ConfigureHttpJsonOptions(options =>
+        {
+            options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
+        });
+
         builder.Services.AddCors(options =>
         {
             options.AddDefaultPolicy(policy =>
-                policy.SetIsOriginAllowed(_ => true)
+                policy.WithOrigins(
+                          builder.Configuration.GetSection("Cors:Origins").Get<string[]>()
+                          ?? ["http://localhost:3000"])
                       .AllowAnyHeader()
                       .AllowAnyMethod()
                       .AllowCredentials());
+        });
+
+        builder.Services.AddRateLimiter(options =>
+        {
+            options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(context =>
+                RateLimitPartition.GetFixedWindowLimiter(
+                    partitionKey: context.Connection.RemoteIpAddress?.ToString() ?? "anonymous",
+                    factory: _ => new FixedWindowRateLimiterOptions
+                    {
+                        PermitLimit = 100,
+                        Window = TimeSpan.FromMinutes(1),
+                        QueueLimit = 10
+                    }));
+            options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
         });
 
         builder.Services.AddSignalR();

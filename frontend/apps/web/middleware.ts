@@ -3,7 +3,7 @@ import { ROLES } from "@/lib/roles";
 import { decodeRole } from "@/lib/auth-utils";
 
 // Các trang TUYỆT ĐỐI bảo mật (Cần Role tương ứng)
-const SECURE_ROUTES = ["/giamdoc", "/doitruong", "/nhanvien", "/staff", "/settings", "/analytics", "/reports", "/map", "/incidents", "/planning"];
+const SECURE_ROUTES = ["/giamdoc", "/doitruong", "/nhanvien", "/staff", "/settings", "/analytics", "/reports", "/map", "/incidents", "/plans", "/works", "/tasks", "/feedback-inbox"];
 
 // Các trang CÔNG CỘNG (Người dân xem được)
 const PUBLIC_ROUTES = ["/", "/login", "/trees", "/tree-detail", "/report-incident", "/category"];
@@ -58,8 +58,9 @@ export function middleware(req: NextRequest) {
 
 export const config = {
   matcher: [
-    "/", "/login", "/giamdoc/:path*", "/doitruong/:path*", "/nhanvien/:path*", 
+    "/", "/login", "/giamdoc/:path*", "/doitruong/:path*", "/nhanvien/:path*",
     "/trees/:path*", "/map/:path*", "/staff/:path*", "/settings/:path*",
     "/analytics/:path*", "/reports/:path*", "/tree-detail/:path*",
+    "/plans/:path*", "/works/:path*", "/tasks/:path*", "/feedback-inbox/:path*",
   ],
 };

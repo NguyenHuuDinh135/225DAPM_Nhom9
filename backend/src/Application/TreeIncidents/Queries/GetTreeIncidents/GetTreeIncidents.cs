@@ -35,7 +35,7 @@ public class GetTreeIncidentsQueryHandler : IRequestHandler<GetTreeIncidentsQuer
                 TreeId = i.TreeId,
                 TreeName = i.Tree.Name,
                 Description = i.Content,
-                Status = i.Status,
+                Status = i.Status.ToString(),
                 ReportedDate = i.ReportedDate ?? DateTime.UtcNow,
                 ReportedBy = i.ReporterName ?? i.ReporterId,
                 Severity = i.Severity

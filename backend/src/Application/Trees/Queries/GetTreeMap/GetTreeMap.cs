@@ -26,7 +26,8 @@ public class GetTreeMapQueryHandler : IRequestHandler<GetTreeMapQuery, TreeMapVm
                 Condition = t.Condition,
                 TreeTypeName = t.TreeType != null ? t.TreeType.Name : "Không xác định",
                 Latitude = t.Latitude,
-                Longitude = t.Longitude
+                Longitude = t.Longitude,
+                RecordedDate = t.RecordedDate
             })
             .ToListAsync(cancellationToken);
 

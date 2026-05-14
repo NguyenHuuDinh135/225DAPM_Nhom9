@@ -79,13 +79,7 @@ public class IncidentCreationService(
                     context.Works.Add(work);
 
                     var tree = await context.Trees.FindAsync(new object[] { treeId }, cancellationToken);
-                    var workDetail = new WorkDetail
-                    {
-                        Work = work,
-                        TreeId = treeId,
-                        Content = $"[KHẨN CẤP] {content}",
-                        Status = "New"
-                    };
+                    var workDetail = WorkDetail.CreateWithWork(work, treeId, $"[KHẨN CẤP] {content}", "New");
                     context.WorkDetails.Add(workDetail);
                     await context.SaveChangesAsync(cancellationToken);
 

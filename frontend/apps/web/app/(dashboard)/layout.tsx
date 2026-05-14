@@ -2,6 +2,7 @@ import { AppSidebar } from "@/app/(dashboard)/components/app-sidebar"
 import { SiteHeader } from "@/app/(dashboard)/components/site-header"
 import { SidebarInset, SidebarProvider } from "@workspace/ui/components/sidebar"
 import { NotificationListener } from "@/components/notification-listener"
+import { AiChatPanel } from "@/app/(dashboard)/components/ai-chat/ai-chat-panel"
 import { ReactNode } from "react"
 
 export default function Page({ children }: { children: ReactNode }) {
@@ -20,6 +21,7 @@ export default function Page({ children }: { children: ReactNode }) {
         {children}
       </SidebarInset>
       <NotificationListener />
+      <AiChatPanel />
     </SidebarProvider>
   )
 }

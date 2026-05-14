@@ -1,0 +1,25 @@
+version: 1
+applications:
+  - appRoot: frontend/apps/web
+    frontend:
+      phases:
+        preBuild:
+          commands:
+            - curl -fsSL https://bun.sh/install | bash
+            - export PATH="$HOME/.bun/bin:$PATH"
+            - cd ../../ && bun install
+        build:
+          commands:
+            - export PATH="$HOME/.bun/bin:$PATH"
+            - bun run build
+        postBuild:
+          commands:
+            - ln -sf ../../node_modules node_modules
+      artifacts:
+        baseDirectory: .next
+        files:
+          - '**/*'
+      cache:
+        paths:
+          - ../../node_modules/**/*
+          - .next/cache/**/*

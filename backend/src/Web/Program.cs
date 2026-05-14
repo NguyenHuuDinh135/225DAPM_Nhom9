@@ -20,7 +20,6 @@ if (app.Environment.IsDevelopment())
     if (app.Configuration.GetConnectionString("QLCayXanhDb") is not null || app.Configuration.GetConnectionString("backendDb") is not null)
     {
         await app.InitialiseDatabaseAsync();
-        app.UseHangfireDashboard("/hangfire");
     }
 }
 else
@@ -28,9 +27,13 @@ else
     app.UseHsts();
 }
 
+if (app.Configuration.GetConnectionString("QLCayXanhDb") is not null || app.Configuration.GetConnectionString("backendDb") is not null)
+{
+    app.UseHangfireDashboard("/hangfire");
+}
+
 app.UseCors();
-if (!app.Environment.IsDevelopment())
-    app.UseHttpsRedirection();
+app.UseRateLimiter();
 app.UseStaticFiles();
 
 app.UseSwaggerUi(settings =>
@@ -47,15 +50,17 @@ app.MapDefaultEndpoints();
 app.MapEndpoints();
 app.MapHub<IncidentHub>("/hubs/incidents");
 
-/*
 if (!app.Environment.IsEnvironment("Testing") && (app.Configuration.GetConnectionString("QLCayXanhDb") is not null || app.Configuration.GetConnectionString("backendDb") is not null))
 {
-    RecurringJob.AddOrUpdate<IMaintenanceJobService>(
-        "tree-maintenance",
-        svc => svc.CheckAndGenerateMaintenanceWorkAsync(CancellationToken.None),
-        Cron.Daily);
+    var jobManager = app.Services.GetService<IRecurringJobManager>();
+    if (jobManager is not null)
+    {
+        jobManager.AddOrUpdate<IMaintenanceJobService>(
+            "tree-maintenance",
+            svc => svc.CheckAndGenerateMaintenanceWorkAsync(CancellationToken.None),
+            Cron.Daily);
+    }
 }
-*/
 
 app.Run();
 

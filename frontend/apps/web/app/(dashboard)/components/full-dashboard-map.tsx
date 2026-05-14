@@ -6,12 +6,17 @@ import { Map, MapMarker, MarkerContent, MapPopup, MapControls, type MapRef } fro
 import { Badge } from "@workspace/ui/components/badge";
 import { Button } from "@workspace/ui/components/button";
 import { Input } from "@workspace/ui/components/input";
-import { 
-  TreePine, Wrench, AlertCircle, Search, 
-  MapPin, Maximize2, Minimize2, 
+import {
+  TreePine, Wrench, AlertCircle, Search,
+  MapPin, Maximize2, Minimize2,
   Move, Activity, User, Trash2, Check, X,
-  Briefcase, ShieldCheck, RefreshCw, Sparkles
+  Briefcase, ShieldCheck, RefreshCw, Sparkles,
+  Hexagon, Route, Clock, Navigation
 } from "lucide-react";
+import { MapHeatmapLayer } from "./map-features/map-heatmap-layer";
+import { MapPolygonDraw } from "./map-features/map-polygon-draw";
+import { MapRouteOptimizer } from "./map-features/map-route-optimizer";
+import { MapTimelineSlider } from "./map-features/map-timeline-slider";
 import { 
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue 
 } from "@workspace/ui/components/select";
@@ -60,6 +65,7 @@ interface WorkItemMapDto {
   workType: string;
   status: string;
   assignedToName: string;
+  assignedUserIds: string[];
   latitude: number;
   longitude: number;
 }
@@ -93,13 +99,17 @@ export function FullDashboardMap() {
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
   
   const [searchQuery, setSearchQuery] = React.useState("");
-  const [activeMode, setActiveMode] = React.useState<"view" | "add-tree" | "relocate">("view");
+  const [activeMode, setActiveMode] = React.useState<"view" | "add-tree" | "relocate" | "draw-polygon" | "select-route">("view");
 
   const [showTrees, setShowTrees] = React.useState(true);
   const [showIncidents, setShowIncidents] = React.useState(true);
   const [showWorkItems, setShowWorkItems] = React.useState(true);
   const [showAiLayer, setShowAiLayer] = React.useState(false);
   const [aiSuggestions, setAiSuggestions] = React.useState<number[]>([]);
+  const [showHeatmap, setShowHeatmap] = React.useState(false);
+  const [showTimeline, setShowTimeline] = React.useState(false);
+  const [showMyTasks, setShowMyTasks] = React.useState(false);
+  const [timelineVisibleIds, setTimelineVisibleIds] = React.useState<Set<number> | null>(null);
 
   const stats = React.useMemo(() => ({
     totalTrees: trees.length,
@@ -127,6 +137,7 @@ export function FullDashboardMap() {
         workType: w.workTypeName,
         status: w.status,
         assignedToName: w.assignedUsers?.[0]?.userName,
+        assignedUserIds: w.assignedUsers?.map((au: any) => au.userId) || [],
         latitude: w.treeLocations?.[0]?.latitude,
         longitude: w.treeLocations?.[0]?.longitude
       })).filter((w: any) => w.latitude != null);
@@ -237,6 +248,7 @@ export function FullDashboardMap() {
   };
 
   const handleMapClick = (e: any) => {
+    if (activeMode === "draw-polygon" || activeMode === "select-route") return;
     if (activeMode !== "add-tree") return;
     const { lng, lat } = e.lngLat;
     toast("Xác nhận thêm cây mới?", {
@@ -289,7 +301,11 @@ export function FullDashboardMap() {
     } catch (err) {}
   };
 
-  const filteredTrees = trees.filter(t => !searchQuery || t.name?.toLowerCase().includes(searchQuery.toLowerCase()) || t.id.toString() === searchQuery);
+  const filteredTrees = trees.filter(t => {
+    if (searchQuery && !t.name?.toLowerCase().includes(searchQuery.toLowerCase()) && t.id.toString() !== searchQuery) return false;
+    if (timelineVisibleIds && !timelineVisibleIds.has(t.id)) return false;
+    return true;
+  });
 
   return (
     <div className={cn(
@@ -323,6 +339,14 @@ export function FullDashboardMap() {
                     <ModeButton label="Di dời" active={activeMode === "relocate"} onClick={() => setActiveMode("relocate")} icon={Move} color="text-blue-600" />
                 </>
             )}
+            <ModeButton label="Vùng" active={activeMode === "draw-polygon"} onClick={() => setActiveMode(activeMode === "draw-polygon" ? "view" : "draw-polygon")} icon={Hexagon} color="text-violet-600" />
+            <ModeButton label="Tuyến" active={activeMode === "select-route"} onClick={() => setActiveMode(activeMode === "select-route" ? "view" : "select-route")} icon={Route} color="text-emerald-600" />
+            {!isAdmin && isStaff && (
+                <ModeButton label="Tuyến tôi" active={showMyTasks && activeMode === "select-route"} onClick={() => {
+                    setShowMyTasks(true);
+                    setActiveMode("select-route");
+                }} icon={Navigation} color="text-amber-600" />
+            )}
             <Button variant={showAiLayer ? "secondary" : "ghost"} size="sm" className={cn("rounded-xl h-9 px-4 font-black text-[10px] uppercase tracking-wider transition-all", showAiLayer && "text-primary bg-primary/10 shadow-inner")} onClick={loadAiSuggestions}>
                 <Sparkles className="size-3.5 mr-1.5" /> AI
             </Button>
@@ -339,6 +363,11 @@ export function FullDashboardMap() {
             <LayerItem label="Cây xanh" checked={showTrees} onCheck={setShowTrees} color="bg-primary" />
             <LayerItem label="Sự cố" checked={showIncidents} onCheck={setShowIncidents} color="bg-destructive" />
             <LayerItem label="Thi công" checked={showWorkItems} onCheck={setShowWorkItems} color="bg-blue-600" />
+            <LayerItem label="Mật độ" checked={showHeatmap} onCheck={setShowHeatmap} color="bg-orange-500" />
+            <LayerItem label="Dòng thời gian" checked={showTimeline} onCheck={(v) => { setShowTimeline(v); if (!v) setTimelineVisibleIds(null); }} color="bg-violet-500" />
+            {!isAdmin && isStaff && (
+                <LayerItem label="Việc của tôi" checked={showMyTasks} onCheck={setShowMyTasks} color="bg-amber-500" />
+            )}
         </div>
       </div>
 
@@ -372,16 +401,26 @@ export function FullDashboardMap() {
             </MapMarker>
           ))}
 
-          {showWorkItems && workItems.map((work) => (
-            <MapMarker key={`work-${work.id}`} longitude={work.longitude} latitude={work.latitude} onClick={() => setSelectedWorkItem(work)}>
-              <MarkerContent>
-                <div className={cn(
-                    "size-7 flex items-center justify-center rounded-full shadow-2xl border-2 border-white cursor-pointer hover:scale-125 transition-transform",
-                    work.status === "Completed" ? "bg-primary text-white" : "bg-blue-600 text-white"
-                )}>{work.status === "Completed" ? <Check className="size-4" /> : <Wrench className="size-4" />}</div>
-              </MarkerContent>
-            </MapMarker>
-          ))}
+          {showWorkItems && workItems
+            .filter((work) => !showMyTasks || (user && work.assignedUserIds.includes(user.id)))
+            .map((work) => {
+              const isMyTask = user && work.assignedUserIds.includes(user.id);
+              return (
+                <MapMarker key={`work-${work.id}`} longitude={work.longitude} latitude={work.latitude} onClick={() => setSelectedWorkItem(work)}>
+                  <MarkerContent>
+                    <div className="relative">
+                      <div className={cn(
+                          "size-7 flex items-center justify-center rounded-full shadow-2xl border-2 border-white cursor-pointer hover:scale-125 transition-transform",
+                          work.status === "Completed" ? "bg-primary text-white" : "bg-blue-600 text-white"
+                      )}>{work.status === "Completed" ? <Check className="size-4" /> : <Wrench className="size-4" />}</div>
+                      {showMyTasks && isMyTask && work.status !== "Completed" && (
+                          <div className="absolute -inset-1.5 rounded-full border-2 border-amber-500 animate-ping opacity-75" />
+                      )}
+                    </div>
+                  </MarkerContent>
+                </MapMarker>
+              );
+            })}
 
           {/* REAL-TIME OPERATIONS POPUPS */}
           {selectedTree && (
@@ -432,6 +471,11 @@ export function FullDashboardMap() {
                             <Button variant="outline" className="flex-1 rounded-2xl h-14 font-black text-xs text-destructive border-destructive/20 hover:bg-destructive/5" onClick={() => {
                                 toast.warning("Hủy bỏ dữ liệu cây?", { action: { label: "XÓA", onClick: async () => { await apiClient.delete(`/api/trees/${selectedTree.id}`); loadData(); setSelectedTree(null); } } });
                             }}><Trash2 className="size-5 mr-2" /> GỠ BỎ</Button>
+                        )}
+                        {!isAdmin && isStaff && (
+                            <Button variant="outline" className="flex-1 rounded-2xl h-14 font-black text-xs text-amber-600 border-amber-200 hover:bg-amber-50" asChild>
+                                <Link href={`/report-incident?treeId=${selectedTree.id}`}><AlertCircle className="size-5 mr-2" /> BÁO SỰ CỐ</Link>
+                            </Button>
                         )}
                         <Button className="flex-[1.5] rounded-2xl h-14 font-black text-xs shadow-xl shadow-primary/20 bg-primary hover:bg-primary/90" onClick={() => setIsSidebarOpen(true)}><Activity className="size-5 mr-2" /> CHI TIẾT LỊCH SỬ</Button>
                     </div>
@@ -514,8 +558,8 @@ export function FullDashboardMap() {
                         <div className="space-y-4">
                             <div className="space-y-2">
                                 <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground px-2">Ghi chú phản hồi (nếu từ chối)</Label>
-                                <Input 
-                                    placeholder="Lý do không duyệt..." 
+                                <Input
+                                    placeholder="Lý do không duyệt..."
                                     className="h-12 border-none bg-muted/30 rounded-2xl shadow-inner px-5 font-bold text-sm"
                                     value={rejectFeedback}
                                     onChange={(e) => setRejectFeedback(e.target.value)}
@@ -527,10 +571,22 @@ export function FullDashboardMap() {
                             </div>
                         </div>
                     )}
+                    {!isAdmin && isStaff && user && selectedWorkItem.assignedUserIds.includes(user.id) && selectedWorkItem.status !== "Completed" && (
+                        <Button className="w-full rounded-2xl h-14 font-black text-xs shadow-xl shadow-amber-500/20 bg-amber-500 hover:bg-amber-600 text-white uppercase tracking-widest" asChild>
+                            <Link href={`/nhanvien/tasks/${selectedWorkItem.id}/progress`}><Activity className="size-5 mr-2" /> BÁO CÁO TIẾN ĐỘ</Link>
+                        </Button>
+                    )}
                 </div>
             </MapPopup>
           )}
+          <MapHeatmapLayer trees={filteredTrees} visible={showHeatmap} />
+          <MapPolygonDraw trees={trees} active={activeMode === "draw-polygon"} onClose={() => setActiveMode("view")} />
+          <MapRouteOptimizer trees={trees} active={activeMode === "select-route"} onClose={() => setActiveMode("view")} />
         </Map>
+
+        {showTimeline && (
+          <MapTimelineSlider trees={trees} onFilterChange={setTimelineVisibleIds} />
+        )}
       </div>
 
       {/* Analytics HUD */}

@@ -29,7 +29,7 @@ public class GetTreeIncidentDetailQueryHandler : IRequestHandler<GetTreeIncident
                 TreeId = i.TreeId,
                 TreeName = i.Tree.Name,
                 Description = i.Content,
-                Status = i.Status,
+                Status = i.Status.ToString(),
                 ReportedDate = i.ReportedDate ?? DateTime.UtcNow,
                 ReportedBy = i.ReporterName ?? i.ReporterId,
                 Images = i.Images.Select(img => img.Path!).ToList()

@@ -60,15 +60,7 @@ public class MaintenanceJobService : IMaintenanceJobService
 
                 _dbContext.Works.Add(work);
 
-                var workDetail = new WorkDetail
-                {
-                    Work = work,
-                    WorkId = work.Id,
-                    TreeId = tree.Id,
-                    Tree = tree,
-                    Content = "Bảo dưỡng định kỳ cây xanh",
-                    Status = "New"
-                };
+                var workDetail = WorkDetail.CreateWithWork(work, tree.Id, "Bảo dưỡng định kỳ cây xanh", "New");
 
                 _dbContext.WorkDetails.Add(workDetail);
                 tree.UpdateLastMaintenanceDate(now);

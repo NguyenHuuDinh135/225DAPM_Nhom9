@@ -21,7 +21,7 @@ interface MonthlyStatDto {
   NewIncidents?: number;
 }
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000"
+const BASE_URL = typeof window !== "undefined" ? "" : (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000")
 
 const chartConfig = {
   completedWorks: { label: "Công việc hoàn thành", color: "hsl(var(--primary))" },

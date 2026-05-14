@@ -56,10 +56,11 @@ public class Trees : EndpointGroupBase
     public async Task<Ok<List<TreeLocationHistoryDto>>> GetLocationHistory(ISender sender, int id)
         => TypedResults.Ok(await sender.Send(new GetTreeLocationHistoryQuery(id)));
 
-    public async Task<Results<Created<int>, BadRequest>> CreateTree(ISender sender, CreateTreeCommand command)
+    public async Task<Results<Created<int>, BadRequest<string[]>>> CreateTree(ISender sender, CreateTreeCommand command)
     {
-        var id = await sender.Send(command);
-        return TypedResults.Created($"/Trees/{id}", id);
+        var result = await sender.Send(command);
+        if (!result.Succeeded) return TypedResults.BadRequest(result.Errors);
+        return TypedResults.Created($"/Trees/{result.Value}", result.Value);
     }
 
     public async Task<Results<NoContent, BadRequest<string[]>>> ImportTrees(ISender sender, IFormFile file)

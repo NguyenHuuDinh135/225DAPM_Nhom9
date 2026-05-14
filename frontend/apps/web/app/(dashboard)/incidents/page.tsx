@@ -169,10 +169,10 @@ export default function IncidentsPage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <StatusCard icon={AlertOctagonIcon} label="Khẩn cấp" value="3" color="red" />
-        <StatusCard icon={TriangleAlertIcon} label="Mới ghi nhận" value="12" color="orange" />
-        <StatusCard icon={ClockIcon} label="Đang xử lý" value="8" color="blue" />
-        <StatusCard icon={CheckCircle2Icon} label="Đã khắc phục" value="156" color="green" />
+        <StatusCard icon={AlertOctagonIcon} label="Khẩn cấp" value={incidents.filter(i => i.severity === "High" && i.status === "Pending").length.toString()} color="red" />
+        <StatusCard icon={TriangleAlertIcon} label="Mới ghi nhận" value={incidents.filter(i => i.status === "Pending").length.toString()} color="orange" />
+        <StatusCard icon={ClockIcon} label="Đang xử lý" value={incidents.filter(i => i.status === "InProgress").length.toString()} color="blue" />
+        <StatusCard icon={CheckCircle2Icon} label="Đã khắc phục" value={incidents.filter(i => i.status === "Resolved").length.toString()} color="green" />
       </div>
 
       <Card className="border-none shadow-2xl shadow-slate-200/50 rounded-[2rem] overflow-hidden bg-white/80 backdrop-blur-xl">
