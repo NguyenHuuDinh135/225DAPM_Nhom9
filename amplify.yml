@@ -7,16 +7,16 @@ applications:
           commands:
             - curl -fsSL https://bun.sh/install | bash
             - export PATH="$HOME/.bun/bin:$PATH"
-            - cd $CODEBUILD_SRC_DIR && cd frontend && bun install
+            - cd ../../ && bun install
         build:
           commands:
             - export PATH="$HOME/.bun/bin:$PATH"
-            - cd $CODEBUILD_SRC_DIR && cd frontend && bun run build --filter=web
+            - cd ../../ && bun run build --filter=web
       artifacts:
         baseDirectory: .next/standalone
         files:
           - '**/*'
       cache:
         paths:
-          - node_modules/**/*
+          - ../../node_modules/**/*
           - .next/cache/**/*
