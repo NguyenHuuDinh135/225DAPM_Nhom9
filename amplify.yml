@@ -17,9 +17,12 @@ applications:
             - npm init -y 2>/dev/null || true
             - npm install next@16.1.6 react react-dom --legacy-peer-deps 2>/dev/null || true
       artifacts:
-        baseDirectory: .next
+        baseDirectory: .
         files:
-          - '**/*'
+          - .next/**/*
+          - node_modules/**/*
+          - package.json
+          - next.config.mjs
       cache:
         paths:
           - ../../node_modules/**/*
