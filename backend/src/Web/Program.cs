@@ -29,6 +29,7 @@ else
 }
 
 app.UseCors();
+app.UseRateLimiter();
 if (!app.Environment.IsDevelopment())
     app.UseHttpsRedirection();
 app.UseStaticFiles();
@@ -47,7 +48,6 @@ app.MapDefaultEndpoints();
 app.MapEndpoints();
 app.MapHub<IncidentHub>("/hubs/incidents");
 
-/*
 if (!app.Environment.IsEnvironment("Testing") && (app.Configuration.GetConnectionString("QLCayXanhDb") is not null || app.Configuration.GetConnectionString("backendDb") is not null))
 {
     RecurringJob.AddOrUpdate<IMaintenanceJobService>(
@@ -55,7 +55,6 @@ if (!app.Environment.IsEnvironment("Testing") && (app.Configuration.GetConnectio
         svc => svc.CheckAndGenerateMaintenanceWorkAsync(CancellationToken.None),
         Cron.Daily);
 }
-*/
 
 app.Run();
 
