@@ -14,11 +14,8 @@ applications:
             - bun run build
         postBuild:
           commands:
-            - export PATH="$HOME/.bun/bin:$PATH"
-            - mkdir -p node_modules
-            - cp -rL ../../node_modules/next node_modules/next
-            - cp -rL ../../node_modules/react node_modules/react
-            - cp -rL ../../node_modules/react-dom node_modules/react-dom
+            - npm init -y 2>/dev/null || true
+            - npm install next@16.1.6 react react-dom --legacy-peer-deps 2>/dev/null || true
       artifacts:
         baseDirectory: .next
         files:
