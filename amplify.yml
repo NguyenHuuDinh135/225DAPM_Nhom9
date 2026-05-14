@@ -11,13 +11,13 @@ applications:
         build:
           commands:
             - export PATH="$HOME/.bun/bin:$PATH"
-            - node ../../node_modules/next/dist/bin/next build
+            - bun run build
         postBuild:
           commands:
-            - echo "Standalone contents:"
-            - ls -la .next/standalone/ 2>/dev/null || echo "NO STANDALONE DIR"
-            - find .next/standalone -name "required-server-files.json" 2>/dev/null || echo "NO RSF"
-            - find .next/standalone -maxdepth 2 -type d 2>/dev/null | head -20
+            - echo "=== DEBUG standalone ==="
+            - find .next/standalone -name "required-server-files.json" 2>/dev/null || echo "RSF not found"
+            - find .next/standalone -maxdepth 3 -type d 2>/dev/null | head -30 || echo "no standalone"
+            - ls .next/standalone/node_modules/next/package.json 2>/dev/null && echo "next at root" || echo "next NOT at standalone root"
             - cp -r .next/static .next/standalone/.next/static 2>/dev/null || true
             - cp -r public .next/standalone/public 2>/dev/null || true
       artifacts:
