@@ -30,28 +30,7 @@ resource "aws_amplify_app" "web" {
   access_token         = var.github_access_token
   iam_service_role_arn = aws_iam_role.amplify.arn
 
-  build_spec = <<-EOT
-    version: 1
-    frontend:
-      phases:
-        preBuild:
-          commands:
-            - curl -fsSL https://bun.sh/install | bash
-            - export PATH="$HOME/.bun/bin:$PATH"
-            - bun install
-        build:
-          commands:
-            - export PATH="$HOME/.bun/bin:$PATH"
-            - bun run build
-      artifacts:
-        baseDirectory: .next/standalone
-        files:
-          - '**/*'
-      cache:
-        paths:
-          - node_modules/**/*
-          - .next/cache/**/*
-  EOT
+  build_spec = file("${path.module}/../../../amplify.yml")
 
   environment_variables = {
     NEXT_PUBLIC_API_URL        = "http://${aws_lb.api.dns_name}"

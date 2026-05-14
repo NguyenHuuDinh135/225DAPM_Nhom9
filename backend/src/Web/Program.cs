@@ -34,8 +34,6 @@ if (app.Configuration.GetConnectionString("QLCayXanhDb") is not null || app.Conf
 
 app.UseCors();
 app.UseRateLimiter();
-if (!app.Environment.IsDevelopment())
-    app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseSwaggerUi(settings =>
