@@ -11,15 +11,27 @@ applications:
         build:
           commands:
             - export PATH="$HOME/.bun/bin:$PATH"
-            - bun run build
+            - npx next build
         postBuild:
           commands:
-            - echo "=== DEBUG standalone ==="
-            - find .next/standalone -name "required-server-files.json" 2>/dev/null || echo "RSF not found"
-            - find .next/standalone -maxdepth 3 -type d 2>/dev/null | head -30 || echo "no standalone"
-            - ls .next/standalone/node_modules/next/package.json 2>/dev/null && echo "next at root" || echo "next NOT at standalone root"
-            - cp -r .next/static .next/standalone/.next/static 2>/dev/null || true
+            - echo "=== Restructuring monorepo standalone output ==="
+            - cp -r .next/standalone/apps/web/server.js .next/standalone/server.js
+            - cp -r .next/standalone/apps/web/package.json .next/standalone/package.json
+            - cp -r .next/standalone/apps/web/.next .next/standalone/.next
+            - rm -rf .next/standalone/apps
+            - cp -r .next/static .next/standalone/.next/static
             - cp -r public .next/standalone/public 2>/dev/null || true
+            - |
+              if [ ! -d ".next/standalone/node_modules/next" ] || [ -L ".next/standalone/node_modules/next" ]; then
+                echo "Fixing next symlink..."
+                rm -f .next/standalone/node_modules/next 2>/dev/null || true
+                mkdir -p .next/standalone/node_modules
+                cp -rL ../../node_modules/.bun/next@*/node_modules/next .next/standalone/node_modules/next
+              fi
+            - echo "=== Final structure ==="
+            - ls .next/standalone/server.js && echo "server.js OK"
+            - ls .next/standalone/.next/required-server-files.json && echo "RSF OK"
+            - ls .next/standalone/node_modules/next/package.json && echo "next module OK"
       artifacts:
         baseDirectory: .next/standalone
         files:
