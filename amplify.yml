@@ -11,13 +11,16 @@ applications:
         build:
           commands:
             - export PATH="$HOME/.bun/bin:$PATH"
-            - bun run build
+            - ../../node_modules/.bin/next build
         postBuild:
           commands:
-            - cp -r .next/static .next/standalone/apps/web/.next/static 2>/dev/null || true
-            - cp -r public .next/standalone/apps/web/public 2>/dev/null || true
+            - echo "=== Standalone structure ==="
+            - find .next/standalone -maxdepth 3 -type d 2>/dev/null || echo "No standalone dir"
+            - ls .next/standalone/ 2>/dev/null || echo "standalone root empty"
+            - cp -r .next/static .next/standalone/.next/static 2>/dev/null || true
+            - cp -r public .next/standalone/public 2>/dev/null || true
       artifacts:
-        baseDirectory: .next/standalone/apps/web
+        baseDirectory: .next/standalone
         files:
           - '**/*'
       cache:
