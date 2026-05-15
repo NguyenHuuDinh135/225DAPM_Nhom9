@@ -24,6 +24,7 @@ export default function PlansReportPage() {
   const [error, setError] = useState<string | null>(null)
 
   const search = searchParams.get("search") ?? ""
+  const statusFilter = searchParams.get("status") ?? ""
   const autoPrint = searchParams.get("autoPrint") === "1"
   const reportDate = useMemo(() => new Date(), [])
 
@@ -36,11 +37,12 @@ export default function PlansReportPage() {
       try {
         const data = await apiClient.get<PlanReportRow[]>("/api/Planning")
         const list = Array.isArray(data) ? data : []
-        const filtered = search
-          ? list.filter((plan) =>
-              plan.name?.toLowerCase().includes(search.toLowerCase())
-            )
-          : list
+        const filtered = list.filter(
+          (plan) =>
+            (!search ||
+              plan.name?.toLowerCase().includes(search.toLowerCase())) &&
+            (!statusFilter || plan.status === statusFilter)
+        )
 
         if (isMounted) {
           setItems(filtered)
@@ -63,7 +65,7 @@ export default function PlansReportPage() {
     return () => {
       isMounted = false
     }
-  }, [search])
+  }, [search, statusFilter])
 
   useEffect(() => {
     if (!autoPrint || loading || error) return
@@ -193,6 +195,10 @@ export default function PlansReportPage() {
             <p>
               - Từ khóa lọc:{" "}
               <span className="font-semibold">{search || "Không"}</span>
+            </p>
+            <p>
+              - Trạng thái lọc:{" "}
+              <span className="font-semibold">{statusFilter || "Tất cả"}</span>
             </p>
           </div>
         </div>

@@ -32,6 +32,7 @@ export default function PlansPage() {
   const [plans, setPlans] = React.useState<PlanDto[]>([])
   const [loading, setLoading] = React.useState(true)
   const [search, setSearch] = React.useState("")
+  const [statusFilter, setStatusFilter] = React.useState("")
   const [page, setPage] = React.useState(1)
   const [pageSize] = React.useState(8)
   const [isExportingPdf, setIsExportingPdf] = React.useState(false)
@@ -86,6 +87,7 @@ export default function PlansPage() {
     try {
       const params = new URLSearchParams()
       if (search) params.append("search", search)
+      if (statusFilter) params.append("status", statusFilter)
       params.append("autoPrint", "1")
 
       const url = `/plans-report?${params.toString()}`
@@ -147,6 +149,8 @@ export default function PlansPage() {
         loading={loading}
         search={search}
         onSearchChange={setSearch}
+        statusFilter={statusFilter}
+        onStatusFilterChange={setStatusFilter}
         page={page}
         pageSize={pageSize}
         onPageChange={setPage}
