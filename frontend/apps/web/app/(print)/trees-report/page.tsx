@@ -55,10 +55,18 @@ export default function TreesReportPage() {
 
         const data = await apiClient.get<any>(`/api/trees?${params.toString()}`)
         const list = (data?.items as TreeReportRow[]) ?? []
+        const filtered =
+          treeIds.length > 0
+            ? list.filter((item) => treeIds.includes(item.id))
+            : list
 
         if (isMounted) {
-          setItems(list)
-          setTotalCount((data?.totalCount as number) ?? list.length)
+          setItems(filtered)
+          setTotalCount(
+            treeIds.length > 0
+              ? treeIds.length
+              : ((data?.totalCount as number) ?? filtered.length)
+          )
         }
       } catch (err) {
         if (isMounted) {
