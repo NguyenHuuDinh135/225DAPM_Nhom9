@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useState, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@workspace/ui/components/button"
@@ -17,7 +17,8 @@ interface TreeReportRow {
   longitude: number | null
 }
 
-export default function TreesReportPage() {
+// 1. Đổi tên component cũ thành TreesReportContent (component con)
+function TreesReportContent() {
   const searchParams = useSearchParams()
   const [items, setItems] = useState<TreeReportRow[]>([])
   const [totalCount, setTotalCount] = useState(0)
@@ -294,5 +295,23 @@ export default function TreesReportPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+// 2. Component chính để export default, bọc TreesReportContent bằng Suspense
+export default function TreesReportPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center bg-slate-100">
+          <div className="flex items-center gap-2 text-slate-500">
+            <Loader2 className="size-6 animate-spin" />
+            <span>Đang chuẩn bị trang in...</span>
+          </div>
+        </div>
+      }
+    >
+      <TreesReportContent />
+    </Suspense>
   )
 }

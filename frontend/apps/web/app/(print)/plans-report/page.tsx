@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useState, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@workspace/ui/components/button"
@@ -27,7 +27,8 @@ const STATUS_LABELS: Record<string, string> = {
   Rejected: "Bị từ chối",
 }
 
-export default function PlansReportPage() {
+// 1. Đổi tên component cũ thành ReportContent (component con)
+function ReportContent() {
   const searchParams = useSearchParams()
   const [items, setItems] = useState<PlanReportRow[]>([])
   const [loading, setLoading] = useState(true)
@@ -311,5 +312,23 @@ export default function PlansReportPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+// 2. Tạo Component chính để export default, bọc ReportContent bằng Suspense
+export default function PlansReportPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center bg-slate-100">
+          <div className="flex items-center gap-2 text-slate-500">
+            <Loader2 className="size-6 animate-spin" />
+            <span>Đang chuẩn bị trang in...</span>
+          </div>
+        </div>
+      }
+    >
+      <ReportContent />
+    </Suspense>
   )
 }
