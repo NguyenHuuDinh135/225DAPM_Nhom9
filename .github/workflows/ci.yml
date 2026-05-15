@@ -14,8 +14,8 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '10.0.x'
-          dotnet-quality: 'preview'
+          dotnet-version: "10.0.x"
+          dotnet-quality: "preview"
 
       - name: Restore dependencies
         run: dotnet restore backend/src/Web/Web.csproj
@@ -66,8 +66,8 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '10.0.x'
-          dotnet-quality: 'preview'
+          dotnet-version: "10.0.x"
+          dotnet-quality: "preview"
 
       - uses: oven-sh/setup-bun@v2
         with:
@@ -79,7 +79,7 @@ jobs:
 
       - name: Install Playwright Browsers
         working-directory: frontend/apps/web
-        run: bunx playwright install --with-deps chromium
+        run: bunx playwright install --with-deps
 
       - name: Start Backend
         run: dotnet run --project backend/src/AppHost --launch-profile http &
