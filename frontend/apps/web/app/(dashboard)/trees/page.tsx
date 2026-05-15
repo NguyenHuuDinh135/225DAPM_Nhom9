@@ -308,8 +308,12 @@ export default function TreesPage() {
     setIsExportingPdf(true)
     try {
       const params = new URLSearchParams()
-      selectedTreeIds.forEach((id) => params.append("treeIds", id.toString()))
-      params.append("autoPrint", "1")
+      selectedTreeIds.forEach((id) => {
+        if (id) {
+          // Chỉ khi id có giá trị thật thì mới append
+          params.append("treeIds", id.toString())
+        }
+      })
 
       const url = `/trees-report?${params.toString()}`
       window.open(url, "_blank", "noopener,noreferrer")

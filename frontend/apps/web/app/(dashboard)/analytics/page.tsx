@@ -84,9 +84,9 @@ export default function AnalyticsPage() {
       Completed: 0,
       Rejected: 0,
     }
-    plans.forEach((plan) => {
+    plans?.forEach((plan) => {
       if (plan.status && counters[plan.status] !== undefined) {
-        counters[plan.status] += 1
+        counters[plan.status]! += 1
       }
     })
     return counters
