@@ -17,6 +17,16 @@ interface PlanReportRow {
   statusName?: string
 }
 
+const STATUS_LABELS: Record<string, string> = {
+  Draft: "Bản nháp",
+  PendingApproval: "Chờ duyệt",
+  NeedsRevision: "Cần sửa",
+  Approved: "Đã duyệt",
+  InProgress: "Đang triển khai",
+  Completed: "Hoàn thành",
+  Rejected: "Bị từ chối",
+}
+
 export default function PlansReportPage() {
   const searchParams = useSearchParams()
   const [items, setItems] = useState<PlanReportRow[]>([])
@@ -95,6 +105,11 @@ export default function PlansReportPage() {
     const date = new Date(value)
     if (Number.isNaN(date.getTime())) return ""
     return date.toLocaleDateString("vi-VN")
+  }
+
+  const formatStatus = (value: string | null | undefined) => {
+    if (!value) return ""
+    return STATUS_LABELS[value] ?? value
   }
 
   return (
@@ -198,7 +213,9 @@ export default function PlansReportPage() {
             </p>
             <p>
               - Trạng thái lọc:{" "}
-              <span className="font-semibold">{statusFilter || "Tất cả"}</span>
+              <span className="font-semibold">
+                {statusFilter ? formatStatus(statusFilter) : "Tất cả"}
+              </span>
             </p>
           </div>
         </div>
@@ -271,7 +288,7 @@ export default function PlansReportPage() {
                           {formatDate(item.endDate)}
                         </td>
                         <td className="border border-slate-300 px-2 py-1">
-                          {item.statusName || item.status}
+                          {item.statusName || formatStatus(item.status)}
                         </td>
                       </tr>
                     ))
