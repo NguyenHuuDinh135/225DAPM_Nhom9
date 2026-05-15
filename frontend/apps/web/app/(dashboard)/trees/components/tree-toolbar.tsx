@@ -29,7 +29,8 @@ interface TreeToolbarHeaderProps {
   search: string
   onExportAll: () => void
   onExportSelected: () => void
-  onExportPdf: () => void
+  onExportPdfAll: () => void
+  onExportPdfSelected: () => void
   onAdd: () => void
 }
 
@@ -42,25 +43,91 @@ export function TreeToolbarHeader({
   search,
   onExportAll,
   onExportSelected,
-  onExportPdf,
+  onExportPdfAll,
+  onExportPdfSelected,
   onAdd,
 }: TreeToolbarHeaderProps) {
   return (
     <div className="flex gap-2">
-      <Button
-        onClick={onExportPdf}
-        disabled={isExportingPdf}
-        variant="outline"
-        className="h-11 gap-2 rounded-2xl border-slate-700 px-6 font-bold text-slate-700 hover:bg-slate-100"
-      >
-        <FileTextIcon className="size-5" />
-        {isExportingPdf ? "ĐANG XUẤT..." : "XUẤT PDF"}
-        {selectedCount > 0 && (
-          <Badge className="ml-1 bg-slate-700 px-1.5 py-0 text-[10px] text-white">
-            {selectedCount}
-          </Badge>
-        )}
-      </Button>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button
+            disabled={isExportingPdf}
+            variant="outline"
+            className={cn(
+              "h-11 gap-2 rounded-2xl border-slate-700 px-6 font-bold text-slate-700 hover:bg-slate-100",
+              (conditionFilter || search || selectedCount > 0) && "bg-slate-100"
+            )}
+          >
+            <FileTextIcon className="size-5" />
+            {isExportingPdf ? "ĐANG XUẤT..." : "XUẤT PDF"}
+            {selectedCount > 0 && (
+              <Badge className="ml-1 bg-slate-700 px-1.5 py-0 text-[10px] text-white">
+                {selectedCount}
+              </Badge>
+            )}
+            {(conditionFilter || search) && selectedCount === 0 && (
+              <Badge className="ml-1 bg-slate-700 px-1.5 py-0 text-[10px] text-white">
+                LỌC
+              </Badge>
+            )}
+            <ChevronDownIcon className="ml-1 size-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent
+          align="end"
+          className="w-72 rounded-xl border-none shadow-xl"
+        >
+          <DropdownMenuItem
+            onClick={onExportPdfAll}
+            disabled={isExportingPdf}
+            className="cursor-pointer rounded-lg px-4 py-3 font-semibold"
+          >
+            <FileTextIcon className="mr-2 size-4" />
+            <div className="flex flex-col items-start">
+              <span>Xuất tất cả</span>
+              {(conditionFilter || search) && (
+                <span className="text-[10px] font-normal text-slate-500">
+                  Áp dụng bộ lọc hiện tại
+                </span>
+              )}
+            </div>
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={onExportPdfSelected}
+            disabled={isExportingPdf || selectedCount === 0}
+            className="cursor-pointer rounded-lg px-4 py-3 font-semibold"
+          >
+            <FileTextIcon className="mr-2 size-4" />
+            <div className="flex flex-col items-start">
+              <span>Xuất cây đã chọn</span>
+              <span className="text-[10px] font-normal text-slate-500">
+                {selectedCount > 0
+                  ? `${selectedCount} cây được chọn`
+                  : "Chưa chọn cây nào"}
+              </span>
+            </div>
+          </DropdownMenuItem>
+          {(conditionFilter || search) && (
+            <div className="mt-1 border-t px-4 py-2 text-xs text-slate-500">
+              <div className="mb-1 font-semibold">Bộ lọc đang áp dụng:</div>
+              {conditionFilter && (
+                <div className="flex items-center gap-1">
+                  <FilterIcon className="size-3" />
+                  Tình trạng:{" "}
+                  <span className="font-bold">{conditionFilter}</span>
+                </div>
+              )}
+              {search && (
+                <div className="flex items-center gap-1">
+                  <SearchIcon className="size-3" />
+                  Tìm kiếm: <span className="font-bold">{search}</span>
+                </div>
+              )}
+            </div>
+          )}
+        </DropdownMenuContent>
+      </DropdownMenu>
 
       <DropdownMenu>
         <DropdownMenuTrigger asChild>

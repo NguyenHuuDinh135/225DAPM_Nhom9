@@ -282,15 +282,33 @@ export default function TreesPage() {
     }
   }
 
-  const handleExportPdf = () => {
+  const handleExportPdfAll = () => {
     setIsExportingPdf(true)
     try {
       const params = new URLSearchParams()
       if (conditionFilter) params.append("condition", conditionFilter)
       if (search) params.append("searchTerm", search)
-      if (selectedTreeIds.length > 0) {
-        selectedTreeIds.forEach((id) => params.append("treeIds", id.toString()))
-      }
+      params.append("autoPrint", "1")
+
+      const url = `/trees-report?${params.toString()}`
+      window.open(url, "_blank", "noopener,noreferrer")
+    } finally {
+      setIsExportingPdf(false)
+    }
+  }
+
+  const handleExportPdfSelected = () => {
+    if (selectedTreeIds.length === 0) {
+      toast.error("Chưa chọn cây", {
+        description: "Vui lòng chọn ít nhất một cây để xuất PDF.",
+      })
+      return
+    }
+
+    setIsExportingPdf(true)
+    try {
+      const params = new URLSearchParams()
+      selectedTreeIds.forEach((id) => params.append("treeIds", id.toString()))
       params.append("autoPrint", "1")
 
       const url = `/trees-report?${params.toString()}`
@@ -330,7 +348,8 @@ export default function TreesPage() {
           search={search}
           onExportAll={handleExportAll}
           onExportSelected={handleExportSelected}
-          onExportPdf={handleExportPdf}
+          onExportPdfAll={handleExportPdfAll}
+          onExportPdfSelected={handleExportPdfSelected}
           onAdd={handleOpenAdd}
         />
       </div>
