@@ -6,6 +6,195 @@
     "version": "1.0.0"
   },
   "paths": {
+    "/api/ai/chat": {
+      "post": {
+        "tags": [
+          "ai"
+        ],
+        "operationId": "Chat",
+        "requestBody": {
+          "x-name": "request",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChatRequest"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChatResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      }
+    },
+    "/api/ai/chat/stream": {
+      "post": {
+        "tags": [
+          "ai"
+        ],
+        "operationId": "ChatStream",
+        "requestBody": {
+          "x-name": "request",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChatRequest"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT": []
+          }
+        ]
+      }
+    },
+    "/api/ai/anomalies": {
+      "get": {
+        "tags": [
+          "ai"
+        ],
+        "operationId": "DetectAnomalies",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "integer",
+                    "format": "int32"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "JWT": [
+              "GiamDoc",
+              "DoiTruong"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/ai/report/{type}": {
+      "get": {
+        "tags": [
+          "ai"
+        ],
+        "operationId": "GenerateReport",
+        "parameters": [
+          {
+            "name": "type",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "JWT": [
+              "GiamDoc",
+              "DoiTruong"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/ai/predictions": {
+      "get": {
+        "tags": [
+          "ai"
+        ],
+        "operationId": "PredictMaintenance",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MaintenancePrediction"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "JWT": [
+              "GiamDoc",
+              "DoiTruong"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/ai/health": {
+      "get": {
+        "tags": [
+          "ai"
+        ],
+        "operationId": "HealthCheck",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/Employees": {
       "get": {
         "tags": [
@@ -1193,6 +1382,41 @@
         ]
       }
     },
+    "/api/tree-incidents/by-location/{locationId}": {
+      "get": {
+        "tags": [
+          "tree-incidents"
+        ],
+        "operationId": "GetApiTreeIncidentsByLocation",
+        "parameters": [
+          {
+            "name": "locationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "x-position": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TreeIncidentDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/trees": {
       "get": {
         "tags": [
@@ -1284,7 +1508,17 @@
             }
           },
           "400": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
           }
         },
         "security": [
@@ -2149,6 +2383,75 @@
   },
   "components": {
     "schemas": {
+      "ChatResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "response": {
+            "type": "string"
+          }
+        }
+      },
+      "ChatRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "message": {
+            "type": "string"
+          },
+          "history": {
+            "type": "array",
+            "nullable": true,
+            "items": {
+              "$ref": "#/components/schemas/ChatMessageDto"
+            }
+          }
+        }
+      },
+      "ChatMessageDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "role": {
+            "type": "string"
+          },
+          "content": {
+            "type": "string"
+          }
+        }
+      },
+      "MaintenancePrediction": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "treeId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "treeName": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "urgencyScore": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "suggestedAction": {
+            "type": "string"
+          }
+        }
+      },
+      "HealthResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "available": {
+            "type": "boolean"
+          }
+        }
+      },
       "EmployeesVm": {
         "type": "object",
         "additionalProperties": false,
@@ -2190,15 +2493,15 @@
         }
       },
       "UserStatus": {
-        "type": "integer",
+        "type": "string",
         "description": "",
         "x-enumNames": [
           "Inactive",
           "Active"
         ],
         "enum": [
-          0,
-          1
+          "Inactive",
+          "Active"
         ]
       },
       "CreateEmployeeCommand": {
@@ -2895,9 +3198,27 @@
             "format": "int32"
           },
           "status": {
-            "type": "string"
+            "$ref": "#/components/schemas/IncidentStatus"
           }
         }
+      },
+      "IncidentStatus": {
+        "type": "string",
+        "description": "",
+        "x-enumNames": [
+          "Pending",
+          "Approved",
+          "InProgress",
+          "Resolved",
+          "Cancelled"
+        ],
+        "enum": [
+          "Pending",
+          "Approved",
+          "InProgress",
+          "Resolved",
+          "Cancelled"
+        ]
       },
       "ApproveIncidentCommand": {
         "type": "object",
@@ -3046,6 +3367,11 @@
           "longitude": {
             "type": "number",
             "format": "double",
+            "nullable": true
+          },
+          "recordedDate": {
+            "type": "string",
+            "format": "date-time",
             "nullable": true
           }
         }
@@ -3362,7 +3688,7 @@
         }
       },
       "WorkStatus": {
-        "type": "integer",
+        "type": "string",
         "description": "",
         "x-enumNames": [
           "New",
@@ -3372,11 +3698,11 @@
           "Cancelled"
         ],
         "enum": [
-          0,
-          1,
-          2,
-          3,
-          4
+          "New",
+          "InProgress",
+          "WaitingForApproval",
+          "Completed",
+          "Cancelled"
         ]
       },
       "WorkTreeLocationDto": {
@@ -3452,6 +3778,9 @@
           },
           "status": {
             "$ref": "#/components/schemas/WorkStatus"
+          },
+          "statusName": {
+            "type": "string"
           },
           "rejectionFeedback": {
             "type": "string",

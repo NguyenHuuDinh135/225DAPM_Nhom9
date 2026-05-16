@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Plus, Sparkles } from "lucide-react"
+import { FileText, Plus, Sparkles } from "lucide-react"
 import { Button } from "@workspace/ui/components/button"
 import { apiClient } from "@/lib/api-client"
 import { useAuth } from "@/hooks/use-auth"
@@ -14,25 +14,28 @@ import { CreatePlanDialog } from "./components/create-plan-dialog"
 import { PlanWorkSheet } from "./components/plan-work-dialogs"
 
 interface PlanDto {
-  id: number;
-  name: string;
-  creatorId: string;
-  creatorName: string;
-  startDate: string;
-  endDate: string;
-  status: string;
-  workCount?: number;
+  id: number
+  name: string
+  creatorId: string
+  creatorName: string
+  startDate: string
+  endDate: string
+  status: string
+  workCount?: number
 }
 
 export default function PlansPage() {
   const { user } = useAuth()
-  const isAdmin = user && (user.role === ROLES.DoiTruong || user.role === ROLES.GiamDoc);
+  const isCaptain = user?.role === ROLES.DoiTruong
+  const isDirector = user?.role === ROLES.GiamDoc
 
   const [plans, setPlans] = React.useState<PlanDto[]>([])
   const [loading, setLoading] = React.useState(true)
   const [search, setSearch] = React.useState("")
+  const [statusFilter, setStatusFilter] = React.useState("")
   const [page, setPage] = React.useState(1)
   const [pageSize] = React.useState(8)
+  const [isExportingPdf, setIsExportingPdf] = React.useState(false)
 
   // Dialog states
   const [isAutoDialogOpen, setIsAutoDialogOpen] = React.useState(false)
@@ -79,31 +82,64 @@ export default function PlansPage() {
     }
   }
 
+  const handleExportPdf = () => {
+    setIsExportingPdf(true)
+    try {
+      const params = new URLSearchParams()
+      if (search) params.append("search", search)
+      if (statusFilter) params.append("status", statusFilter)
+      params.append("autoPrint", "1")
+
+      const url = `/plans-report?${params.toString()}`
+      window.open(url, "_blank", "noopener,noreferrer")
+    } finally {
+      setIsExportingPdf(false)
+    }
+  }
+
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+    <div className="space-y-6 p-6">
+      <div className="flex flex-col justify-between gap-6 md:flex-row md:items-center">
         <div>
-          <h1 className="text-2xl font-black text-slate-800 tracking-tight">Kế hoạch Chiến lược</h1>
-          <p className="text-sm text-slate-500 font-medium italic">Xây dựng lộ trình bảo trì và chăm sóc cây xanh toàn thành phố.</p>
+          <h1 className="text-2xl font-black tracking-tight text-slate-800">
+            Kế hoạch Chiến lược
+          </h1>
+          <p className="text-sm font-medium text-slate-500 italic">
+            Xây dựng lộ trình bảo trì và chăm sóc cây xanh toàn thành phố.
+          </p>
         </div>
 
-        {isAdmin && (
-          <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3">
+          {isDirector && (
             <Button
               variant="outline"
-              onClick={() => setIsAutoDialogOpen(true)}
-              className="h-11 px-6 rounded-2xl border-primary/20 text-primary font-bold gap-2 hover:bg-primary/5 transition-all"
+              onClick={handleExportPdf}
+              disabled={isExportingPdf}
+              className="h-11 gap-2 rounded-2xl border-slate-700 px-6 font-bold text-slate-700 hover:bg-slate-100"
             >
-              <Sparkles className="size-4" /> AI GỢI Ý
+              <FileText className="size-4" />
+              {isExportingPdf ? "ĐANG XUẤT..." : "XUẤT PDF"}
             </Button>
-            <Button
-              className="h-11 px-6 rounded-2xl bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20 font-bold gap-2 transition-all hover:scale-105"
-              onClick={() => setIsCreateDialogOpen(true)}
-            >
-              <Plus className="size-4" /> TẠO MỚI
-            </Button>
-          </div>
-        )}
+          )}
+
+          {isCaptain && (
+            <>
+              <Button
+                variant="outline"
+                onClick={() => setIsAutoDialogOpen(true)}
+                className="h-11 gap-2 rounded-2xl border-primary/20 px-6 font-bold text-primary transition-all hover:bg-primary/5"
+              >
+                <Sparkles className="size-4" /> AI GỢI Ý
+              </Button>
+              <Button
+                className="h-11 gap-2 rounded-2xl bg-primary px-6 font-bold shadow-lg shadow-primary/20 transition-all hover:scale-105 hover:bg-primary/90"
+                onClick={() => setIsCreateDialogOpen(true)}
+              >
+                <Plus className="size-4" /> TẠO MỚI
+              </Button>
+            </>
+          )}
+        </div>
       </div>
 
       <PlanStats plans={plans} />
@@ -113,6 +149,8 @@ export default function PlansPage() {
         loading={loading}
         search={search}
         onSearchChange={setSearch}
+        statusFilter={statusFilter}
+        onStatusFilterChange={setStatusFilter}
         page={page}
         pageSize={pageSize}
         onPageChange={setPage}

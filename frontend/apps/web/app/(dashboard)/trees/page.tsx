@@ -21,7 +21,10 @@ import { type RowSelectionState } from "@tanstack/react-table"
 import { type TreeRow, makeColumns } from "./components/columns"
 import { TreeDataTable } from "./components/tree-data-table"
 import { TreeToolbarHeader, TreeFilterBar } from "./components/tree-toolbar"
-import { TreeFormDialog, type TreeFormData } from "./components/tree-form-dialog"
+import {
+  TreeFormDialog,
+  type TreeFormData,
+} from "./components/tree-form-dialog"
 
 const DEFAULT_FORM: TreeFormData = {
   name: "",
@@ -33,7 +36,10 @@ const DEFAULT_FORM: TreeFormData = {
 
 export default function TreesPage() {
   const { user } = useAuth()
-  const isAdmin = !!(user && (user.role === ROLES.DoiTruong || user.role === ROLES.GiamDoc))
+  const isAdmin = !!(
+    user &&
+    (user.role === ROLES.DoiTruong || user.role === ROLES.GiamDoc)
+  )
 
   const [trees, setTrees] = React.useState<TreeRow[]>([])
   const [loading, setLoading] = React.useState(true)
@@ -49,6 +55,7 @@ export default function TreesPage() {
   })
   const [rowSelection, setRowSelection] = React.useState<RowSelectionState>({})
   const [isExporting, setIsExporting] = React.useState(false)
+  const [isExportingPdf, setIsExportingPdf] = React.useState(false)
 
   // Dialog state
   const [isDialogOpen, setIsDialogOpen] = React.useState(false)
@@ -60,7 +67,11 @@ export default function TreesPage() {
   const [isDeleting, setIsDeleting] = React.useState(false)
 
   const selectedTreeIds = React.useMemo(
-    () => Object.keys(rowSelection).filter((k) => rowSelection[k]).map((idx) => trees[parseInt(idx)]?.id).filter(Boolean),
+    () =>
+      Object.keys(rowSelection)
+        .filter((k) => rowSelection[k])
+        .map((idx) => trees[parseInt(idx)]?.id)
+        .filter(Boolean),
     [rowSelection, trees]
   )
 
@@ -76,10 +87,15 @@ export default function TreesPage() {
         queryParams.append("condition", conditionFilter)
       }
 
-      const data = await apiClient.get<Record<string, unknown>>(`/api/trees?${queryParams.toString()}`)
-      const items = (data?.items as TreeRow[]) || (Array.isArray(data) ? (data as TreeRow[]) : [])
+      const data = await apiClient.get<Record<string, unknown>>(
+        `/api/trees?${queryParams.toString()}`
+      )
+      const items =
+        (data?.items as TreeRow[]) ||
+        (Array.isArray(data) ? (data as TreeRow[]) : [])
       const totalCount = (data?.totalCount as number) || items.length
-      const totalPages = (data?.totalPages as number) || Math.ceil(totalCount / pageSize)
+      const totalPages =
+        (data?.totalPages as number) || Math.ceil(totalCount / pageSize)
 
       setTrees(items)
       setPagination({
@@ -91,7 +107,8 @@ export default function TreesPage() {
     } catch {
       setTrees([])
       toast.error("Lỗi kết nối", {
-        description: "Không thể kết nối đến máy chủ. Vui lòng kiểm tra Backend đang chạy.",
+        description:
+          "Không thể kết nối đến máy chủ. Vui lòng kiểm tra Backend đang chạy.",
       })
     } finally {
       setLoading(false)
@@ -131,16 +148,24 @@ export default function TreesPage() {
   const handleSubmit = async () => {
     try {
       if (editingTree) {
-        await apiClient.put(`/api/trees/${editingTree.id}`, { ...formData, id: editingTree.id })
-        toast.success("Thành công", { description: "Đã cập nhật thông tin cây xanh." })
+        await apiClient.put(`/api/trees/${editingTree.id}`, {
+          ...formData,
+          id: editingTree.id,
+        })
+        toast.success("Thành công", {
+          description: "Đã cập nhật thông tin cây xanh.",
+        })
       } else {
         await apiClient.post("/api/trees", formData)
-        toast.success("Thành công", { description: "Đã thêm cây xanh mới vào hệ thống." })
+        toast.success("Thành công", {
+          description: "Đã thêm cây xanh mới vào hệ thống.",
+        })
       }
       setIsDialogOpen(false)
       loadTrees()
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Không thể lưu thông tin cây xanh."
+      const message =
+        err instanceof Error ? err.message : "Không thể lưu thông tin cây xanh."
       toast.error("Lỗi", { description: message })
     }
   }
@@ -150,11 +175,14 @@ export default function TreesPage() {
     setIsDeleting(true)
     try {
       await apiClient.delete(`/api/trees/${treeToDelete}`)
-      toast.success("Đã xóa", { description: "Cây xanh đã được loại bỏ khỏi hệ thống." })
+      toast.success("Đã xóa", {
+        description: "Cây xanh đã được loại bỏ khỏi hệ thống.",
+      })
       loadTrees()
       setTreeToDelete(null)
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Không thể xóa cây xanh này."
+      const message =
+        err instanceof Error ? err.message : "Không thể xóa cây xanh này."
       toast.error("Lỗi xóa", { description: message })
     } finally {
       setIsDeleting(false)
@@ -168,10 +196,15 @@ export default function TreesPage() {
       if (conditionFilter) queryParams.append("condition", conditionFilter)
       if (search) queryParams.append("searchTerm", search)
 
-      const response = await fetch(`/api/trees/export?${queryParams.toString()}`, {
-        method: "GET",
-        headers: { Authorization: `Bearer ${localStorage.getItem("access_token")}` },
-      })
+      const response = await fetch(
+        `/api/trees/export?${queryParams.toString()}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+          },
+        }
+      )
       if (!response.ok) throw new Error("Không thể xuất file")
 
       const blob = await response.blob()
@@ -187,12 +220,16 @@ export default function TreesPage() {
       window.URL.revokeObjectURL(downloadUrl)
       document.body.removeChild(a)
 
-      const filterMsg = conditionFilter || search
-        ? ` theo bộ lọc${conditionFilter ? ` (${conditionFilter})` : ""}`
-        : ""
-      toast.success("Thành công", { description: `Đã xuất danh sách cây xanh${filterMsg} ra file Excel.` })
+      const filterMsg =
+        conditionFilter || search
+          ? ` theo bộ lọc${conditionFilter ? ` (${conditionFilter})` : ""}`
+          : ""
+      toast.success("Thành công", {
+        description: `Đã xuất danh sách cây xanh${filterMsg} ra file Excel.`,
+      })
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Không thể xuất file Excel."
+      const message =
+        err instanceof Error ? err.message : "Không thể xuất file Excel."
       toast.error("Lỗi", { description: message })
     } finally {
       setIsExporting(false)
@@ -201,7 +238,9 @@ export default function TreesPage() {
 
   const handleExportSelected = async () => {
     if (selectedTreeIds.length === 0) {
-      toast.error("Chưa chọn cây", { description: "Vui lòng chọn ít nhất một cây để xuất." })
+      toast.error("Chưa chọn cây", {
+        description: "Vui lòng chọn ít nhất một cây để xuất.",
+      })
       return
     }
     setIsExporting(true)
@@ -212,7 +251,11 @@ export default function TreesPage() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("access_token")}`,
         },
-        body: JSON.stringify({ treeIds: selectedTreeIds, condition: null, searchTerm: null }),
+        body: JSON.stringify({
+          treeIds: selectedTreeIds,
+          condition: null,
+          searchTerm: null,
+        }),
       })
       if (!response.ok) throw new Error("Không thể xuất file")
 
@@ -226,41 +269,96 @@ export default function TreesPage() {
       window.URL.revokeObjectURL(url)
       document.body.removeChild(a)
 
-      toast.success("Thành công", { description: `Đã xuất ${selectedTreeIds.length} cây đã chọn ra file Excel.` })
+      toast.success("Thành công", {
+        description: `Đã xuất ${selectedTreeIds.length} cây đã chọn ra file Excel.`,
+      })
       setRowSelection({})
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Không thể xuất file Excel."
+      const message =
+        err instanceof Error ? err.message : "Không thể xuất file Excel."
       toast.error("Lỗi", { description: message })
     } finally {
       setIsExporting(false)
     }
   }
 
+  const handleExportPdfAll = () => {
+    setIsExportingPdf(true)
+    try {
+      const params = new URLSearchParams()
+      if (conditionFilter) params.append("condition", conditionFilter)
+      if (search) params.append("searchTerm", search)
+      params.append("autoPrint", "1")
+
+      const url = `/trees-report?${params.toString()}`
+      window.open(url, "_blank", "noopener,noreferrer")
+    } finally {
+      setIsExportingPdf(false)
+    }
+  }
+
+  const handleExportPdfSelected = () => {
+    if (selectedTreeIds.length === 0) {
+      toast.error("Chưa chọn cây", {
+        description: "Vui lòng chọn ít nhất một cây để xuất PDF.",
+      })
+      return
+    }
+
+    setIsExportingPdf(true)
+    try {
+      const params = new URLSearchParams()
+      selectedTreeIds.forEach((id) => {
+        if (id) {
+          // Chỉ khi id có giá trị thật thì mới append
+          params.append("treeIds", id.toString())
+        }
+      })
+
+      const url = `/trees-report?${params.toString()}`
+      window.open(url, "_blank", "noopener,noreferrer")
+    } finally {
+      setIsExportingPdf(false)
+    }
+  }
+
   const columns = React.useMemo(
-    () => makeColumns({ isAdmin, onEdit: handleOpenEdit, onDelete: setTreeToDelete }),
+    () =>
+      makeColumns({
+        isAdmin,
+        onEdit: handleOpenEdit,
+        onDelete: setTreeToDelete,
+      }),
     [isAdmin]
   )
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div className="space-y-6 p-6">
+      <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
         <div>
-          <h1 className="text-2xl font-black text-slate-800 tracking-tight">Hệ thống Cây xanh</h1>
-          <p className="text-sm text-slate-500 font-medium italic">Quản lý tài sản xanh và theo dõi hiện trạng sinh trưởng.</p>
+          <h1 className="text-2xl font-black tracking-tight text-slate-800">
+            Hệ thống Cây xanh
+          </h1>
+          <p className="text-sm font-medium text-slate-500 italic">
+            Quản lý tài sản xanh và theo dõi hiện trạng sinh trưởng.
+          </p>
         </div>
         <TreeToolbarHeader
           selectedCount={selectedTreeIds.length}
           isExporting={isExporting}
+          isExportingPdf={isExportingPdf}
           isAdmin={isAdmin}
           conditionFilter={conditionFilter}
           search={search}
           onExportAll={handleExportAll}
           onExportSelected={handleExportSelected}
+          onExportPdfAll={handleExportPdfAll}
+          onExportPdfSelected={handleExportPdfSelected}
           onAdd={handleOpenAdd}
         />
       </div>
 
-      <Card className="border-none shadow-2xl shadow-slate-200/50 rounded-[2rem] overflow-hidden bg-white/80 backdrop-blur-xl">
+      <Card className="overflow-hidden rounded-[2rem] border-none bg-white/80 shadow-2xl shadow-slate-200/50 backdrop-blur-xl">
         <TreeFilterBar
           search={search}
           onSearchChange={setSearch}
@@ -290,12 +388,17 @@ export default function TreesPage() {
         onSubmit={handleSubmit}
       />
 
-      <AlertDialog open={treeToDelete !== null} onOpenChange={(open) => !open && setTreeToDelete(null)}>
+      <AlertDialog
+        open={treeToDelete !== null}
+        onOpenChange={(open) => !open && setTreeToDelete(null)}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Xác nhận xóa cây xanh</AlertDialogTitle>
             <AlertDialogDescription>
-              Bạn có chắc chắn muốn xóa cây xanh này không? (Lưu ý: Không thể xóa nếu cây có lịch sử bảo trì hoặc sự cố liên quan). Hành động này không thể hoàn tác.
+              Bạn có chắc chắn muốn xóa cây xanh này không? (Lưu ý: Không thể
+              xóa nếu cây có lịch sử bảo trì hoặc sự cố liên quan). Hành động
+              này không thể hoàn tác.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -306,7 +409,7 @@ export default function TreesPage() {
                 e.preventDefault()
                 confirmDelete()
               }}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              className="text-destructive-foreground bg-destructive hover:bg-destructive/90"
             >
               {isDeleting ? "Đang xóa..." : "Xóa"}
             </AlertDialogAction>
